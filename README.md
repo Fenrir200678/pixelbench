@@ -39,7 +39,8 @@ Pixelbench is a local image editor for Windows. It drives a private ComfyUI proc
 
 Pixelbench does not download models. It uses the weights you already have in your ComfyUI model folders, and each profile shows which files it is missing. See [Profiles and models](docs/profiles-and-models.md).
 
-**Video models are not supported, and that is not planned.** Pixelbench is built for still images, so please don't open feature requests for video. Maybe one day I'll build a "Videobench" that is made for exactly that. :)
+> [!NOTE]
+> **Video models are not supported, and that is not planned.** Pixelbench is built for still images, so please don't open feature requests for video. Maybe one day I'll build a "Videobench" that is made for exactly that. :)
 
 ## Prerequisites
 
