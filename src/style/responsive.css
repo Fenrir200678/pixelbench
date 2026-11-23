@@ -1,0 +1,81 @@
+@media (max-width: 1050px) {
+  .topbar {
+    gap: var(--space-1-5);
+    padding-inline: var(--space-2);
+  }
+  .status {
+    max-width: 140px;
+  }
+  #open span,
+  #new-image span,
+  #export span {
+    display: none;
+  }
+}
+@media (max-width: 950px) {
+  .variant-head .quiet {
+    font-size: 0;
+  }
+  .variant-head .quiet svg {
+    margin: 0;
+  }
+}
+@media (max-width: 920px) {
+  .brand strong,
+  #backend-label {
+    display: none;
+  }
+  .mode-switcher button {
+    padding-inline: var(--space-2-5);
+  }
+}
+@media (max-width: 690px) {
+  .history {
+    display: none;
+  }
+  .section {
+    padding-inline: var(--space-3);
+  }
+  .run-panel {
+    padding-inline: var(--space-3);
+  }
+  .variant-actions {
+    gap: var(--space-0-5);
+  }
+  .variant-head h2 {
+    font-size: var(--text-xs);
+  }
+  .variant-head .compact {
+    font-size: 0;
+  }
+  .variant-head .icon {
+    width: var(--control-height-sm);
+  }
+}
+@media (max-width: 620px) {
+  .topbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding-block: var(--space-1-5);
+  }
+  .mode-switcher {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+@media (max-width: 1050px) {
+  .workflow-switch .combobox {
+    width: 150px;
+  }
+}
+@media (max-width: 800px) {
+  #presets > span {
+    display: none;
+  }
+}

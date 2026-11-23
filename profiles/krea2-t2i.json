@@ -1,0 +1,72 @@
+{
+  "id": "krea2-t2i",
+  "name": "Krea 2 Turbo",
+  "short": "Krea 2 Turbo",
+  "tools": ["create", "upscale"],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_krea2_turbo_t2i.json",
+  "notes": "Text-zu-Bild mit Krea 2 Turbo nach der Comfy-Org-Vorlage, ohne den optionalen Prompt-Generator.",
+  "workflow": "krea2-t2i.json",
+  "nodes": [
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "EmptyLatentImage",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Krea 2 Turbo Diffusionsmodell",
+      "files": ["krea2_turbo_fp8_scaled.safetensors", "krea2_turbo_int8_convrot.safetensors", "krea2_turbo_bf16.safetensors"]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL 4B Textencoder",
+      "files": ["qwen3vl_4b_fp8_scaled.safetensors", "qwen3vl_4b.safetensors"]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen Image VAE",
+      "files": ["qwen_image_vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": { "label": "Steps", "default": 8, "min": 1, "max": 20, "step": 1 },
+    "sampler": { "label": "Sampler", "default": "euler" },
+    "scheduler": { "label": "Scheduler", "default": "simple" }
+  },
+  "bindings": {
+    "width": ["latent", "width"],
+    "height": ["latent", "height"],
+    "prompt": ["positive", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage"
+  },
+  "lora": { "model": ["unet", 0], "family": "krea2" },
+  "variance": ["sample", "positive"],
+  "img2img": { "denoise": ["sample", "denoise"] },
+  "weights": "krea2",
+  "weightsModel": ["sample", "model"]
+}

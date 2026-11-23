@@ -1,0 +1,148 @@
+{
+  "id": "flux-fill",
+  "name": "FLUX.1 Fill",
+  "short": "FLUX.1 Fill",
+  "tools": [
+    "inpaint",
+    "outpaint"
+  ],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/flux_fill_inpaint_example.json",
+  "notes": "Core-Nodes aus der Fill-Vorlage. Für Outpainting erzeugt die App den Rahmen und seine Maske.",
+  "workflow": "flux-fill.json",
+  "nodes": [
+    "LoadImage",
+    "LoadImageMask",
+    "UNETLoader",
+    "DualCLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "FluxGuidance",
+    "ConditioningZeroOut",
+    "DifferentialDiffusion",
+    "InpaintModelConditioning",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 2097152,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "FLUX.1 Fill Diffusionsmodell",
+      "files": [
+        "flux1-fill-dev.safetensors",
+        "flux1-fill-dev-fp8.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name1",
+      "category": "text_encoders",
+      "label": "CLIP-L",
+      "files": [
+        "clip_l.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name2",
+      "category": "text_encoders",
+      "label": "T5-XXL",
+      "files": [
+        "t5xxl_fp16.safetensors",
+        "t5xxl_fp8_e4m3fn.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX VAE",
+      "files": [
+        "ae.safetensors"
+      ]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 20,
+      "min": 1,
+      "max": 100,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "default": "normal"
+    },
+    "denoise": {
+      "label": "Denoising Strength",
+      "default": 1,
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    },
+    "guidance": {
+      "label": "FLUX Guidance",
+      "default": 30,
+      "min": 0,
+      "max": 50,
+      "step": 0.5
+    }
+  },
+  "bindings": {
+    "image": [
+      "image",
+      "image"
+    ],
+    "mask": [
+      "mask",
+      "image"
+    ],
+    "prompt": [
+      "positive",
+      "text"
+    ],
+    "seed": [
+      "sample",
+      "seed"
+    ],
+    "steps": [
+      "sample",
+      "steps"
+    ],
+    "sampler": [
+      "sample",
+      "sampler_name"
+    ],
+    "scheduler": [
+      "sample",
+      "scheduler"
+    ],
+    "denoise": [
+      "sample",
+      "denoise"
+    ],
+    "guidance": [
+      "guide",
+      "guidance"
+    ]
+  },
+  "fixed": {
+    "CFG": "1,0 · FluxGuidance konditioniert das Modell separat"
+  },
+  "lora": { "model": ["unet", 0], "family": "flux" },
+  "weights": "clip"
+}

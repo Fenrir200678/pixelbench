@@ -1,0 +1,194 @@
+/* ---------- Statusleiste unten ---------- */
+
+.workspace-footer {
+  container-type: inline-size;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--footer-height);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  overflow: hidden;
+  border-top: 1px solid var(--border-gutter);
+  background: var(--surface-app);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+.document-meta,
+#document-status {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.document-meta {
+  flex: 1;
+  gap: var(--space-2-5);
+}
+#document-status {
+  gap: var(--space-1);
+  padding-inline-end: var(--space-2-5);
+  border-inline-end: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+.document-name,
+#image-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#image-meta {
+  flex-shrink: 0;
+  max-width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+#document-status + #image-meta {
+  max-width: 68%;
+}
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-0-5);
+}
+.zoom-controls .icon {
+  width: 22px;
+  min-height: 22px;
+}
+.zoom-controls .zoom-value {
+  min-height: 22px;
+  min-width: 48px;
+}
+.toggle-count {
+  min-width: 16px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-round);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font: var(--weight-medium) var(--text-2xs) / 16px var(--font-mono);
+  text-align: center;
+}
+@container (max-width: 640px) {
+  .vram-label {
+    display: none;
+  }
+}
+@container (max-width: 420px) {
+  .vram-total {
+    display: none;
+  }
+}
+@container (max-width: 380px) {
+  .workspace-panel-toggle span {
+    display: none;
+  }
+}
+.workspace-footer .workspace-panel-toggle {
+  flex: none;
+  min-height: 22px;
+  gap: var(--space-1);
+  padding: 0 var(--space-1-5);
+  font-size: var(--text-xs);
+}
+.workspace-panel-toggle[aria-expanded='true'] {
+  background: var(--surface-selected);
+  color: var(--accent-text);
+}
+
+/* VRAM-Anzeige */
+.vram-meter {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding-inline: var(--space-1);
+  color: var(--text-tertiary);
+  font: var(--weight-regular) var(--text-2xs) / 1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.vram-label {
+  letter-spacing: 0.06em;
+}
+.vram-bar {
+  display: flex;
+  width: 56px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-round);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+}
+.vram-bar > span {
+  height: 100%;
+  transition:
+    width var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out);
+}
+.vram-comfy {
+  background: var(--accent);
+}
+.vram-other {
+  background: var(--border-hover);
+}
+.vram-value {
+  color: var(--text-secondary);
+}
+.vram-total {
+  color: var(--text-muted);
+}
+.vram-meter[data-level='high'] .vram-comfy {
+  background: var(--status-warn);
+}
+.vram-meter[data-level='critical'] .vram-comfy {
+  background: var(--status-error);
+}
+.vram-meter[data-level='critical'] .vram-value {
+  color: var(--status-error);
+}
+
+/* ---------- Konsole ---------- */
+
+.console-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--surface-sunken);
+}
+.console-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--border-gutter);
+  background: var(--surface-panel);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+.console-heading h2 {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.console-log {
+  padding: var(--space-1-5) var(--space-3) var(--space-2);
+  overflow: auto;
+  color: var(--text-secondary);
+  font: var(--text-xs) / 1.6 var(--font-mono);
+}
+.console-log > div {
+  display: grid;
+  grid-template-columns: 8ch 7ch minmax(0, 1fr);
+  gap: 1.2ch;
+}
+.console-log time {
+  color: var(--text-muted);
+}
+.console-log .log-source {
+  color: var(--accent-text);
+}
+.console-log .log-source[data-source='ComfyUI'] {
+  color: var(--status-info);
+}
+.console-log span:last-child {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

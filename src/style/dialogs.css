@@ -1,0 +1,42 @@
+dialog {
+  width: min(560px, calc(100% - var(--space-8)));
+  max-height: calc(100dvh - 48px);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-dialog);
+  color: var(--text-primary);
+}
+dialog::backdrop {
+  background: var(--surface-scrim);
+}
+.dialog-head,
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2-5);
+}
+.dialog-head {
+  margin: 0 calc(var(--space-2) * -1) var(--space-4) 0;
+}
+.dialog-head h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+.dialog-actions {
+  justify-content: flex-end;
+  margin-top: var(--space-5);
+}
+.dialog-actions button {
+  min-height: 32px;
+  padding-inline: var(--space-3);
+}
+dialog .stack > span {
+  margin-bottom: var(--space-1-5);
+}
+dialog .field-note + :is(.stack, label, div) {
+  margin-top: var(--space-4);
+}

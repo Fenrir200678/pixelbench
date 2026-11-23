@@ -1,0 +1,11 @@
+{
+  "image": {"class_type":"LoadImage","inputs":{"image":""}},
+  "mask": {"class_type":"LoadImageMask","inputs":{"image":"","channel":"red"}},
+  "checkpoint": {"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":""}},
+  "positive": {"class_type":"CLIPTextEncode","inputs":{"clip":["checkpoint",1],"text":""}},
+  "negative": {"class_type":"CLIPTextEncode","inputs":{"clip":["checkpoint",1],"text":""}},
+  "conditioning": {"class_type":"InpaintModelConditioning","inputs":{"positive":["positive",0],"negative":["negative",0],"vae":["checkpoint",2],"pixels":["image",0],"mask":["mask",0],"noise_mask":true}},
+  "sample": {"class_type":"KSampler","inputs":{"model":["checkpoint",0],"positive":["conditioning",0],"negative":["conditioning",1],"latent_image":["conditioning",2],"seed":0,"steps":1,"cfg":1,"sampler_name":"euler","scheduler":"normal","denoise":1}},
+  "decode": {"class_type":"VAEDecode","inputs":{"samples":["sample",0],"vae":["checkpoint",2]}},
+  "preview": {"class_type":"PreviewImage","inputs":{"images":["decode",0]}}
+}

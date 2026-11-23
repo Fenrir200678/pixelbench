@@ -1,0 +1,111 @@
+{
+  "id": "krea2-edit",
+  "name": "Krea 2 Turbo Edit",
+  "short": "Krea 2 Edit",
+  "tools": ["edit"],
+  "source": "https://github.com/lbouaraba/comfyui-krea2edit/blob/v2.0.0/workflows/krea2_identity_edit.json",
+  "notes": "Ein-Bild-Bearbeitung mit dem Krea-2-Edit-LoRA von conradlocke (General Edit V2, alternativ Identity Edit V2) und den Nodes aus comfyui-krea2edit. Das Arbeitsbild wird von der App auf die wirksamen Generierungsmaße gebracht. Die V2-LoRAs sind nur für nicht-kommerzielle Nutzung frei.",
+  "workflow": "krea2-edit.json",
+  "nodes": [
+    "LoadImage",
+    "GetImageSize",
+    "UNETLoader",
+    "LoraLoaderModelOnly",
+    "CLIPLoader",
+    "VAELoader",
+    "VAEEncode",
+    "EmptySD3LatentImage",
+    "Krea2EditModelPatch",
+    "Krea2EditGroundedEncode",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 2097152,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Krea 2 Turbo Diffusionsmodell",
+      "files": ["krea2_turbo_fp8_scaled.safetensors", "krea2_turbo_int8_convrot.safetensors", "krea2_turbo_bf16.safetensors"]
+    },
+    {
+      "node": "edit",
+      "input": "lora_name",
+      "category": "loras",
+      "label": "Edit-LoRA",
+      "title": "Krea 2 Edit",
+      "hint": "Der Workflow lädt das Edit-LoRA selbst. Nicht zusätzlich unter LoRAs hinzufügen. Die Dateivariante (r64, r128, voll) steht unter Erweiterte Einstellungen.",
+      "docs": "https://huggingface.co/conradlocke/krea2-identity-edit",
+      "toggle": [
+        {
+          "label": "General Edit",
+          "prefix": "krea2_general_edit",
+          "hint": "Anweisungen wie entfernen, umfärben, Licht, Hintergrund, Text oder Outfit ändern"
+        },
+        {
+          "label": "Identity Edit",
+          "prefix": "krea2_identity_edit",
+          "hint": "Dieselbe Person in neuer Szene, Pose, Kleidung oder Beleuchtung"
+        }
+      ],
+      "files": [
+        "krea2_general_edit_v2_r128.safetensors",
+        "krea2_general_edit_v2.safetensors",
+        "krea2_general_edit_v2_r64.safetensors",
+        "krea2_identity_edit_v2_r128.safetensors",
+        "krea2_identity_edit_v2.safetensors",
+        "krea2_identity_edit_v2_r64.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL 4B Textencoder",
+      "files": ["qwen3vl_4b_fp8_scaled.safetensors", "qwen3vl_4b.safetensors"]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen Image VAE",
+      "files": ["qwen_image_vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": { "label": "Steps", "default": 8, "min": 1, "max": 30, "step": 1 },
+    "sampler": { "label": "Sampler", "default": "euler" },
+    "scheduler": { "label": "Scheduler", "default": "simple" },
+    "refBoost": {
+      "label": "Referenztreue",
+      "section": "edit",
+      "hint": "Wie eng das Ergebnis am Quellbild bleibt. 1 ist neutral, höher hält Aussehen und Layout enger, unter 1 lockert. Jeder Wert außer 1 braucht sehr viel VRAM und kann ComfyUI bei 1 MP abbrechen lassen.",
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    }
+  },
+  "bindings": {
+    "image": ["image", "image"],
+    "prompt": ["positive", "prompt"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "refBoost": ["patch", "ref_boost"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage",
+    "Denoising Strength": "1,0 · vollständiger Sigma-Verlauf"
+  },
+  "lora": { "model": ["edit", 0], "family": "krea2" }
+}

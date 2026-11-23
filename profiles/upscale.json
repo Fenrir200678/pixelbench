@@ -1,0 +1,23 @@
+{
+  "id": "upscale",
+  "name": "Nur Upscaler",
+  "short": "Upscaler",
+  "tools": ["upscale"],
+  "source": "https://github.com/comfyanonymous/ComfyUI/blob/master/comfy_extras/nodes_upscale_model.py",
+  "notes": "Vergrößert mit einem Upscale-Modell (ESRGAN und verwandte) und skaliert per Lanczos auf die Zielgröße. Ohne Diffusionsmodell und ohne Prompt.",
+  "workflow": "upscale.json",
+  "nodes": ["LoadImage", "UpscaleModelLoader", "ImageUpscaleWithModel", "ImageScale", "PreviewImage"],
+  "sizes": {
+    "grid": 1,
+    "min": 64,
+    "max": 8192,
+    "area": 24000000,
+    "target": 2048
+  },
+  "models": [],
+  "parameters": {},
+  "bindings": {
+    "width": ["scale", "width"],
+    "height": ["scale", "height"]
+  }
+}

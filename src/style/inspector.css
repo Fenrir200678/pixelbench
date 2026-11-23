@@ -1,0 +1,7 @@
+@import './inspector/sections.css';
+@import './inspector/workflow.css';
+@import './inspector/prompt.css';
+@import './inspector/fields.css';
+@import './inspector/run-panel.css';
+@import './inspector/combobox.css';
+@import './inspector/metadata.css';

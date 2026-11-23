@@ -1,0 +1,61 @@
+{
+  "node": 24,
+  "comfyui": "0.46.0",
+  "nodes": [
+    {
+      "folder": "pixelbench_lanpaint",
+      "repo": "scraed/LanPaint",
+      "commit": "2d7912f9a5efe5ece8de334c7ca18317b8288c39",
+      "purpose": "LanPaint inpainting",
+      "requirements": []
+    },
+    {
+      "folder": "pixelbench_gguf",
+      "repo": "leejet/ComfyUI-GGUF",
+      "commit": "ff8d48666758866bcc9e93b22e1e07cb636e084f",
+      "purpose": "GGUF model loaders",
+      "requirements": ["gguf>=0.13.0", "sentencepiece"]
+    },
+    {
+      "folder": "ComfyUI_UltimateSDUpscale",
+      "repo": "ssitu/ComfyUI_UltimateSDUpscale",
+      "commit": "a5547db9e1d07d3318bb21e9e9c474f4c1e9c8df",
+      "purpose": "Tiled hires fix",
+      "submodules": [
+        {
+          "path": "repositories/ultimate_sd_upscale",
+          "repo": "Coyote-A/ultimate-upscale-for-automatic1111",
+          "commit": "2322caa480535b1011a1f9c18126d85ea444f146"
+        }
+      ],
+      "requirements": []
+    },
+    {
+      "folder": "KreaSeedVarianceEnhancer",
+      "repo": "harukimix/KreaSeedVarianceEnhancer",
+      "commit": "1515d23a5b399a44ccd97482e1105a43937268ae",
+      "purpose": "Seed variance for Krea 2 Turbo",
+      "requirements": []
+    },
+    {
+      "folder": "ComfyUI-KJNodes",
+      "repo": "kijai/ComfyUI-KJNodes",
+      "commit": "aa2b5ea5e7f61b51f5d26d726f23c1d74e951016",
+      "purpose": "Prompt weights for Krea 2",
+      "requirements": [
+        "pillow>=10.3.0",
+        "color-matcher",
+        "matplotlib",
+        "mss",
+        "opencv-python-headless|opencv-python|opencv-contrib-python"
+      ]
+    },
+    {
+      "folder": "comfyui-krea2edit",
+      "repo": "lbouaraba/comfyui-krea2edit",
+      "commit": "13ef60f20828949becada815d3cbc371eb5ccaab",
+      "purpose": "Krea 2 edit",
+      "requirements": []
+    }
+  ]
+}

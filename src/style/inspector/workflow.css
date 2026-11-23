@@ -1,0 +1,117 @@
+/* Workflow profile and presets in the top bar */
+.workflow-switch {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-1);
+}
+.workflow-switch .combobox {
+  width: 200px;
+  min-width: 120px;
+  flex: 0 1 auto;
+}
+.workflow-switch .combobox > input {
+  border-color: var(--border-subtle);
+  font-size: var(--text-sm);
+}
+.workflow-switch .combobox > input:hover:not(:focus, :disabled) {
+  border-color: var(--control-border);
+}
+.workflow-switch .combobox-list {
+  left: auto;
+  min-width: 260px;
+}
+.preset-menu {
+  position: relative;
+  flex: none;
+}
+#presets {
+  max-width: 160px;
+  color: var(--text-secondary);
+}
+#presets > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#presets[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: var(--z-popover);
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-popover);
+  font-size: var(--text-sm);
+}
+.menu > button {
+  justify-content: flex-start;
+  min-height: var(--control-height-md);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-primary);
+  text-align: left;
+}
+.menu > button:is(:hover, :focus-visible) {
+  background: var(--surface-selected);
+}
+.menu > button[aria-checked='true'] {
+  color: var(--accent-text);
+}
+.menu > hr {
+  margin: var(--space-1) 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.menu-empty {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-muted);
+}
+
+/* Model and LoRAs */
+.profile-note:not([hidden]) {
+  margin: var(--space-3) var(--space-4) 0;
+}
+.model-pick {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-1-5);
+}
+.model-pick-fields {
+  flex: 1;
+  min-width: 0;
+}
+#reload-models[aria-busy='true'] svg {
+  animation: reload-spin 0.9s linear infinite;
+}
+@keyframes reload-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lora-fields {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+.section-content > .lora-fields:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+#model-settings :is(select, .combobox input),
+#advanced :is(select, .combobox input) {
+  font-size: var(--text-sm);
+}

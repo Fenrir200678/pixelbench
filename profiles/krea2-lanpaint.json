@@ -1,0 +1,102 @@
+{
+  "id": "krea2-lanpaint",
+  "name": "Krea 2 Turbo · LanPaint",
+  "short": "Krea 2 · LanPaint",
+  "tools": ["inpaint"],
+  "source": "https://github.com/scraed/LanPaint/tree/2.2.0/examples/Example_28",
+  "notes": "Krea 2 Turbo mit LanPaint-Sampler. Die App verwendet ihren Ausschnitt und setzt das Ergebnis innerhalb der Pinselmaske ins Original ein.",
+  "workflow": "krea2-lanpaint.json",
+  "nodes": [
+    "LoadImage",
+    "LoadImageMask",
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "VAEEncode",
+    "SetLatentNoiseMask",
+    "DifferentialDiffusion",
+    "LanPaint_KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Krea 2 Turbo Diffusionsmodell",
+      "files": ["krea2_turbo_fp8_scaled.safetensors", "krea2_turbo_int8_convrot.safetensors", "krea2_turbo_bf16.safetensors"]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL 4B Textencoder",
+      "files": ["qwen3vl_4b_fp8_scaled.safetensors", "qwen3vl_4b.safetensors"]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen Image VAE",
+      "files": ["qwen_image_vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 15,
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "default": "simple"
+    },
+    "denoise": {
+      "label": "Denoising Strength",
+      "default": 1,
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    },
+    "lanpaintIterations": {
+      "label": "LanPaint-Iterationen",
+      "default": 5,
+      "min": 1,
+      "max": 20,
+      "step": 1
+    }
+  },
+  "bindings": {
+    "image": ["image", "image"],
+    "mask": ["mask", "image"],
+    "prompt": ["positive", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "denoise": ["sample", "denoise"],
+    "lanpaintIterations": ["sample", "LanPaint_NumSteps"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage"
+  },
+  "lora": { "model": ["unet", 0], "family": "krea2" },
+  "weights": "krea2",
+  "weightsModel": ["sample", "model"]
+}

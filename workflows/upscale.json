@@ -1,0 +1,13 @@
+{
+  "upscaleSource": { "class_type": "LoadImage", "inputs": { "image": "" } },
+  "upscaleModel": { "class_type": "UpscaleModelLoader", "inputs": { "model_name": "" } },
+  "upscale": {
+    "class_type": "ImageUpscaleWithModel",
+    "inputs": { "upscale_model": ["upscaleModel", 0], "image": ["upscaleSource", 0] }
+  },
+  "scale": {
+    "class_type": "ImageScale",
+    "inputs": { "image": ["upscale", 0], "upscale_method": "lanczos", "width": 2048, "height": 2048, "crop": "disabled" }
+  },
+  "preview": { "class_type": "PreviewImage", "inputs": { "images": ["scale", 0] } }
+}

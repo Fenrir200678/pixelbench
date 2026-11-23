@@ -1,0 +1,131 @@
+# Editor and modes
+
+The editing modes are in the middle of the header and switch with the keys **1** to **5**. The tools, mask controls and zoom are below the canvas. Job settings are in the inspector on the right.
+
+| Key | Mode                                      | Needs an open image |
+| --- | ----------------------------------------- | ------------------- |
+| 1   | Create (create image)                     | No                  |
+| 2   | Edit (edit image)                         | Yes                 |
+| 3   | Inpaint (inpaint area)                    | Yes                 |
+| 4   | Outpaint (extend image)                   | Yes                 |
+| 5   | Extras (generation data and upscale)      | Yes                 |
+
+Which profiles each mode offers is listed in [Profiles and models](profiles-and-models.md#profiles).
+
+## Create
+
+Create an image from a prompt without a starting image.
+
+- **Size.** Aspect ratio chips choose a size that fits the profile. You can also type width and height. The arrow between them swaps both values.
+- **Apply** or **Set as starting image** makes a variant the working image and switches to Edit. If an image is open, Pixelbench asks first, and **Ctrl+Z** restores it.
+- **New** in the header closes the document (after asking about unexported changes), deletes the variants and starts a new image in Create. The prompt stays.
+- **Template.** You can use the current image or a dropped image as a template for img2img. The box is only ticked for you when you open or drop an image in Create. **Apply** on a variant leaves it as it is, and **New** clears it. Low strength stays close to the template, high strength is freer. Without a template, the image comes from the prompt only.
+  The Img2Img section shows the source image as a thumbnail. Img2Img always uses the source image, not a variant you are only looking at. While another variant is shown, a note offers **Use variant N as source**.
+- **Variation** (Krea 2 Turbo) adds seed-dependent noise to the prompt embedding in the first quarter of the steps. 0 is off, 1 is the node author's recommendation and values up to 5 vary more and follow the prompt less. The same seed still gives the same image. See [Profiles and models](profiles-and-models.md#more-variation-with-krea-2-turbo).
+
+### Hires fix
+
+The hires fix lives in Create. It enlarges an image and re-renders it with low strength in an img2img pass at the target size, like in Forge.
+
+- **Apply when generating** upscales every created image in a second job right after the first render. Both variants stay in the strip.
+- **Render in tiles** switches to Ultimate SD Upscale. Above the profile's maximum size (usually 2048 px or 4.2 MP) a notice warns about the higher VRAM and time needs without tiles. Tiled mode uses a Chess pattern with 64 px overlap.
+- The same prompt, seed and LoRAs apply.
+- **Details** sets the strength. Around 0.3 stays close to the first render.
+- **Hires steps** of 0 uses the steps under **Render**.
+- **Lock seed** in the section keeps the seed of the last created or selected variant, like the lock under **Render**. It is set automatically when you turn the hires fix on, and you can unset it. With a locked seed the first render comes from the cache and only the hires fix is recomputed.
+- **Apply hires fix to open image** runs the same pass without a new render.
+- For variants from Create, **Hires fix 2x** in the variant strip runs it afterwards.
+
+## Edit
+
+Edit an image with an instruction and optional image references (Qwen-Image 2.1). If the Qwen base model is missing, the editor picks the available Turbo profile. See [Image references](profiles-and-models.md#image-references).
+
+## Inpaint
+
+Replace an area with the mask brush.
+
+- **M** selects the **Mask Brush** and **E** the **Eraser**. **,** and **.** change the brush size, and Ctrl plus the mouse wheel over the image does too.
+- **H** shows or hides the mask. **Shift+M** clears it. **Ctrl+Z** undoes a stroke or the clearing.
+- **Auto** under **Render resolution** picks the crop around the mask including context. With **Auto** off the whole image is used by default. A manually set frame takes priority.
+- A soft mask edge works inside the painted pixels. The display opacity only changes how the mask looks.
+- **C** switches the generation frame on or off in Edit and Inpaint.
+- Applying a detailer variant turns the detected masks into the Inpaint mask, where you can extend or erase them.
+
+Outside the mask the original pixels are kept. PNG channel values outside the effective mask stay unchanged.
+
+## Outpaint
+
+Extend the image by dragging the eight frame handles, or type target width, target height and the original's offset (**Original from left**, **Original from top**). The target frame can be up to 8192 px per side and 24 MP.
+
+The **Transition** setting can blend inside the original along the extended edges. At 0 px the original pixels match everywhere in the placed rectangle.
+
+## Extras
+
+Extras has two jobs.
+
+**Generation data.** Drop an image on the field at the top of the section, or click the field to choose a file, to read its stored generation data (prompt, negative prompt, seed, settings and raw data). The image appears there as a thumbnail next to its data, and the canvas keeps the open image. The × button clears the field. You can copy values, **Send to canvas** to open the image, or send the settings to Create, Edit or Inpaint (everything except the model). An image dropped on the canvas always opens, as in the other modes, and does not fill this section. Data written by Forge, ComfyUI tools and Pixelbench is readable.
+
+**Upscale (upscaler only).** Enlarges the whole working image with an upscale model, or with Lanczos if you choose no model. There is no prompt and no diffusion model.
+
+- **Scale by** takes a factor from 1 to 4. **Scale to** takes a width and height.
+- With the aspect ratio lock open, the image is cropped from the center to the new aspect ratio.
+- The result stays within 8192 px per side and 24 MP.
+- Upscale models such as `4x-UltraSharpV2.safetensors` belong in `upscale_models`, `ESRGAN` or `RealESRGAN` in a model root folder. UltraSharp is preselected when found. You can add folders in Settings under `upscale_models`. DAT models like UltraSharpV2 are much slower than ESRGAN models.
+
+For more detail than a plain upscale, use the hires fix in Create.
+
+## Drawing layer
+
+The drawing layer is for color and shape sketches in all workflows.
+
+- **B** selects the solid brush and creates a layer if needed. Pick the color in the canvas controls, where you can also create and delete the layer.
+- **E** and the right mouse button erase on the active layer.
+- In inpainting, the sketch works inside the mask. In outpainting you can also paint into the extension area.
+- The sketch becomes part of the model's input image. Applying a variant removes the layer. Export uses the last applied working image.
+
+## Detailer
+
+The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. **Apply to current image** refines the selected variant or open image without a new render.
+
+## Image adjustments
+
+**A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.
+
+## Variants and compare
+
+- Every job adds a variant to the strip under the canvas. Right-click a variant for actions.
+- **Left/Right arrow** switches between variants at the same zoom.
+- **V** splits the canvas into before and after. Drag the divider, or move it with the arrow keys when its handle has focus.
+- The **Source** card at the start of the strip shows the open image that the next job starts from, in every mode. Click it to show it on the canvas. A variant only becomes the source through **Apply** or **Set as starting image**. In Create without Img2Img the card is dimmed, because the source is not used there. A click still shows the image until you pick a variant or press **Esc**.
+- **Apply** sets the working state. **Set as starting image** (canvas controls or **S**) uses the shown image for further jobs and starts with an empty mask. The variants stay available. **Ctrl+Z** undoes both actions.
+- The circular arrow runs a job again with its original inputs, effective settings, model paths and seed.
+- **Delete** removes a variant. **Shift+D** deletes all previews and **Shift+V** shows or hides the strip.
+
+## Canvas and view
+
+- The mouse wheel zooms around the pointer. **-** and **+** zoom in steps, **0** resets to 100 % and **F** fits the view.
+- **G** toggles the hand tool. The middle mouse button or **Space** plus dragging pans temporarily.
+- **Effective** shows the generation grid before you start. The original image size or the set outpaint frame determines the export.
+
+Under **Size** you can set frame size and render resolution separately. The lock next to each size keeps the aspect ratio. You can move the frame on the canvas. Under **Render**, the seed lock enables manual entry. With the lock open, a random seed is used per run.
+
+## Prompt refinement
+
+**Refine prompt** asks a local text model to rewrite your prompt. You choose the model under **Advanced settings → Prompt refinement model** in the inspector. The suggestion appears for you to accept or discard.
+
+## Console
+
+The **Console** in the footer (**Shift+C**) shows timestamps, running nodes, phase durations, cache hits and messages from ComfyUI and the bridge. The log is kept in memory only. You can open it automatically on errors in Settings.
+
+## Sessions, files and export
+
+- Variants, inputs, masks and undo history stay in memory. Backend settings are saved in `.settings.json`. Defaults and presets are saved in the browser.
+- Export downloads a file with a new name. Inputs are PNG (up to 8 bits per channel), JPEG and WebP, up to 8192 px per side and 24 MP. PNG export has 8 bits per channel and contains every pixel of the working size. Metadata and color profiles of the input are left out, but generation data can be stored in exported PNGs (see Settings → Export).
+- Starting a new image ends the previous editing session.
+- When you close or leave the tab with an unexported applied result, the browser shows its native warning after you interacted with the page.
+
+## Privacy and the private ComfyUI process
+
+The app binds only to 127.0.0.1. It starts your existing ComfyUI as a separate process with its own working folder under `.runtime`. Inputs go through a job folder and outputs through PreviewImage into the private temp folder. After a job finishes or is cancelled, the bridge removes the job files and its own history entry. A process lock protects running private instances when orphaned folders are cleaned up. Cancel targets the job ID of the bridge's own ComfyUI job.
+
+An external ComfyUI instance is only for diagnostics. ComfyUI's standard API gives the bridge no way to safely delete all job files, so jobs are blocked in that mode.

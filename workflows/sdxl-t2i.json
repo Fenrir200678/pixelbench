@@ -1,0 +1,9 @@
+{
+  "checkpoint": {"class_type":"CheckpointLoaderSimple","inputs":{"ckpt_name":""}},
+  "positive": {"class_type":"CLIPTextEncode","inputs":{"clip":["checkpoint",1],"text":""}},
+  "negative": {"class_type":"CLIPTextEncode","inputs":{"clip":["checkpoint",1],"text":""}},
+  "latent": {"class_type":"EmptyLatentImage","inputs":{"width":1024,"height":1024,"batch_size":1}},
+  "sample": {"class_type":"KSampler","inputs":{"model":["checkpoint",0],"positive":["positive",0],"negative":["negative",0],"latent_image":["latent",0],"seed":0,"steps":25,"cfg":6,"sampler_name":"dpmpp_2m","scheduler":"karras","denoise":1}},
+  "decode": {"class_type":"VAEDecode","inputs":{"samples":["sample",0],"vae":["checkpoint",2]}},
+  "preview": {"class_type":"PreviewImage","inputs":{"images":["decode",0]}}
+}

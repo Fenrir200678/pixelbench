@@ -1,0 +1,212 @@
+/* ---------- Kopfleiste ---------- */
+
+.topbar {
+  z-index: var(--z-raised);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--topbar-height);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--border-gutter);
+  background: var(--surface-app);
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-1);
+}
+.topbar-end {
+  justify-content: flex-end;
+  gap: var(--space-1-5);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: var(--space-2);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+.brand strong {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+  overflow: hidden;
+}
+.brand-mark i {
+  width: 2.5px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--text-on-accent);
+  transform: skewX(-24deg);
+}
+.brand-mark i:nth-child(2) {
+  height: 16px;
+}
+.brand-mark i:nth-child(3) {
+  height: 8px;
+  margin-top: 8px;
+  opacity: 0.6;
+}
+.top-divider {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1-5);
+  background: var(--border-default);
+}
+.history {
+  display: flex;
+  gap: var(--space-0-5);
+}
+
+/* Moduswahl: segmentierte Steuerung */
+.mode-switcher {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-0-5);
+  padding: var(--space-0-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+.mode-switcher button {
+  min-height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+}
+.mode-switcher button[aria-pressed='true'] {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 1px 2px rgb(0 0 0 / 0.4);
+}
+.mode-switcher button[aria-pressed='true'] svg {
+  color: var(--accent-text);
+}
+
+/* Verbindungsstatus */
+.status {
+  min-width: 0;
+  max-width: 180px;
+  gap: var(--space-2);
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+}
+#backend-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.signal {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-round);
+  background: var(--status-warn);
+}
+[data-state='ready'] .signal {
+  background: var(--status-ok);
+}
+[data-state='error'] .signal {
+  background: var(--status-error);
+}
+.settings-icon {
+  color: var(--text-tertiary);
+}
+#open,
+#new-image,
+#export {
+  padding-inline: var(--space-2);
+}
+
+/* ---------- Arbeitsfläche & Panels ---------- */
+
+.editor {
+  min-height: 0;
+}
+.workspace {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.workspace > [data-group] {
+  flex: 1;
+  min-height: 0;
+}
+.layout-panel {
+  display: flex;
+  flex-direction: column;
+}
+.layout-panel > .stage,
+.layout-panel > .inspector,
+.layout-panel > .variants,
+.layout-panel > .console-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Trenner zwischen Panels: dunkle Fuge, Akzent beim Ziehen */
+.resize-handle {
+  position: relative;
+  flex-basis: 1px;
+  background: var(--border-gutter);
+  touch-action: none;
+  outline: none;
+}
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
+  z-index: var(--z-raised);
+}
+.resize-handle[aria-orientation='horizontal']::after {
+  inset: -4px 0;
+}
+/* Grip in the middle of the seam, so the handle can be found without hovering. */
+.resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-raised);
+  width: 4px;
+  height: 28px;
+  border-radius: var(--radius-round);
+  background: var(--border-strong);
+  transform: translate(-50%, -50%);
+  transition: background var(--duration-base) var(--ease-out);
+}
+.resize-handle[aria-orientation='horizontal']::before {
+  width: 28px;
+  height: 4px;
+}
+.resize-handle:hover,
+.resize-handle:active,
+.resize-handle:focus-visible,
+.resize-handle[data-separator='active'],
+.resize-handle[data-separator='hover'] {
+  background: var(--accent);
+}
+.resize-handle:is(:hover, :active, :focus-visible, [data-separator='active'], [data-separator='hover'])::before {
+  background: var(--accent);
+}

@@ -1,0 +1,127 @@
+{
+  "id": "qwen21-t2i",
+  "name": "Qwen-Image 2.1",
+  "short": "Qwen 2.1",
+  "tools": ["create", "upscale"],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_qwen_image_2_1_t2i.json",
+  "notes": "Text-zu-Bild nach der Comfy-Org-Vorlage. Prompt-Refiner weggelassen.",
+  "workflow": "qwen21-t2i.json",
+  "nodes": [
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "QwenImage21Cache",
+    "TextEncodeQwenImage21",
+    "EmptyLatentImage",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 32,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Qwen-Image 2.1 Diffusionsmodell",
+      "gguf": true,
+      "files": [
+        "qwen_image_2.1_int8_convrot.safetensors",
+        "qwen_image_2.1_bf16.safetensors",
+        "qwen-image-2.1-step90000-FP8.safetensors",
+        "qwen-image-2.1-step90000-q5_k_m.gguf"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL Textencoder",
+      "files": [
+        "qwen3vl_8b_int8_convrot.safetensors",
+        "qwen3vl_8b_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen-Image 2.1 VAE",
+      "files": [
+        "texture_fix_vae_for_qwen_image_2.1_bf16.safetensors",
+        "qwen_image_2.1_vae_bf16.safetensors"
+      ]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 25,
+      "min": 1,
+      "max": 100,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "default": "simple"
+    },
+    "cfg": {
+      "label": "CFG",
+      "default": 1,
+      "min": 1,
+      "max": 16,
+      "step": 0.5
+    }
+  },
+  "bindings": {
+    "width": [
+      "latent",
+      "width"
+    ],
+    "height": [
+      "latent",
+      "height"
+    ],
+    "prompt": [
+      "encode",
+      "prompt"
+    ],
+    "negative": [
+      "encode",
+      "negative_prompt"
+    ],
+    "steps": [
+      "sample",
+      "steps"
+    ],
+    "sampler": [
+      "sample",
+      "sampler_name"
+    ],
+    "scheduler": [
+      "sample",
+      "scheduler"
+    ],
+    "cfg": [
+      "sample",
+      "cfg"
+    ],
+    "seed": [
+      "sample",
+      "seed"
+    ]
+  },
+  "negative": true,
+  "lora": { "model": ["unet", 0], "family": "qwen-image" },
+  "img2img": { "denoise": ["sample", "denoise"] }
+}

@@ -1,0 +1,201 @@
+/*
+ * Design-Tokens
+ *
+ * Drei Ebenen:
+ * 1. Primitive  – rohe Farbwerte und Skalen. Werden nie direkt in Komponenten benutzt.
+ * 2. Semantik   – Rollen wie Fläche, Text, Rahmen, Akzent. Nur diese Ebene wechselt pro Theme.
+ * 3. Komponente – wenige Ableitungen für wiederkehrende Bausteine (Buttons, Eingaben, Bildfläche).
+ *
+ * Ein neues Theme überschreibt nur Ebene 2 (und ggf. 3) in einem eigenen
+ * [data-theme='…']-Block; alle Styles und die Canvas-Zeichnung lesen ausschließlich Tokens.
+ */
+
+:root {
+  /* ---------- 1. Primitive ---------- */
+
+  /* Neutrales Graphit, ohne Farbstich */
+  --gray-1000: #121212;
+  --gray-950: #161616;
+  --gray-900: #1b1b1b;
+  --gray-850: #202020;
+  --gray-800: #252525;
+  --gray-750: #2b2b2b;
+  --gray-700: #323232;
+  --gray-650: #3a3a3a;
+  --gray-600: #444444;
+  --gray-550: #4f4f4f;
+  --gray-500: #5e5e5e;
+  --gray-400: #787878;
+  --gray-300: #969696;
+  --gray-200: #b4b4b4;
+  --gray-150: #cbcbcb;
+  --gray-100: #dedede;
+  --gray-50: #f0f0f0;
+
+  --blue-800: #123a73;
+  --blue-700: #1859b8;
+  --blue-600: #1d6be0;
+  --blue-500: #2f7cf0;
+  --blue-400: #5694f5;
+  --blue-300: #86b3fa;
+
+  --green-400: #4cc38a;
+  --amber-400: #e8a849;
+  --amber-200: #f3cd90;
+  --red-400: #ec6a5e;
+  --violet-300: #b4a6ff;
+
+  /* Typografie */
+  --font-sans: 'IBM Plex Sans Variable', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Cascadia Mono', Consolas, monospace;
+
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 15px;
+  --text-xl: 18px;
+  --text-2xl: 26px;
+
+  --leading-tight: 1.15;
+  --leading-ui: 1.35;
+  --leading-text: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 650;
+
+  --tracking-tight: -0.015em;
+  --tracking-display: -0.025em;
+
+  /* Abstände (4-px-Raster) */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radien */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-round: 999px;
+
+  /* Bewegung */
+  --duration-fast: 90ms;
+  --duration-base: 140ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* Ebenen */
+  --z-raised: 1;
+  --z-popover: 10;
+
+  /* Feste Maße */
+  --topbar-height: 48px;
+  --footer-height: 28px;
+  --control-height-sm: 24px;
+  --control-height-md: 28px;
+  --control-height-lg: 36px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+}
+
+/* ---------- 2. Semantik: Dunkles Theme (Standard) ---------- */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Flächen, von hinten nach vorn */
+  --surface-stage: var(--gray-900);
+  --surface-app: var(--gray-800);
+  --surface-panel: var(--gray-750);
+  --surface-sunken: var(--gray-850);
+  --surface-raised: var(--gray-650);
+  --surface-overlay: var(--gray-700);
+  --surface-hover: rgb(255 255 255 / 0.06);
+  --surface-active: rgb(255 255 255 / 0.1);
+  --surface-selected: rgb(47 124 240 / 0.2);
+  --surface-scrim: rgb(10 10 10 / 0.72);
+
+  /* Linien */
+  --border-gutter: var(--gray-1000);
+  --border-subtle: var(--gray-700);
+  --border-default: var(--gray-600);
+  --border-strong: var(--gray-500);
+  --border-hover: var(--gray-400);
+
+  /* Text */
+  --text-primary: var(--gray-100);
+  --text-secondary: var(--gray-200);
+  --text-tertiary: var(--gray-300);
+  --text-muted: var(--gray-400);
+  --text-on-accent: #ffffff;
+  --text-link: var(--blue-300);
+
+  /* Akzent */
+  --accent: var(--blue-600);
+  --accent-hover: var(--blue-500);
+  --accent-pressed: var(--blue-700);
+  --accent-subtle: rgb(47 124 240 / 0.16);
+  --accent-border: rgb(86 148 245 / 0.55);
+  --accent-text: var(--blue-300);
+  --focus-ring: var(--blue-400);
+
+  /* Prompt weights: warm for stronger, cool for weaker */
+  --weight-up: var(--amber-400);
+  --weight-down: var(--blue-300);
+  --weight-selection: rgb(86 148 245 / 0.35);
+
+  /* Status */
+  --status-ok: var(--green-400);
+  --status-warn: var(--amber-400);
+  --status-warn-text: var(--amber-200);
+  --status-error: var(--red-400);
+  --status-info: var(--violet-300);
+
+  /* Schatten */
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(0 0 0 / 0.4);
+  --shadow-dialog: 0 24px 64px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.5);
+
+  /* ---------- 3. Komponenten ---------- */
+
+  --control-bg: var(--surface-sunken);
+  --control-border: var(--border-default);
+  --control-border-hover: var(--border-hover);
+  --control-text: var(--text-primary);
+  --control-placeholder: var(--text-muted);
+
+  --button-bg: var(--surface-raised);
+  --button-bg-hover: var(--gray-600);
+  --button-border: var(--gray-550);
+
+  --scrollbar-thumb: var(--gray-550);
+
+  /* Bildfläche – wird auch von der Canvas-Zeichnung (viewport.ts) gelesen */
+  --canvas-checker-a: var(--gray-650);
+  --canvas-checker-b: var(--gray-550);
+  --canvas-frame: rgb(255 255 255 / 0.22);
+  --canvas-frame-active: var(--blue-400);
+  --canvas-selection: var(--blue-400);
+  --canvas-selection-soft: rgb(86 148 245 / 0.7);
+  --canvas-selection-halo: rgb(0 0 0 / 0.75);
+  --canvas-handle-fill: var(--gray-50);
+  --canvas-handle-stroke: var(--blue-600);
+  --canvas-cursor-halo: rgb(0 0 0 / 0.7);
+  --canvas-cursor: #ffffff;
+  --canvas-cursor-erase: var(--amber-200);
+  --canvas-detection: var(--blue-500);
+  --canvas-detection-text: #ffffff;
+  --canvas-dot: rgb(255 255 255 / 0.05);
+}

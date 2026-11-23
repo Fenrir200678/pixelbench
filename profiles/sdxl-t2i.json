@@ -1,0 +1,47 @@
+{
+  "id": "sdxl-t2i",
+  "name": "SDXL",
+  "short": "SDXL",
+  "tools": ["create", "upscale"],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_sdxl_simple.json",
+  "notes": "Text-zu-Bild mit einem SDXL-Checkpoint nach der Comfy-Org-Vorlage.",
+  "workflow": "sdxl-t2i.json",
+  "nodes": ["CheckpointLoaderSimple", "CLIPTextEncode", "EmptyLatentImage", "KSampler", "VAEDecode", "PreviewImage"],
+  "sizes": {
+    "grid": 64,
+    "min": 512,
+    "max": 2048,
+    "area": 1572864,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "checkpoint",
+      "input": "ckpt_name",
+      "category": "checkpoints",
+      "label": "SDXL-Checkpoint",
+      "files": ["sd_xl_base_1.0.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": { "label": "Steps", "default": 25, "min": 1, "max": 100, "step": 1 },
+    "sampler": { "label": "Sampler", "default": "dpmpp_2m" },
+    "scheduler": { "label": "Scheduler", "default": "karras" },
+    "cfg": { "label": "CFG", "default": 6, "min": 1, "max": 16, "step": 0.5 }
+  },
+  "bindings": {
+    "width": ["latent", "width"],
+    "height": ["latent", "height"],
+    "prompt": ["positive", "text"],
+    "negative": ["negative", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "cfg": ["sample", "cfg"]
+  },
+  "negative": true,
+  "lora": { "model": ["checkpoint", 0], "clip": ["checkpoint", 1], "family": "sdxl" },
+  "img2img": { "denoise": ["sample", "denoise"] },
+  "weights": "clip"
+}

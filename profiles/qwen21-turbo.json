@@ -1,0 +1,116 @@
+{
+  "id": "qwen21-turbo",
+  "name": "Qwen-Image 2.1 Turbo",
+  "short": "Qwen 2.1 Turbo",
+  "tools": [
+    "edit"
+  ],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_qwen_image_2_1_turbo_image_edit.json",
+  "notes": "Comfy-Org-Turbo-Edit-Vorlage mit festem Sigma-Verlauf. Prompt-Refiner weggelassen.",
+  "workflow": "qwen21-turbo.json",
+  "nodes": [
+    "LoadImage",
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "QwenImage21Cache",
+    "TextEncodeQwenImage21",
+    "ManualSigmas",
+    "KSamplerSelect",
+    "RandomNoise",
+    "CFGGuider",
+    "SamplerCustomAdvanced",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 32,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1536
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Qwen-Image 2.1 Diffusionsmodell",
+      "files": [
+        "qwen_image_2.1_turbo_int8_convrot.safetensors",
+        "qwen_image_2.1_turbo_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL Textencoder",
+      "files": [
+        "qwen3vl_8b_int8_convrot.safetensors",
+        "qwen3vl_8b_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen-Image 2.1 VAE",
+      "files": [
+        "texture_fix_vae_for_qwen_image_2.1_bf16.safetensors",
+        "qwen_image_2.1_vae_bf16.safetensors"
+      ]
+    }
+  ],
+  "parameters": {
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "cfg": {
+      "label": "CFG",
+      "default": 1,
+      "min": 1,
+      "max": 16,
+      "step": 0.5
+    }
+  },
+  "bindings": {
+    "image": [
+      "image",
+      "image"
+    ],
+    "prompt": [
+      "encode",
+      "prompt"
+    ],
+    "negative": [
+      "encode",
+      "negative_prompt"
+    ],
+    "sampler": [
+      "sampler",
+      "sampler_name"
+    ],
+    "cfg": [
+      "guide",
+      "cfg"
+    ],
+    "seed": [
+      "noise",
+      "noise_seed"
+    ]
+  },
+  "referenceLimit": 15,
+  "reference": [
+    "encode",
+    "images.image_2"
+  ],
+  "negative": true,
+  "fixed": {
+    "Steps": "8 · aus der Sigma-Kurve",
+    "Scheduler": "Feste Sigma-Kurve der Turbo-Vorlage",
+    "Denoising Strength": "1,0 · vollständige Sigma-Kurve"
+  },
+  "lora": { "model": ["unet", 0], "family": "qwen-image" }
+}

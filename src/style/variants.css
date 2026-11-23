@@ -1,0 +1,203 @@
+.variants {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--space-2) var(--space-3) var(--space-2-5);
+  background: var(--surface-panel);
+}
+.variant-head,
+.variant-head > div,
+.variant-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.variant-head {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.variant-head > div:first-child {
+  gap: var(--space-2);
+}
+.variant-head h2 {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.count {
+  color: var(--text-muted);
+  font: var(--text-xs) var(--font-mono);
+}
+.variant-strip {
+  flex: 1;
+  display: flex;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow-x: auto;
+  padding: var(--space-0-5);
+}
+.variant-card {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 105 / 68;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+.variant-card:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-hover);
+}
+.variant-card canvas {
+  display: block;
+  flex: 1;
+  width: 100%;
+  height: 0;
+  min-height: 0;
+  object-fit: contain;
+}
+.variant-card > span {
+  position: absolute;
+  pointer-events: none;
+}
+.variant-index {
+  top: var(--space-1);
+  left: var(--space-1);
+  min-width: 16px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface-scrim);
+  color: var(--text-secondary);
+  font: var(--weight-medium) var(--text-2xs) / 16px var(--font-mono);
+  text-align: center;
+}
+.variant-badge {
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0 var(--space-1-5);
+  border-radius: var(--radius-sm);
+  background: var(--surface-scrim);
+  color: var(--text-primary);
+  font: var(--weight-medium) var(--text-2xs) / 16px var(--font-sans);
+}
+/* Seed or size, only while hovering or for the selected card */
+.variant-detail {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--space-3) var(--space-1-5) var(--space-1);
+  overflow: hidden;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.75));
+  color: var(--text-primary);
+  font: var(--text-2xs) var(--font-mono);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+.variant-card:is(:hover, :focus-visible, [aria-pressed='true']) .variant-detail {
+  opacity: 1;
+}
+.variant-card[aria-pressed='true'] .variant-index {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.variant-card[aria-pressed='true'] {
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 1px var(--accent);
+}
+
+/* Placeholder for the variant that is being rendered */
+.variant-pending {
+  aspect-ratio: 1;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  background: repeating-linear-gradient(-45deg, var(--surface-sunken) 0 8px, var(--surface-panel) 8px 16px);
+}
+.variant-pending img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* With a live frame, label and bar sit on a scrim at the bottom so the image stays visible */
+.variant-pending[data-preview] {
+  justify-content: flex-end;
+  gap: var(--space-1);
+  background: var(--surface-sunken);
+}
+.variant-pending > span,
+.variant-pending > progress {
+  position: relative;
+  z-index: 1;
+}
+.variant-pending[data-preview]::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 40%;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.7));
+}
+.variant-pending-label {
+  color: var(--text-secondary);
+  font: var(--text-xs) var(--font-mono);
+}
+.variant-pending progress {
+  width: 80%;
+  margin: 0;
+}
+
+/* Action groups: view, discard, keep */
+.variant-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-0-5);
+}
+.variant-group + .variant-group {
+  margin-left: var(--space-1-5);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border-subtle);
+}
+.variant-group:empty {
+  display: none;
+}
+
+/* The open image that the next job starts from, pinned before the variants */
+.variant-source .variant-source-badge {
+  left: var(--space-1);
+  right: auto;
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.variant-source[data-unused] canvas {
+  opacity: 0.45;
+}
+.variant-source[data-unused] .variant-source-badge {
+  background: var(--surface-scrim);
+  color: var(--text-secondary);
+}
+.variant-divider {
+  flex: none;
+  align-self: stretch;
+  width: 1px;
+  margin: var(--space-1) var(--space-0-5);
+  background: var(--border-default);
+}

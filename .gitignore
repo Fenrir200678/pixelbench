@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.runtime/
+.settings.json
+.settings.json.next
+__pycache__/
+.claude/
+AGENTS.md
+TODO.md

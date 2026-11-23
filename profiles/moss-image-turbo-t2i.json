@@ -1,0 +1,89 @@
+{
+  "id": "moss-image-turbo-t2i",
+  "name": "MOSS-Image Turbo",
+  "short": "MOSS Turbo",
+  "tools": ["create", "upscale"],
+  "source": "https://huggingface.co/akhaliq/MOSS-Image-SFT-4-steps/blob/main/comfyui/moss-image-4step-turbo.json",
+  "notes": "Text-zu-Bild mit MOSS-Image und dem 4-Step-Turbo-LoRA, Euler ohne CFG.",
+  "workflow": "moss-image-turbo-t2i.json",
+  "nodes": [
+    "UNETLoader",
+    "LoraLoaderModelOnly",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "EmptyFlux2LatentImage",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 512,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "MOSS-Image Diffusionsmodell",
+      "files": [
+        "mossImageFinalcut5GB_universal.safetensors",
+        "Dirty-MossV2.safetensors",
+        "moss_image_sft_int8_convrot.safetensors",
+        "moss_image_sft_bf16.safetensors",
+        "moss_image_base_int8_convrot.safetensors",
+        "moss_image_base_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "turbo",
+      "input": "lora_name",
+      "category": "loras",
+      "label": "MOSS-Image Turbo-LoRA",
+      "files": ["moss_image_sft_4step_v2.0.safetensors"]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3.5 9B Textencoder",
+      "files": [
+        "qwen3.5_9b_int8_convrot.safetensors",
+        "qwen3.5_9b_w4a8_gptq.safetensors",
+        "qwen3.5_9b_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX.2 VAE",
+      "files": ["flux2-vae_small.safetensors", "flux2-vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": { "label": "Steps", "default": 4, "min": 1, "max": 12, "step": 1 },
+    "sampler": { "label": "Sampler", "default": "euler" },
+    "scheduler": { "label": "Scheduler", "default": "simple" }
+  },
+  "bindings": {
+    "width": ["latent", "width"],
+    "height": ["latent", "height"],
+    "prompt": ["positive", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage"
+  },
+  "lora": { "model": ["turbo", 0], "family": "moss" },
+  "variance": ["sample", "positive"],
+  "img2img": { "denoise": ["sample", "denoise"] }
+}

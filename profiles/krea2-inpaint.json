@@ -1,0 +1,94 @@
+{
+  "id": "krea2-inpaint",
+  "name": "Krea 2 Turbo Inpainting",
+  "short": "Krea 2 Turbo",
+  "tools": ["inpaint"],
+  "source": "https://docs.comfy.org/tutorials/image/krea/krea-2",
+  "notes": "Krea 2 Turbo mit maskiertem Sampling aus dem kodierten Bild und Differential Diffusion. Die App setzt das Ergebnis innerhalb der Pinselmaske ins Original ein.",
+  "workflow": "krea2-inpaint.json",
+  "nodes": [
+    "LoadImage",
+    "LoadImageMask",
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "VAEEncode",
+    "SetLatentNoiseMask",
+    "DifferentialDiffusion",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "Krea 2 Turbo Diffusionsmodell",
+      "files": ["krea2_turbo_fp8_scaled.safetensors", "krea2_turbo_int8_convrot.safetensors", "krea2_turbo_bf16.safetensors"]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3-VL 4B Textencoder",
+      "files": ["qwen3vl_4b_fp8_scaled.safetensors", "qwen3vl_4b.safetensors"]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "Qwen Image VAE",
+      "files": ["qwen_image_vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 8,
+      "min": 1,
+      "max": 20,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "default": "simple"
+    },
+    "denoise": {
+      "label": "Denoising Strength",
+      "default": 0.5,
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    }
+  },
+  "bindings": {
+    "image": ["image", "image"],
+    "mask": ["mask", "image"],
+    "prompt": ["positive", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "denoise": ["sample", "denoise"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage"
+  },
+  "lora": { "model": ["unet", 0], "family": "krea2" },
+  "weights": "krea2",
+  "weightsModel": ["sample", "model"]
+}

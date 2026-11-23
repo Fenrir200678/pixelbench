@@ -1,0 +1,122 @@
+{
+  "id": "moss-image-turbo-lanpaint",
+  "name": "MOSS-Image Turbo · LanPaint",
+  "short": "MOSS · LanPaint",
+  "tools": ["inpaint"],
+  "source": "https://github.com/scraed/LanPaint/tree/2.2.0/examples/Example_28",
+  "notes": "MOSS-Image mit Turbo-LoRA und LanPaint-Sampler. Die App verwendet ihren Ausschnitt und setzt das Ergebnis innerhalb der Pinselmaske ins Original ein.",
+  "workflow": "moss-image-turbo-lanpaint.json",
+  "nodes": [
+    "LoadImage",
+    "LoadImageMask",
+    "UNETLoader",
+    "LoraLoaderModelOnly",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "VAEEncode",
+    "SetLatentNoiseMask",
+    "DifferentialDiffusion",
+    "LanPaint_KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 512,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "MOSS-Image Diffusionsmodell",
+      "files": [
+        "mossImageFinalcut5GB_universal.safetensors",
+        "Dirty-MossV2.safetensors",
+        "moss_image_sft_int8_convrot.safetensors",
+        "moss_image_sft_bf16.safetensors",
+        "moss_image_base_int8_convrot.safetensors",
+        "moss_image_base_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "turbo",
+      "input": "lora_name",
+      "category": "loras",
+      "label": "MOSS-Image Turbo-LoRA",
+      "files": ["moss_image_sft_4step_v2.0.safetensors"]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3.5 9B Textencoder",
+      "files": [
+        "qwen3.5_9b_int8_convrot.safetensors",
+        "qwen3.5_9b_w4a8_gptq.safetensors",
+        "qwen3.5_9b_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX.2 VAE",
+      "files": ["flux2-vae_small.safetensors", "flux2-vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 8,
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "default": "simple"
+    },
+    "denoise": {
+      "label": "Denoising Strength",
+      "default": 1,
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    },
+    "lanpaintIterations": {
+      "label": "LanPaint-Iterationen",
+      "default": 5,
+      "min": 1,
+      "max": 20,
+      "step": 1
+    }
+  },
+  "bindings": {
+    "image": ["image", "image"],
+    "mask": ["mask", "image"],
+    "prompt": ["positive", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "denoise": ["sample", "denoise"],
+    "lanpaintIterations": ["sample", "LanPaint_NumSteps"]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage"
+  },
+  "lora": {
+    "model": ["turbo", 0],
+    "family": "moss"
+  }
+}

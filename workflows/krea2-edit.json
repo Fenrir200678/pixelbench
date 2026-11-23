@@ -1,0 +1,16 @@
+{
+  "image": {"class_type":"LoadImage","inputs":{"image":""}},
+  "dimensions": {"class_type":"GetImageSize","inputs":{"image":["image",0]}},
+  "unet": {"class_type":"UNETLoader","inputs":{"unet_name":"","weight_dtype":"default"}},
+  "edit": {"class_type":"LoraLoaderModelOnly","inputs":{"model":["unet",0],"lora_name":"","strength_model":1}},
+  "clip": {"class_type":"CLIPLoader","inputs":{"clip_name":"","type":"krea2","device":"default"}},
+  "vae": {"class_type":"VAELoader","inputs":{"vae_name":""}},
+  "encode": {"class_type":"VAEEncode","inputs":{"pixels":["image",0],"vae":["vae",0]}},
+  "latent": {"class_type":"EmptySD3LatentImage","inputs":{"width":["dimensions",0],"height":["dimensions",1],"batch_size":1}},
+  "patch": {"class_type":"Krea2EditModelPatch","inputs":{"model":["edit",0],"source_latent":["encode",0],"ref_boost":4,"ref_boost_a":1,"fit_mode":"fit","vae":["vae",0],"source_image":["image",0],"target_latent":["latent",0],"ref_position":"aligned (trained)","ref_position_a":"aligned (trained)"}},
+  "positive": {"class_type":"Krea2EditGroundedEncode","inputs":{"clip":["clip",0],"prompt":"","image":["image",0],"grounding_px":768,"system_prompt":""}},
+  "negative": {"class_type":"Krea2EditGroundedEncode","inputs":{"clip":["clip",0],"prompt":"","image":["image",0],"grounding_px":768,"system_prompt":""}},
+  "sample": {"class_type":"KSampler","inputs":{"model":["patch",0],"positive":["positive",0],"negative":["negative",0],"latent_image":["latent",0],"seed":0,"steps":8,"cfg":1,"sampler_name":"euler","scheduler":"simple","denoise":1}},
+  "decode": {"class_type":"VAEDecode","inputs":{"samples":["sample",0],"vae":["vae",0]}},
+  "preview": {"class_type":"PreviewImage","inputs":{"images":["decode",0]}}
+}

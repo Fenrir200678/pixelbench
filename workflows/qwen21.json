@@ -1,0 +1,11 @@
+{
+  "image": {"class_type":"LoadImage","inputs":{"image":""}},
+  "unet": {"class_type":"UNETLoader","inputs":{"unet_name":"","weight_dtype":"default"}},
+  "clip": {"class_type":"CLIPLoader","inputs":{"clip_name":"","type":"qwen_image","device":"default"}},
+  "vae": {"class_type":"VAELoader","inputs":{"vae_name":""}},
+  "cache": {"class_type":"QwenImage21Cache","inputs":{"model":["unet",0],"device":"auto","dtype":"default"}},
+  "encode": {"class_type":"TextEncodeQwenImage21","inputs":{"clip":["clip",0],"vae":["vae",0],"images.image_1":["image",0],"prompt":"","negative_prompt":"","resolution":0}},
+  "sample": {"class_type":"KSampler","inputs":{"model":["cache",0],"positive":["encode",0],"negative":["encode",1],"latent_image":["encode",2],"seed":0,"steps":1,"cfg":1,"sampler_name":"euler","scheduler":"normal","denoise":1}},
+  "decode": {"class_type":"VAEDecode","inputs":{"samples":["sample",0],"vae":["vae",0]}},
+  "preview": {"class_type":"PreviewImage","inputs":{"images":["decode",0]}}
+}

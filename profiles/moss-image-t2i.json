@@ -1,0 +1,81 @@
+{
+  "id": "moss-image-t2i",
+  "name": "MOSS-Image",
+  "short": "MOSS-Image",
+  "tools": ["create", "upscale"],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_moss_image_base_t2i.json",
+  "notes": "Text-zu-Bild mit MOSS-Image nach der Comfy-Org-Vorlage, mit Skip Layer Guidance auf Layer 22. Prompt-Upsampler weggelassen.",
+  "workflow": "moss-image-t2i.json",
+  "nodes": [
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "SkipLayerGuidanceDiTSimple",
+    "CLIPTextEncode",
+    "EmptyFlux2LatentImage",
+    "KSampler",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 512,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "MOSS-Image Diffusionsmodell",
+      "files": [
+        "mossImageFinalcut5GB_universal.safetensors",
+        "Dirty-MossV2.safetensors",
+        "moss_image_sft_int8_convrot.safetensors",
+        "moss_image_sft_bf16.safetensors",
+        "moss_image_base_int8_convrot.safetensors",
+        "moss_image_base_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3.5 9B Textencoder",
+      "files": [
+        "qwen3.5_9b_int8_convrot.safetensors",
+        "qwen3.5_9b_w4a8_gptq.safetensors",
+        "qwen3.5_9b_bf16.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX.2 VAE",
+      "files": ["flux2-vae_small.safetensors", "flux2-vae.safetensors"]
+    }
+  ],
+  "parameters": {
+    "steps": { "label": "Steps", "default": 25, "min": 1, "max": 60, "step": 1 },
+    "sampler": { "label": "Sampler", "default": "er_sde" },
+    "scheduler": { "label": "Scheduler", "default": "simple" },
+    "cfg": { "label": "CFG", "default": 2.5, "min": 1, "max": 10, "step": 0.5 }
+  },
+  "bindings": {
+    "width": ["latent", "width"],
+    "height": ["latent", "height"],
+    "prompt": ["positive", "text"],
+    "negative": ["negative", "text"],
+    "seed": ["sample", "seed"],
+    "steps": ["sample", "steps"],
+    "sampler": ["sample", "sampler_name"],
+    "scheduler": ["sample", "scheduler"],
+    "cfg": ["sample", "cfg"]
+  },
+  "negative": true,
+  "lora": { "model": ["unet", 0], "family": "moss" },
+  "img2img": { "denoise": ["sample", "denoise"] }
+}
