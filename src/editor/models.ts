@@ -16,20 +16,29 @@ export function selectModels(profile: Profile, saved: SavedModels): ModelChoices
   )
 }
 
-export function modelProblems(profile: Profile, selected: ModelChoices) {
-  return profile.models.flatMap((slot) => {
+/** A model slot with no file anywhere in the search path. Rendered as a card instead of a sentence. */
+export type MissingModel = { model: string; files: string[]; paths: string[]; note?: string }
+export type Problem = string | MissingModel
+
+const searchPathNote = /^\w+ in this instance’s search configuration$/
+
+/** Splits the server's "Search path" text into folders. Remote instances report a note instead of folders. */
+function parseSearchPath(raw: string): Pick<MissingModel, 'paths' | 'note'> {
+  const path = raw.match(/Search path: ([\s\S]*)$/)?.[1] ?? ''
+  if (searchPathNote.test(path)) return { paths: [], note: appMessage(path) }
+  return { paths: path.split(' · ').filter(Boolean) }
+}
+
+export function modelProblems(profile: Profile, selected: ModelChoices): Problem[] {
+  return profile.models.flatMap((slot): Problem[] => {
     const key = modelKey(slot)
     const file = selected[key]
     if (file && profile.catalog[key]?.includes(file)) return []
     const model = i18n.t(slot.label)
     const missing = profile.modelMissing[key]
-    return [
-      file
-        ? i18n.t('{{model}} · ausgewählte Datei fehlt ({{file}}).', { model, file })
-        : missing
-          ? appMessage(missing)
-          : i18n.t('Bitte {{model}} auswählen.', { model })
-    ]
+    if (file) return [i18n.t('{{model}} · ausgewählte Datei fehlt ({{file}}).', { model, file })]
+    if (missing) return [{ model, files: slot.files, ...parseSearchPath(missing) }]
+    return [i18n.t('Bitte {{model}} auswählen.', { model })]
   })
 }
 

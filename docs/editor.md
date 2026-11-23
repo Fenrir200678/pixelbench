@@ -89,7 +89,7 @@ The detailer re-renders detected objects (for example faces) one at a time with 
 
 ## Image adjustments
 
-**A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.
+**A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, blur, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.
 
 ## Variants and compare
 

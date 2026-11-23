@@ -95,3 +95,36 @@ test('histogram counts opaque pixels and auto levels stretch to their range', ()
   assert.equal(counts.r[0], 0)
   assert.deepEqual(autoLevels(counts), { ...neutralLevels, inBlack: 40, inWhite: 180 })
 })
+
+test('blur leaves a flat area unchanged', () => {
+  const flat = new Uint8ClampedArray(w * h * 4).fill(120)
+  for (const blur of [0.5, 5]) assert.deepEqual(adjust(flat, w, h, settings({ blur })), flat)
+})
+
+test('blur softens edges with both the exact kernel and the box passes', () => {
+  const size = 16
+  const stripes = new Uint8ClampedArray(size * size * 4)
+  for (let i = 0; i < size * size; i++)
+    stripes.set(
+      Array(3)
+        .fill(i % 2 ? 255 : 0)
+        .concat(255),
+      i * 4
+    )
+  const spread = (data) => {
+    let low = 255,
+      high = 0
+    for (let i = 0; i < data.length; i += 4) ((low = Math.min(low, data[i])), (high = Math.max(high, data[i])))
+    return high - low
+  }
+  const soft = adjust(stripes, size, size, settings({ blur: 1 }))
+  const softer = adjust(stripes, size, size, settings({ blur: 4 }))
+  assert.ok(spread(soft) < 255)
+  assert.ok(spread(softer) < spread(soft))
+  assert.equal(mean(softer, 3), 255)
+})
+
+test('blur scales its radius with the preview scale', () => {
+  const values = settings({ blur: 2 })
+  assert.deepEqual(adjust(pixels, w, h, values, 0.5), adjust(pixels, w, h, settings({ blur: 1 })))
+})
