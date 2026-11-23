@@ -1,5 +1,9 @@
 # Pixelbench
 
+<p align="center">
+  <img src="docs/pixelbench.png" alt="Pixelbench screenshot">
+</p>
+
 Pixelbench started as a "just for me" project: a way to streamline my own generative AI workflows and shape the tools around how I actually work. Then a few friends saw it and wanted it too, so I turned it into a complete, polished app.
 
 It brings together the concepts and features I found most useful in ComfyUI, Automatic1111 / sd-webui-forge, SwarmUI and InvokeAI: the flexibility of ComfyUI's node workflows, the fast prompt-to-image loop and hires fix of the A1111 family, SwarmUI's idea of a friendly front end on top of ComfyUI, and the canvas-first editing of InvokeAI. All of it sits in a modern interface laid out like a classic image editor such as Photoshop, with tools on the left, settings on the right and your image in the middle. On top of that, it builds in a handful of community extensions and custom nodes that I found to be a good fit, such as LanPaint for inpainting, Ultimate SD Upscale for tiled hires fix and GGUF loaders for quantized models (see [Third-party components](docs/third-party.md)).
