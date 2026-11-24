@@ -3,6 +3,7 @@ import type { Tool } from '../types/editor.js'
 export const brushLimits = { min: 1, max: 512 }
 
 export const clearVariantsKey = 'Shift+D'
+export const applyVariantKey = 'Enter'
 // Plain V is taken by before/after.
 export const toggleVariantsKey = 'Shift+V'
 

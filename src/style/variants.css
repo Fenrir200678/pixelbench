@@ -6,29 +6,6 @@
   padding: var(--space-2) var(--space-3) var(--space-2-5);
   background: var(--surface-panel);
 }
-.variant-head,
-.variant-head > div,
-.variant-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-.variant-head {
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-bottom: var(--space-2);
-}
-.variant-head > div:first-child {
-  gap: var(--space-2);
-}
-.variant-head h2 {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-}
-.count {
-  color: var(--text-muted);
-  font: var(--text-xs) var(--font-mono);
-}
 .variant-strip {
   flex: 1;
   display: flex;
@@ -165,27 +142,25 @@
   margin: 0;
 }
 
-/* Action groups: view, discard, keep */
-.variant-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-0-5);
-}
-.variant-group + .variant-group {
-  margin-left: var(--space-1-5);
-  padding-left: var(--space-2);
-  border-left: 1px solid var(--border-subtle);
-}
-.variant-group:empty {
-  display: none;
-}
-
 /* The open image that the next job starts from, pinned before the variants */
 .variant-source .variant-source-badge {
   left: var(--space-1);
   right: auto;
   background: var(--accent);
   color: var(--text-on-accent);
+}
+/* Dashed and dimmed, so it reads as the starting point and not as another result */
+.variant-source {
+  border: 1px dashed var(--border-hover);
+  box-shadow: none;
+}
+.variant-source canvas {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast, 120ms);
+}
+.variant-source:hover canvas,
+.variant-source[aria-pressed='true'] canvas {
+  opacity: 1;
 }
 .variant-source[data-unused] canvas {
   opacity: 0.45;
@@ -197,7 +172,8 @@
 .variant-divider {
   flex: none;
   align-self: stretch;
-  width: 1px;
-  margin: var(--space-1) var(--space-0-5);
-  background: var(--border-default);
+  width: 2px;
+  margin: var(--space-1) var(--space-3);
+  border-radius: var(--radius-round);
+  background: var(--border-hover);
 }

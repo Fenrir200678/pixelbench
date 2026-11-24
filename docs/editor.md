@@ -99,9 +99,9 @@ The detailer re-renders detected objects (for example faces) one at a time with 
 - **Left/Right arrow** switches between variants at the same zoom.
 - **V** splits the canvas into before and after. Drag the divider, or move it with the arrow keys when its handle has focus.
 - The **Source** card at the start of the strip shows the open image that the next job starts from, in every mode. Click it to show it on the canvas. A variant only becomes the source through **Apply** or **Set as starting image**. In Create without Img2Img the card is dimmed, because the source is not used there. A click still shows the image until you pick a variant or press **Esc**.
-- **Apply** sets the working state. **Set as starting image** (canvas controls or **S**) uses the shown image for further jobs and starts with an empty mask. The variants stay available. **Ctrl+Z** undoes both actions.
+- **Apply** (or **Enter**) sets the working state. **Set as starting image** (canvas controls or **S**) uses the shown image for further jobs and starts with an empty mask. The variants stay available. **Ctrl+Z** undoes both actions.
 - The circular arrow runs a job again with its original inputs, effective settings, model paths and seed.
-- **Delete** removes a variant. **Shift+D** deletes all previews and **Shift+V** shows or hides the strip.
+- **Delete** removes a variant. **Shift+D** deletes all variants and **Shift+V** shows or hides the strip.
 
 ## Canvas and view
 

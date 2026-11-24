@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useLayoutEffect, useRef, useState, type Ref } from 'react'
 import type { Variant } from '../../editor/generation.js'
 import { sizeLabel } from '../../editor/geometry.js'
-import { clearVariantsKey } from '../../editor/tools.js'
+import { applyVariantKey, clearVariantsKey, toggleVariantsKey } from '../../editor/tools.js'
 import type { Status } from '../../types/api.js'
 import type { Frame } from '../../types/image.js'
 import { Button } from '../../ui/Button.js'
@@ -133,38 +133,153 @@ function PendingCard({ progress, preview }: { progress?: number; preview?: strin
   )
 }
 
+/** Opens and closes the variant strip and clears all previews. Sits at the left of the canvas toolbar. */
+export function VariantsToggle({
+  open,
+  count,
+  position,
+  disabled,
+  onToggle,
+  onClear
+}: {
+  open: boolean
+  count: number
+  /** 1-based position of the shown variant, if one is shown. */
+  position?: number
+  disabled: boolean
+  onToggle: () => void
+  onClear: () => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <>
+      <Button
+        id="variants-toggle"
+        className="quiet compact workspace-panel-toggle"
+        icon="image"
+        aria-label={t('Varianten')}
+        aria-expanded={open}
+        aria-controls={open ? 'variants-panel' : undefined}
+        title={`${t('Varianten')} (${toggleVariantsKey.replace('Shift', t('Umschalt'))})`}
+        aria-keyshortcuts={toggleVariantsKey}
+        disabled={disabled}
+        onClick={onToggle}
+      >
+        <span>{t('Varianten')}</span>
+        {count > 0 && (
+          <span id="variant-counter" className="toggle-count">
+            {position ? position + '/' : ''}
+            {count}
+          </span>
+        )}
+      </Button>
+      <Button
+        id="clear-variants"
+        className="icon quiet compact"
+        icon="trash"
+        title={`${t('Alle Vorschauen löschen')} (${clearVariantsKey.replace('Shift', t('Umschalt'))})`}
+        aria-label={t('Alle Vorschauen löschen')}
+        aria-keyshortcuts={clearVariantsKey}
+        disabled={disabled}
+        onClick={onClear}
+      />
+    </>
+  )
+}
+
+/** Variant actions live in the canvas toolbar, so they stay reachable while the strip is collapsed. */
+export function VariantActions({
+  selected,
+  canReplay,
+  quickUpscale,
+  onReplay,
+  onDismiss,
+  onRemove,
+  onApply
+}: {
+  selected: boolean
+  canReplay: boolean
+  quickUpscale?: { label: string; disabled: boolean; run: () => void }
+  onReplay: () => void
+  onDismiss: () => void
+  onRemove: () => void
+  onApply: () => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <>
+      <Button
+        id="replay"
+        className="icon"
+        icon="repeat"
+        title={t('Mit diesen Einstellungen erneut ausführen')}
+        aria-label={t('Mit diesen Einstellungen erneut ausführen')}
+        disabled={!canReplay}
+        onClick={onReplay}
+      />
+      <Button
+        id="dismiss-preview"
+        className="icon"
+        icon="close"
+        title={t('Arbeitsbild anzeigen (Esc)')}
+        aria-label={t('Vorschau schließen')}
+        disabled={!selected}
+        onClick={onDismiss}
+      />
+      <Button
+        id="delete-variant"
+        className="icon"
+        icon="trash"
+        title={t('Variante entfernen (Entf)')}
+        aria-label={t('Variante entfernen')}
+        disabled={!selected}
+        onClick={onRemove}
+      />
+      {quickUpscale && (
+        <Button
+          id="quick-upscale"
+          className="secondary compact"
+          icon="upscale"
+          title={t('Mit Seed, Prompt und Profil dieser Variante hochskalieren und Details nachrendern')}
+          disabled={quickUpscale.disabled}
+          onClick={quickUpscale.run}
+        >
+          {' '}
+          {quickUpscale.label}
+        </Button>
+      )}
+      <Button
+        id="apply"
+        className="primary compact"
+        icon="check"
+        title={`${t('Variante als Arbeitsbild übernehmen')} (${applyVariantKey})`}
+        aria-keyshortcuts={applyVariantKey}
+        disabled={!selected}
+        onClick={onApply}
+      >
+        {' '}
+        {t('Übernehmen')}
+      </Button>
+    </>
+  )
+}
+
 export function VariantStrip({
   items,
   selected,
   index,
-  compare,
   baseline,
   status,
-  canReplay,
   onSelect,
-  onCompare,
-  onReplay,
-  onRemove,
-  onClear,
-  onApply,
-  quickUpscale,
   pending,
   source
 }: {
   items: Variant[]
   selected?: Variant
   index: number
-  compare: boolean
   baseline?: Frame
   status?: Status
-  canReplay: boolean
   onSelect: (index: number) => void
-  onCompare: () => void
-  onReplay: () => void
-  onRemove: () => void
-  onClear: () => void
-  onApply: () => void
-  quickUpscale?: { label: string; disabled: boolean; run: () => void }
   /** Progress of a running generation, shown as a placeholder card. */
   pending?: { progress?: number; preview?: string }
   /** The open image the next job starts from. */
@@ -183,88 +298,6 @@ export function VariantStrip({
 
   return (
     <section id="variants" className="variants" aria-label={t('Varianten')} hidden={!items.length && !pending}>
-      <div className="variant-head">
-        <div>
-          <h2>{t('Varianten')}</h2>{' '}
-          <span id="variant-counter" className="count">
-            {selected ? index + 1 + ' / ' : ''}
-            {items.length}
-          </span>
-          <Button
-            id="clear-variants"
-            className="icon quiet compact"
-            icon="trash"
-            title={`${t('Alle Vorschauen löschen')} (${clearVariantsKey.replace('Shift', t('Umschalt'))})`}
-            aria-label={t('Alle Vorschauen löschen')}
-            aria-keyshortcuts={clearVariantsKey}
-            onClick={onClear}
-          />
-        </div>
-        <div className="variant-actions">
-          <div className="variant-group" role="group" aria-label={t('Ansicht')}>
-            <Button
-              id="compare"
-              className="quiet compact"
-              icon="split"
-              aria-pressed={compare}
-              title={t('Vorher/Nachher (V)')}
-              disabled={!selected?.prepared.source}
-              onClick={onCompare}
-            >
-              {' '}
-              {t('Vorher / Nachher')}
-            </Button>
-          </div>
-          <div className="variant-group" role="group" aria-label={t('Verwerfen')}>
-            <Button
-              id="replay"
-              className="icon"
-              icon="repeat"
-              title={t('Mit diesen Einstellungen erneut ausführen')}
-              aria-label={t('Mit diesen Einstellungen erneut ausführen')}
-              disabled={!canReplay}
-              onClick={onReplay}
-            />
-            <Button
-              id="dismiss-preview"
-              className="icon"
-              icon="close"
-              title={t('Arbeitsbild anzeigen (Esc)')}
-              aria-label={t('Vorschau schließen')}
-              disabled={!selected}
-              onClick={() => onSelect(-1)}
-            />
-            <Button
-              id="delete-variant"
-              className="icon"
-              icon="trash"
-              title={t('Variante entfernen (Entf)')}
-              aria-label={t('Variante entfernen')}
-              disabled={!selected}
-              onClick={onRemove}
-            />
-          </div>
-          <div className="variant-group" role="group" aria-label={t('Übernehmen')}>
-            {quickUpscale && (
-              <Button
-                id="quick-upscale"
-                className="secondary compact"
-                icon="upscale"
-                title={t('Mit Seed, Prompt und Profil dieser Variante hochskalieren und Details nachrendern')}
-                disabled={quickUpscale.disabled}
-                onClick={quickUpscale.run}
-              >
-                {' '}
-                {quickUpscale.label}
-              </Button>
-            )}
-            <Button id="apply" className="primary compact" icon="check" disabled={!selected} onClick={onApply}>
-              {' '}
-              {t('Übernehmen')}
-            </Button>
-          </div>
-        </div>
-      </div>
       <div id="variant-strip" ref={strip} className="variant-strip" aria-label={t('Vorschläge auswählen')}>
         {source && (
           <SourceCard frame={source.frame} shown={source.shown} unused={source.unused} onShow={source.onShow} />

@@ -1,4 +1,5 @@
 import {
+  applyVariantKey,
   canvasKeys,
   clearVariantsKey,
   consoleKey,
@@ -59,6 +60,7 @@ export const shortcutGroups: ShortcutGroup[] = [
     items: [
       { label: 'Vorherige oder nächste Variante', keys: ['ArrowLeft', 'ArrowRight'] },
       { label: 'Vorher und nachher vergleichen', keys: ['V'] },
+      { label: 'Variante als Arbeitsbild übernehmen', keys: [applyVariantKey] },
       { label: 'Variante entfernen', keys: ['Delete'] },
       { label: 'Alle Vorschauen löschen', keys: [clearVariantsKey] },
       { label: 'Variantenleiste ein- oder ausblenden', keys: [toggleVariantsKey] },

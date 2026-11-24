@@ -11,7 +11,7 @@ import { SettingsDialog } from './components/settings/SettingsDialog.js'
 import { BackendStatus, Topbar } from './components/Topbar.js'
 import { CanvasToolbar, ZoomControls } from './components/canvas/CanvasToolbar.js'
 import { VramMeter } from './components/VramMeter.js'
-import { VariantStrip } from './components/variants/VariantStrip.js'
+import { VariantActions, VariantStrip, VariantsToggle } from './components/variants/VariantStrip.js'
 import { fitView, sizeLabel, suggestExpansion } from './editor/geometry.js'
 import { useAdjustments } from './hooks/useAdjustments.js'
 import { useBridge } from './hooks/useBridge.js'
@@ -360,6 +360,8 @@ export function EditorApp() {
     zoom: zoomCanvas,
     // While adjusting, V flips the adjustment preview instead of the variant before/after.
     toggleCompare: adjustments.open ? () => adjustments.setShowPreview((show) => !show) : toggleCompare,
+    canApply: Boolean(candidate),
+    apply,
     remove: removeVariant,
     clearVariants,
     toggleVariants,
@@ -441,10 +443,8 @@ export function EditorApp() {
               loaded={Boolean(displayed)}
               hasVariants={variants.items.length > 0 || rendering}
               variantsCollapsed={variantsCollapsed}
-              onToggleVariants={toggleVariants}
               consoleOpen={consoleOpen}
               onToggleConsole={() => setConsoleOpen((value) => !value)}
-              variantCount={variants.items.length}
               zoomControls={<ZoomControls zoom={zoom} onZoom={zoomCanvas} onFit={fit} />}
               backendStatus={
                 <>
@@ -457,19 +457,9 @@ export function EditorApp() {
                   items={variants.items}
                   selected={candidate}
                   index={variants.index}
-                  compare={comparing}
                   baseline={work?.start}
                   status={status}
-                  canReplay={canReplay}
-                  onReplay={() => {
-                    if (candidate) run(candidate)
-                  }}
                   onSelect={selectVariant}
-                  onCompare={toggleCompare}
-                  onRemove={removeVariant}
-                  onClear={clearVariants}
-                  onApply={apply}
-                  quickUpscale={variantUpscale}
                   source={
                     work && {
                       frame: work.image,
@@ -557,6 +547,31 @@ export function EditorApp() {
                 onClearMask={tools.clearMask}
                 onBrush={tools.setBrushSize}
                 onBaseline={setDisplayedBaseline}
+                leading={
+                  <VariantsToggle
+                    open={variants.items.length > 0 || rendering ? !variantsCollapsed : false}
+                    count={variants.items.length}
+                    position={candidate ? variants.index + 1 : undefined}
+                    disabled={variants.items.length === 0 && !rendering}
+                    onToggle={toggleVariants}
+                    onClear={clearVariants}
+                  />
+                }
+                actions={
+                  variants.items.length > 0 && (
+                    <VariantActions
+                      selected={Boolean(candidate)}
+                      canReplay={canReplay}
+                      quickUpscale={variantUpscale}
+                      onReplay={() => {
+                        if (candidate) run(candidate)
+                      }}
+                      onDismiss={() => selectVariant(-1)}
+                      onRemove={removeVariant}
+                      onApply={apply}
+                    />
+                  )
+                }
               />
             </Workspace>
           </Panel>

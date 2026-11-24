@@ -58,8 +58,9 @@ Shortcuts work while no text field has focus. The same list is in the app under 
 | ---------------------- | ----------------------------------- |
 | Left / Right arrow     | Previous or next variant            |
 | V                      | Compare before and after            |
+| Enter                  | Apply variant as working image      |
 | Delete                 | Remove variant                      |
-| Shift+D                | Delete all previews                 |
+| Shift+D                | Delete all variants                 |
 | Shift+V                | Show or hide the variant strip      |
 | Escape                 | Clear selection                     |
 
