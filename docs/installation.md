@@ -58,6 +58,8 @@ Everything lives in the Pixelbench folder, or in the folder named by `PIXELBENCH
 | `.runtime/custom_nodes/`     | The downloaded custom nodes.                                |
 | `.runtime/python/`           | Extra Python packages for the private ComfyUI process.      |
 | `.runtime/install.json`      | Bookkeeping for npm packages and the editor build.          |
+| `.runtime/update/`           | Last update check and result, backup of the last update.    |
+| `release.json`               | Version and file list of a release (release zips only).     |
 | `node_modules/`, `dist/`     | npm packages and the built editor.                          |
 | Desktop `Pixelbench.lnk`     | Optional shortcut.                                          |
 
@@ -66,6 +68,23 @@ Everything lives in the Pixelbench folder, or in the folder named by `PIXELBENCH
 `Pixelbench.cmd` runs `scripts/launch.mjs`. It starts the server and opens the default browser at <http://127.0.0.1:3720> once the server answers. If Pixelbench already runs on that port, it only opens the browser. Pass `--no-browser` or set `PIXELBENCH_NO_BROWSER=1` to skip opening the browser. If the port is used by another program, set `PIXELBENCH_PORT`.
 
 ## Update and repair
+
+### In-app update
+
+Pixelbench asks the GitHub releases of this project for a newer version, on start at most once a day and on demand under **Settings → About Pixelbench**. The request carries no images, prompts or personal data. Turn the automatic check off there, and choose whether beta versions (pre-releases) are offered.
+
+**Update now**:
+
+1. Downloads the release zip and compares its SHA-256 with the checksum GitHub lists for it.
+2. Unpacks it to `.runtime/update/staged` and stops the server and the private ComfyUI.
+3. Runs `scripts/update.mjs` from the new release in the start window. It saves every file it replaces or removes to `.runtime/update/backup`, copies the new files, removes files that the old release shipped and the new one does not, and runs `scripts/setup.mjs --yes` for npm packages, custom nodes and Python packages.
+4. Starts the server again. The page reloads with the new version.
+
+Only files listed in the release's `release.json` are touched. `.settings.json`, `.runtime/`, `node_modules/` and files you added, such as your own profiles, stay. If a step fails, the previous files come back and the error is shown under **About Pixelbench**. Do not close the start window during an update; if it was closed, run `install.cmd` to repair the install.
+
+A git checkout only shows that a new release exists. Update it with `git pull` and `install.cmd`.
+
+### Repair
 
 Run `install.cmd` again. It compares each custom node with its pinned commit, installs missing Python packages and rebuilds the editor when needed. To update a git checkout, run `git pull` first. A node folder that is a git checkout on another commit is left alone.
 

@@ -164,6 +164,35 @@ export const settingsEnglish: Record<string, string> = {
   Technik: 'Built with',
   Autor: 'Author',
   Lizenz: 'License',
+  Updates: 'Updates',
+  'Update wird installiert …': 'Installing the update …',
+  'Version {{version}} ist verfügbar': 'Version {{version}} is available',
+  'Pixelbench ist aktuell': 'Pixelbench is up to date',
+  'Noch nicht nach Updates gesucht': 'Not checked for updates yet',
+  'Pixelbench lädt die neue Version, startet neu und lädt danach die Seite neu. Den Fortschritt zeigt das Pixelbench-Fenster.':
+    'Pixelbench downloads the new version, restarts and then reloads the page. The Pixelbench window shows the progress.',
+  'Release-Notes ansehen': 'View release notes',
+  'Zuletzt geprüft: {{time}}': 'Last checked: {{time}}',
+  'Pixelbench auf Version {{version}} aktualisieren? Der Server startet dabei neu.':
+    'Update Pixelbench to version {{version}}? The server restarts during the update.',
+  'Nach Updates suchen': 'Check for updates',
+  'Jetzt aktualisieren': 'Update now',
+  'Dieser Ordner ist ein Git-Checkout. Aktualisiere ihn mit git pull und danach install.cmd.':
+    'This folder is a git checkout. Update it with git pull, then run install.cmd.',
+  'Beim Start nach Updates suchen': 'Check for updates on start',
+  'Fragt höchstens einmal am Tag bei GitHub nach einer neuen Version. Bilder und Prompts werden dabei nicht übertragen.':
+    'Asks GitHub for a new version at most once a day. No images or prompts are sent.',
+  'Beta-Versionen anbieten': 'Offer beta versions',
+  'Bietet auch Vorabversionen an. Sie sind neuer, aber weniger getestet.':
+    'Also offers pre-releases. They are newer but less tested.',
+  'Das letzte Update ist fehlgeschlagen: {{error}}': 'The last update failed: {{error}}',
+  'Update verfügbar': 'Update available',
+  'Einstellungen · Update verfügbar': 'Settings · Update available',
+  'Pixelbench wurde auf Version {{version}} aktualisiert.': 'Pixelbench was updated to version {{version}}.',
+  'Das Update wird installiert. Den Fortschritt zeigt das Pixelbench-Fenster.':
+    'Installing the update. The Pixelbench window shows the progress.',
+  'Der Server ist nach dem Update noch nicht erreichbar.': 'The server is not reachable yet after the update.',
+  'Das Update ist fehlgeschlagen.': 'The update failed.',
   'Läuft komplett auf deinem Rechner. Bilder und Prompts verlassen ihn nicht.':
     'Runs entirely on your machine. Images and prompts never leave it.'
 

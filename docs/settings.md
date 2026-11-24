@@ -51,6 +51,8 @@ Shows the connection status and device. **Restart server** stops ComfyUI and res
 
 Version, author, license and the technology Pixelbench is built with.
 
+**Updates**: checks for a new release and installs it with **Update now**, see [Installation](installation.md#in-app-update). **Check for updates on start** (default: on) asks GitHub at most once a day. **Offer beta versions** also offers pre-releases; it is on by default when the running version is itself a pre-release. Both are saved in the browser.
+
 ## Environment variables
 
 | Variable                | Effect                                                                                                         |
@@ -59,6 +61,7 @@ Version, author, license and the technology Pixelbench is built with.
 | `PIXELBENCH_STATE`      | Folder that holds `.settings.json` and `.runtime` instead of the Pixelbench folder.                            |
 | `PIXELBENCH_NO_BROWSER` | Set to `1` to keep `Pixelbench.cmd` from opening the browser.                                                  |
 | `PIXELBENCH_CHROME`     | Path to Chrome for the browser test in `checks/`.                                                              |
+| `PIXELBENCH_UPDATE_FEED` | Release list the update check reads instead of GitHub's, for testing the updater against a local server.     |
 
 Existing browser settings from earlier versions are still read.
 

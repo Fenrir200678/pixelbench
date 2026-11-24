@@ -636,3 +636,6 @@ kbd {
   font-size: var(--text-sm);
   line-height: var(--leading-text);
 }
+.unsaved-dot.update-dot {
+  background: var(--accent);
+}

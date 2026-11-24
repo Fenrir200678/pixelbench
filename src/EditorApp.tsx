@@ -15,6 +15,7 @@ import { VariantStrip } from './components/variants/VariantStrip.js'
 import { fitView, sizeLabel, suggestExpansion } from './editor/geometry.js'
 import { useAdjustments } from './hooks/useAdjustments.js'
 import { useBridge } from './hooks/useBridge.js'
+import { useUpdates } from './hooks/useUpdates.js'
 import { useCanvasTools } from './hooks/useCanvasTools.js'
 import { useConfig } from './hooks/useConfig.js'
 import { useDocument } from './hooks/useDocument.js'
@@ -55,6 +56,7 @@ export function EditorApp() {
   )
 
   const bridge = useBridge(notice)
+  const updates = useUpdates(notice, bridge)
   const { status, serverAction } = bridge
   const variants = useVariants()
   const inspection = useInspection()
@@ -426,6 +428,7 @@ export function EditorApp() {
         onRedo={() => travel('redo')}
         onSettings={settings.open}
         onTool={chooseTool}
+        updateAvailable={updates.available}
         workflowSwitch={tool !== 'upscale' && <WorkflowSwitch workflow={workflow} />}
       />
       <main className="editor">
@@ -618,6 +621,7 @@ export function EditorApp() {
         <SettingsDialog
           config={settings.config}
           bridge={bridge}
+          updates={updates}
           busy={generation.running || document.importing || document.exporting}
           onClose={settings.close}
         />

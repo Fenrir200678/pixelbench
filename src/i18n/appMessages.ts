@@ -10,6 +10,8 @@ const german = () => i18n.language === 'de'
 
 const prefixes = [
   'Invalid launch option: ',
+  'Could not check for updates · ',
+  'Could not download the update · ',
   'Pixelbench sets this option itself: ',
   'Cannot reach ComfyUI · ',
   'External connection configured · ',

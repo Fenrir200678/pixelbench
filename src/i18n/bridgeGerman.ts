@@ -2,6 +2,14 @@
 // The bridge is moving from German to English source text. A migrated message moves its entry from
 // the German→English maps in messages.ts and settingsMessages.ts to this English→German map.
 export const bridgeGerman: Record<string, string> = {
+  'Could not check for updates · ': 'Suche nach Updates fehlgeschlagen · ',
+  'Could not download the update · ': 'Update konnte nicht geladen werden · ',
+  'A git checkout updates with git pull and install.cmd.':
+    'Ein Git-Checkout wird mit git pull und install.cmd aktualisiert.',
+  'An update is already being installed.': 'Ein Update wird bereits installiert.',
+  'The setup step failed. The Pixelbench window shows the details.':
+    'Die Einrichtung ist fehlgeschlagen. Details zeigt das Pixelbench-Fenster.',
+  'This update is no longer offered. Check again.': 'Dieses Update wird nicht mehr angeboten. Bitte erneut prüfen.',
   'Invalid launch options.': 'Ungültige Startoptionen.',
   'Invalid launch option: ': 'Ungültige Startoption: ',
   'Pixelbench sets this option itself: ': 'Diese Startoption setzt Pixelbench selbst: ',

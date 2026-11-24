@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import type { Updates } from '../../hooks/useUpdates.js'
 import { SettingGroup } from '../../ui/SettingRow.js'
+import { UpdateSection } from './UpdateSection.js'
 
-export function AboutSection() {
+export function AboutSection({ updates, busy }: { updates: Updates; busy: boolean }) {
   const { t } = useTranslation()
   return (
     <>
@@ -36,6 +38,7 @@ export function AboutSection() {
           {t('Läuft komplett auf deinem Rechner. Bilder und Prompts verlassen ihn nicht.')}
         </p>
       </SettingGroup>
+      <UpdateSection updates={updates} busy={busy} />
     </>
   )
 }

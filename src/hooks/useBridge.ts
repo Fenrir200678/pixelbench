@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ApiError, api } from '../api/client.js'
-import { pause } from '../helpers/async.js'
+import { ApiError, api, waitForRestart } from '../api/client.js'
 import type { Status } from '../types/api.js'
 import type { Notice } from '../types/editor.js'
 
@@ -115,20 +114,8 @@ export function useBridge(notice: Notice) {
       markUnavailable(restart ? 'starting' : 'error', message, restart ? 'Server startet neu …' : 'Server offline')
       notice(message, true)
       if (!restart) return
-      const deadline = Date.now() + 30_000
-      while (Date.now() < deadline) {
-        await pause(500)
-        try {
-          const response = await fetch('/api/server', { signal: AbortSignal.timeout(2000) })
-          if (response.ok && (await response.json()).instance !== instance) {
-            notice('Pixelbench-Server ist wieder erreichbar.', true)
-            return
-          }
-        } catch {
-          /* The server is restarting. */
-        }
-      }
-      notice('Der Server ist nach dem Neustart noch nicht erreichbar.')
+      if (await waitForRestart(instance, 30_000)) notice('Pixelbench-Server ist wieder erreichbar.', true)
+      else notice('Der Server ist nach dem Neustart noch nicht erreichbar.')
     } finally {
       action.current = undefined
       setServerAction(undefined)

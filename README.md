@@ -65,7 +65,9 @@ Double-click `Pixelbench.cmd` or the desktop shortcut. It opens Pixelbench in yo
 
 ## Update or repair
 
-Run `install.cmd` again. It only changes what is missing or outdated. To update a git checkout, run `git pull` first.
+Pixelbench checks GitHub for a new release at most once a day and shows a dot on the settings button when one is available. Open **Settings → About Pixelbench** and click **Update now**: Pixelbench downloads the release, swaps its files, updates packages and custom nodes and restarts. Your settings, `.runtime` and files you added yourself stay. The automatic check can be turned off there.
+
+To repair an install, run `install.cmd` again. It only changes what is missing or outdated. A git checkout updates with `git pull` followed by `install.cmd`. Installs older than the first release with the updater need one manual update.
 
 ## Uninstall
 

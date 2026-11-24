@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import type { Bridge } from '../../hooks/useBridge.js'
+import type { Updates } from '../../hooks/useUpdates.js'
 import { appMessage } from '../../i18n/appMessages.js'
 import { confirmDiscard } from '../../settings/preferences.js'
 import type { Config } from '../../types/api.js'
@@ -58,11 +59,13 @@ function Connection({ bridge }: { bridge: Bridge }) {
 export function SettingsDialog({
   config,
   bridge,
+  updates,
   busy,
   onClose
 }: {
   config: Config
   bridge: Bridge
+  updates: Updates
   busy: boolean
   onClose: () => void
 }) {
@@ -108,6 +111,9 @@ export function SettingsDialog({
                   {form.dirty && (item.id === 'comfy' || item.id === 'performance') && (
                     <span className="unsaved-dot" title={t('Ungespeicherte Änderungen')} />
                   )}
+                  {item.id === 'about' && updates.available && (
+                    <span className="unsaved-dot update-dot" title={t('Update verfügbar')} />
+                  )}
                 </button>
               </li>
             ))}
@@ -130,7 +136,7 @@ export function SettingsDialog({
             {page === 'comfy' && <ComfySection form={form} blocked={blocked} />}
             {page === 'performance' && <PerformanceSection form={form} />}
             {page === 'shortcuts' && <ShortcutsSection />}
-            {page === 'about' && <AboutSection />}
+            {page === 'about' && <AboutSection updates={updates} busy={busy} />}
             {page === 'server' && <ServerSection bridge={bridge} busy={busy} disabled={blocked} onClose={onClose} />}
           </div>
           {(form.dirty || form.error) && (

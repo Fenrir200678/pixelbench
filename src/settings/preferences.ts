@@ -17,6 +17,9 @@ export type Preferences = {
   notifyDone: boolean
   soundDone: boolean
   consoleOnError: boolean
+  // Asks GitHub for a newer release at most once a day.
+  updateCheck: boolean
+  updatePrerelease: boolean
 }
 
 export const defaultFileName = '{name}-edit'
@@ -32,7 +35,10 @@ const defaults: Preferences = {
   confirmDiscard: true,
   notifyDone: false,
   soundDone: false,
-  consoleOnError: false
+  consoleOnError: false,
+  updateCheck: true,
+  // Whoever runs a pre-release keeps getting the next one.
+  updatePrerelease: __APP_VERSION__.includes('-')
 }
 
 // Earlier releases stored some of these under their own keys. They stay, so existing choices carry over.
@@ -46,7 +52,9 @@ const keys: Record<keyof Preferences, string> = {
   confirmDiscard: 'pixelbench-confirm-discard',
   notifyDone: 'pixelbench-notify-done',
   soundDone: 'pixelbench-sound-done',
-  consoleOnError: 'pixelbench-console-on-error'
+  consoleOnError: 'pixelbench-console-on-error',
+  updateCheck: 'pixelbench-update-check',
+  updatePrerelease: 'pixelbench-update-prerelease'
 }
 
 function sanitize<K extends keyof Preferences>(key: K, value: unknown): Preferences[K] {

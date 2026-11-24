@@ -21,6 +21,8 @@ type Props = {
   onRedo: () => void
   onSettings: () => void
   onTool: (tool: Tool) => void
+  /** Shows a dot on the settings button while a newer release is offered. */
+  updateAvailable?: boolean
   /** Workflow profile and presets of the current mode, shown next to the mode switcher. */
   workflowSwitch?: ReactNode
 }
@@ -40,6 +42,7 @@ export function Topbar({
   onRedo,
   onSettings,
   onTool,
+  updateAvailable,
   workflowSwitch
 }: Props) {
   const { t } = useTranslation()
@@ -136,10 +139,12 @@ export function Topbar({
           id="settings"
           className="icon settings-icon"
           icon="settings"
-          aria-label={t('Einstellungen')}
-          title={t('Einstellungen')}
+          aria-label={updateAvailable ? t('Einstellungen · Update verfügbar') : t('Einstellungen')}
+          title={updateAvailable ? t('Einstellungen · Update verfügbar') : t('Einstellungen')}
           onClick={onSettings}
-        />
+        >
+          {updateAvailable && <span className="topbar-update-dot" aria-hidden="true" />}
+        </Button>
       </div>
     </header>
   )
