@@ -241,6 +241,20 @@ export function HiresFields({
         slider
         onChange={(strength) => workflow.updateHires({ strength })}
       />
+      {workflow.colorMatchAvailable && (
+        <NumberField
+          id="hires-color-match"
+          label={t('Farbkorrektur')}
+          title={t('Gleicht die Farben des Ergebnisses an das Bild vor dem Hochskalieren an. 0 aus, 1 voll.')}
+          value={Number(hires.colorMatch) || 0}
+          min={0}
+          max={1}
+          step={0.05}
+          row
+          slider
+          onChange={(colorMatch) => workflow.updateHires({ colorMatch })}
+        />
+      )}
       {!fixedSigmas && (
         <NumberField
           id="hires-steps"

@@ -69,6 +69,7 @@ async function status(fresh = false) {
       upscalers: backend.inspected.upscalers,
       tiledUpscale: backend.inspected.tiledUpscale,
       seedVariance: backend.inspected.seedVariance,
+      colorMatch: backend.inspected.colorMatch,
       detectors: backend.inspected.detectors,
       memory: config.memory,
       address: backend.address,

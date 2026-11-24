@@ -44,10 +44,20 @@ export type Request = {
   hires?: Hires
   // Seed variance strength, 0 or missing is off.
   variance?: number
+  // Img2img color correction toward the template, 0 or missing is off.
+  colorMatch?: number
 }
 // Hires fix: enlarge to size with the upscale model, then re-render. Steps 0 keeps the render steps.
 // tiled: Ultimate SD Upscale instead of one image to image pass at the target size.
-export type Hires = { upscaler: string; strength: number; steps: number; size: [number, number]; tiled: boolean }
+// colorMatch: color correction toward the source image, 0 or missing is off.
+export type Hires = {
+  upscaler: string
+  strength: number
+  steps: number
+  size: [number, number]
+  tiled: boolean
+  colorMatch?: number
+}
 export type Prepared = { request: Request; source?: Frame; target: Rect; crop: Rect; effectiveMask?: Uint8ClampedArray }
 // before: the template scaled to the result, so compare lines up when image to image changes the size.
 // detections: what the detailer found and re-rendered, shown as boxes on the canvas.
@@ -80,6 +90,7 @@ type Inputs = {
   upscaler?: string
   hires?: Hires
   variance?: number
+  colorMatch?: number
   references?: Frame[]
 }
 
@@ -119,7 +130,17 @@ export async function prepare(inputs: Inputs): Promise<Prepared> {
   if (tool === 'create') {
     // Image to image: the whole template, cropped to the output ratio from the center and scaled to the output size.
     const image = await asBase64(flattened(cropSource(source, templateArea(source, w, h)), w, h))
-    return { source, target, crop, request: { ...requestFields(inputs), image, strength: inputs.strength } }
+    return {
+      source,
+      target,
+      crop,
+      request: {
+        ...requestFields(inputs),
+        image,
+        strength: inputs.strength,
+        colorMatch: inputs.colorMatch || undefined
+      }
+    }
   }
   let rawMask, effectiveMask
   const cropped = crop.w !== source.w || crop.h !== source.h

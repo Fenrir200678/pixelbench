@@ -66,10 +66,30 @@ export function levelValue(l: Levels, v: number) {
   return l.outBlack + x ** (1 / l.gamma) * (l.outWhite - l.outBlack)
 }
 
+/**
+ * Contrast curve on 0 … 1 around mid gray. Positive amounts use an S-curve (normalized sigmoid) that keeps
+ * black and white in place, so shadows and highlights roll off instead of clipping. Negative amounts compress
+ * linearly toward mid gray, reaching flat gray at -100.
+ */
+export function contrastValue(amount: number, x: number) {
+  if (amount < 0) return 0.5 + (x - 0.5) * (1 + amount / 100)
+  if (amount === 0) return x
+  const beta = amount / 10
+  const sigmoid = (t: number) => 1 / (1 + Math.exp(-beta * (t - 0.5)))
+  const low = sigmoid(0)
+  return (sigmoid(x) - low) / (sigmoid(1) - low)
+}
+
+/**
+ * Brightness as a midtone gamma on 0 … 1: black and white stay in place, so highlights and shadows do not clip.
+ * ±100 is a gamma of 2 or 1/2, lifting mid gray to about 180 or lowering it to about 64.
+ */
+export function brightnessValue(amount: number, x: number) {
+  return amount === 0 ? x : x ** (2 ** (-amount / 100))
+}
+
 // Per-channel tone curve: temperature, brightness and contrast, then the levels.
 function toneTables(a: Adjustments) {
-  const shift = a.brightness * 1.275
-  const factor = ((100 + a.contrast) / 100) ** 2
   const warmth = a.temperature * 0.3
   const { rgb } = a.levels
   return (['r', 'g', 'b'] as const).map((channel, index) => {
@@ -77,7 +97,8 @@ function toneTables(a: Adjustments) {
     const own = a.levels[channel]
     const table = new Uint8ClampedArray(256)
     for (let v = 0; v < 256; v++) {
-      const toned = Math.min(255, Math.max(0, (v + offset + shift - 127.5) * factor + 127.5))
+      const warmed = Math.min(1, Math.max(0, (v + offset) / 255))
+      const toned = contrastValue(a.contrast, brightnessValue(a.brightness, warmed)) * 255
       table[v] = levelValue(own, levelValue(rgb, toned))
     }
     return table

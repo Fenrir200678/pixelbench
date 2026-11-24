@@ -12,7 +12,15 @@ export type PixelbenchRecord = {
   models?: Record<string, string>
   loras?: { name: string; strength: number }[]
   strength?: number
-  hires?: { upscaler: string; strength: number; steps: number; size: [number, number]; tiled: boolean }
+  colorMatch?: number
+  hires?: {
+    upscaler: string
+    strength: number
+    steps: number
+    size: [number, number]
+    tiled: boolean
+    colorMatch?: number
+  }
   variance?: number
 }
 

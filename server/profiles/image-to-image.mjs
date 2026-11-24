@@ -143,6 +143,31 @@ export function useTiledHiresFix(graph, profile, hires) {
   delete graph[decode]
 }
 
+// Color correction as in Forge: after decoding, the result's color distribution is matched to the reference.
+// MKL keeps the content's own contrast better than plain histogram matching. 0 leaves the result as it is.
+export function useColorMatch(graph, reference, strength) {
+  if (!strength) return
+  graph.colorMatch = {
+    class_type: 'ColorMatchV2',
+    inputs: {
+      image_target: graph.preview.inputs.images,
+      image_ref: reference,
+      method: 'mkl',
+      strength,
+      multithread: true
+    }
+  }
+  graph.preview.inputs.images = ['colorMatch', 0]
+}
+
+// Color correction strength from the request: missing is off, otherwise 0 to 1.
+export function colorMatchStrength(value) {
+  if (value === undefined) return 0
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
+    throw new Error('Invalid color correction strength.')
+  return value
+}
+
 export const upscaleSizes = { grid: 1, min: 64, max: 8192, area: 24_000_000 }
 export const validSize = (size, { grid, min, max, area }) =>
   Array.isArray(size) &&
@@ -181,5 +206,6 @@ export function hiresSettings(profile, hires, size, source) {
   const tiles = tiled
     ? Math.ceil(Math.round(source[0] * factor) / tile) * Math.ceil(Math.round(source[1] * factor) / tile)
     : 0
-  return { upscaler: hires.upscaler, strength, steps, size, factor, render, tiled, tiles }
+  const colorMatch = colorMatchStrength(hires.colorMatch)
+  return { upscaler: hires.upscaler, strength, steps, size, factor, render, tiled, tiles, colorMatch }
 }

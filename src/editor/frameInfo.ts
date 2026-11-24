@@ -20,6 +20,7 @@ export function rememberGeneration(frame: Frame, request: Request) {
     models: request.models,
     loras: request.loras,
     strength: request.strength,
+    colorMatch: request.colorMatch,
     hires: request.hires,
     variance: request.variance || undefined
   })

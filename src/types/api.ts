@@ -73,6 +73,8 @@ export type Status = {
   upscalers?: string[]
   tiledUpscale?: boolean
   seedVariance?: boolean
+  /** KJNodes ColorMatchV2 for the img2img and hires fix color correction. */
+  colorMatch?: boolean
   /** SAM3 checkpoints for the detailer. Empty when the model or the core SAM3 nodes are missing. */
   detectors?: string[]
   memory?: Config['memory']

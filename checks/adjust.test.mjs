@@ -4,6 +4,8 @@ import {
   adjust,
   adjustFrame,
   autoLevels,
+  brightnessValue,
+  contrastValue,
   histogram,
   levelValue,
   neutralAdjustments,
@@ -31,6 +33,34 @@ test('brightness raises every color channel and keeps alpha', () => {
   const result = adjust(pixels, w, h, settings({ brightness: 20 }))
   for (const c of [0, 1, 2]) assert.ok(mean(result, c) > mean(pixels, c))
   assert.equal(mean(result, 3), 200)
+})
+
+test('brightness moves midtones and keeps black and white', () => {
+  for (const amount of [-100, -30, 30, 100]) {
+    assert.equal(brightnessValue(amount, 0), 0)
+    assert.equal(brightnessValue(amount, 1), 1)
+    assert.equal(brightnessValue(amount, 0.5) > 0.5, amount > 0)
+  }
+  assert.ok(brightnessValue(30, 0.85) < 1)
+})
+
+test('contrast spreads midtones gently and keeps black and white', () => {
+  for (const amount of [9, 50, 100]) {
+    assert.equal(contrastValue(amount, 0), 0)
+    assert.ok(Math.abs(contrastValue(amount, 1) - 1) < 1e-9)
+    assert.ok(Math.abs(contrastValue(amount, 0.5) - 0.5) < 1e-9)
+    assert.ok(contrastValue(amount, 0.25) < 0.25)
+    assert.ok(contrastValue(amount, 0.75) > 0.75)
+  }
+  // A small step stays a small change.
+  assert.ok(Math.abs(contrastValue(9, 0.25) - 0.25) * 255 < 2)
+  assert.ok(contrastValue(100, 0.05) > 0)
+})
+
+test('negative contrast flattens toward mid gray', () => {
+  assert.equal(contrastValue(-100, 0), 0.5)
+  assert.equal(contrastValue(-100, 1), 0.5)
+  assert.ok(contrastValue(-50, 0.2) > 0.2)
 })
 
 test('saturation -100 gives gray pixels', () => {

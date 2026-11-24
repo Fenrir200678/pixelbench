@@ -164,6 +164,8 @@ async function fetchInspection(backend, config) {
   // Hires fix renders in tiles through the Ultimate SD Upscale custom nodes.
   const tiledUpscale = Boolean(info.UltimateSDUpscale && info.UltimateSDUpscaleGuider)
   const seedVariance = Boolean(info.KreaSeedVarianceEnhancer)
+  // Img2img color correction uses the KJNodes color matcher.
+  const colorMatch = Boolean(info.ColorMatchV2)
   const promptWeights = Boolean(info.Krea2PromptWeight)
   // CLIP and T5 encoders read weights themselves, Krea 2 needs the KJNodes node.
   for (const profile of result)
@@ -182,6 +184,7 @@ async function fetchInspection(backend, config) {
     upscalers,
     tiledUpscale,
     seedVariance,
+    colorMatch,
     promptWeights,
     detectors
   }

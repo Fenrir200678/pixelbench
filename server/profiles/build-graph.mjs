@@ -7,6 +7,8 @@ import {
   useHiresPass,
   useTemplate,
   useTemplateMask,
+  useColorMatch,
+  colorMatchStrength,
   useTiledHiresFix,
   validSize
 } from './image-to-image.mjs'
@@ -124,6 +126,7 @@ export function buildGraph(profile, data, jobId) {
     set(profile.bindings.image, jobId + '/image.png')
   }
   const template = data.tool === 'create' && data.image !== undefined
+  let colorMatch = 0
   if (template) {
     if (!profile.img2img) throw new Error('This profile does not support a template image.')
     const strength = data.strength
@@ -131,6 +134,7 @@ export function buildGraph(profile, data, jobId) {
       throw new Error('Invalid template strength.')
     graph.template = { class_type: 'LoadImage', inputs: { image: jobId + '/image.png' } }
     useTemplate(graph, profile.img2img, ['template', 0], strength)
+    colorMatch = colorMatchStrength(data.colorMatch)
     files.push({ name: 'image.png', payload: data.image, size })
     if (data.mask !== undefined) {
       useTemplateMask(graph, jobId + '/mask.png')
@@ -236,7 +240,12 @@ export function buildGraph(profile, data, jobId) {
     if (!profile.variance) throw new Error('This profile does not support extra variation.')
     useSeedVariance(graph, profile.variance, data.seed, variance)
   }
-  if (hires) (hires.tiled ? useTiledHiresFix : useHiresPass)(graph, profile, hires)
+  if (hires) {
+    if (hires.tiled) useTiledHiresFix(graph, profile, hires)
+    else useHiresPass(graph, profile, hires)
+    // The source before the upscale model is the color reference, since the model can shift colors as well.
+    useColorMatch(graph, ['upscaleSource', 0], hires.colorMatch)
+  } else if (colorMatch) useColorMatch(graph, ['template', 0], colorMatch)
   return {
     graph,
     files,
@@ -244,6 +253,7 @@ export function buildGraph(profile, data, jobId) {
     models,
     loras,
     strength: template ? data.strength : undefined,
+    colorMatch: colorMatch || hires?.colorMatch || undefined,
     upscaler: upscaler ?? hires?.upscaler,
     // tiles and prescale let the job report which tile is sampling. prescale: the model upscale runs first.
     hires: hires && {

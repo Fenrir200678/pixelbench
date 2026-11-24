@@ -146,6 +146,16 @@ test('text-to-image profiles set the latent size and upload no input image', () 
     }
     assert.equal(result.strength, 0.4)
     assert.throws(() => buildGraph(profile, { ...template, strength: 0 }, 'job'))
+    assert.equal(result.graph.colorMatch, undefined)
+
+    // Color correction: the decoded result is matched to the template before the preview.
+    const matched = buildGraph(profile, { ...template, colorMatch: 0.8 }, 'job')
+    assert.deepEqual(matched.graph.colorMatch.inputs.image_target, result.graph.preview.inputs.images)
+    assert.deepEqual(matched.graph.colorMatch.inputs.image_ref, ['template', 0])
+    assert.equal(matched.graph.colorMatch.inputs.strength, 0.8)
+    assert.deepEqual(matched.graph.preview.inputs.images, ['colorMatch', 0])
+    assert.equal(matched.colorMatch, 0.8)
+    assert.throws(() => buildGraph(profile, { ...template, colorMatch: 2 }, 'job'), /color correction/)
 
     // Detailer: a mask limits the new noise to the object, the sampler reads the masked latent.
     const masked = buildGraph(profile, { ...template, mask: 'png' }, 'job')
@@ -186,6 +196,12 @@ test('text-to-image profiles set the latent size and upload no input image', () 
     }
     const fixed = buildGraph(hiresProfile, hires, 'job')
     checkHires(fixed.graph, 9)
+    assert.equal(fixed.graph.colorMatch, undefined)
+    const corrected = buildGraph(hiresProfile, { ...hires, hires: { ...settings, colorMatch: 1 } }, 'job').graph
+    assert.deepEqual(corrected.colorMatch.inputs.image_target, ['upscaleScale', 0])
+    assert.deepEqual(corrected.colorMatch.inputs.image_ref, ['upscaleSource', 0])
+    assert.deepEqual(corrected.preview.inputs.images, ['colorMatch', 0])
+    assert.ok(resolves(corrected))
     assert.equal(fixed.graph.sample, undefined)
     assert.equal(fixed.graph.latent, undefined)
     assert.deepEqual(fixed.graph.upscale.inputs.image, ['upscaleSource', 0])

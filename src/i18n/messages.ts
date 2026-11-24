@@ -405,6 +405,11 @@ export const english: Record<string, string> = {
   Vorlage: 'Template',
   'Aktuelles Bild als Vorlage für Img2Img verwenden': 'Use current image as template for img2img',
   'Niedrig bleibt nah an der Vorlage, hoch wird freier.': 'Low stays close to the template, high is freer.',
+  Farbkorrektur: 'Color correction',
+  'Gleicht die Farben des Ergebnisses an die Vorlage an, wie in Forge. 0 aus, 1 voll.':
+    "Matches the result's colors to the template, as in Forge. 0 is off, 1 is full.",
+  'Gleicht die Farben des Ergebnisses an das Bild vor dem Hochskalieren an. 0 aus, 1 voll.':
+    "Matches the result's colors to the image before upscaling. 0 is off, 1 is full.",
   'Aus: Das Bild entsteht nur aus dem Prompt.': 'Off: the image is created from the prompt only.',
   'Seitenverhältnis der Vorlage halten': 'Keep template aspect ratio',
   'Auf die Zielfläche des Profils skalieren': "Scale to the profile's target area",
