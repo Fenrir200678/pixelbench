@@ -87,7 +87,7 @@ The drawing layer is for color and shape sketches in all workflows.
 
 ## Detailer
 
-The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. **Apply to current image** refines the selected variant or open image without a new render.
+The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. Each crop is rendered at least at the profile's target size; small crops can first be enlarged with an upscale model for sharper results. By default the browser scales them, which gives a softer result. **Apply to current image** refines the selected variant or open image without a new render.
 
 ## Image adjustments
 

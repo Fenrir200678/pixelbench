@@ -26,6 +26,8 @@ export type DetailerSettings = {
   keepBoxes: boolean
   // Keep the union of the detected masks on the result. Applying it makes them the inpaint mask.
   keepMasks: boolean
+  // Upscale model for small crops. Empty or 'lanczos': plain browser scaling.
+  upscaler: string
 }
 export const initialDetailer: DetailerSettings = {
   on: false,
@@ -38,7 +40,8 @@ export const initialDetailer: DetailerSettings = {
   grow: 8,
   feather: 8,
   keepBoxes: false,
-  keepMasks: false
+  keepMasks: false,
+  upscaler: ''
 }
 // The render inputs every detail job shares. Each object gets the seed plus its index.
 export type DetailBase = {
@@ -49,16 +52,21 @@ export type DetailBase = {
   parameters: Parameters
   models: Record<string, string>
   loras?: LoraChoice[]
+  // Enlarges small crops on the server before sampling. Missing: the browser scales them.
+  upscaler?: string
 }
+// Below this enlargement the upscale model adds little over plain scaling.
+const minModelUpscale = 1.25
 type Region = { crop: Rect; mask: Uint8ClampedArray; size: [number, number] }
 
-// The crop around one object mask and its render size at the profile's target area.
+// The crop around one object mask and its render size: at least the profile's target area, but never smaller than
+// the crop itself (up to the profile's limits), so large objects are not rendered at a lower resolution.
 export function detailRegion(alpha: Uint8ClampedArray, image: Rect, settings: DetailerSettings, profile: Profile) {
   const box = bounds(alpha, image.w, image.h)
   if (!box) return undefined
   const crop = cropForMask(box, image, Math.max(settings.padding, settings.grow + settings.feather))
   const mask = growMask(cutMask(alpha, image.w, crop), crop.w, crop.h, settings.grow)
-  const scale = profile.sizes.target / Math.sqrt(crop.w * crop.h)
+  const scale = Math.max(1, profile.sizes.target / Math.sqrt(crop.w * crop.h))
   const size = fitSize(Math.round(crop.w * scale), Math.round(crop.h * scale), profile.sizes)
   return { crop, mask, size } satisfies Region
 }
@@ -72,6 +80,11 @@ async function prepareDetail(
 ): Promise<Prepared> {
   const { crop, mask, size } = region
   const [w, h] = size
+  // A browser upscale of a small crop is blurry, and the sampler keeps that blur. The upscale model keeps detail.
+  const enlarge = base.upscaler && Math.min(w / crop.w, h / crop.h) >= minModelUpscale ? base.upscaler : undefined
+  const image = enlarge
+    ? flattened(cropSource(source, crop), crop.w, crop.h)
+    : flattened(cropSource(source, crop), w, h)
   return {
     source,
     target: { x: source.x, y: source.y, w: source.w, h: source.h },
@@ -88,7 +101,8 @@ async function prepareDetail(
       models: base.models,
       loras: base.loras,
       strength: settings.strength,
-      image: await asBase64(flattened(cropSource(source, crop), w, h)),
+      upscaler: enlarge,
+      image: await asBase64(image),
       mask: await asBase64(resized(maskSurface(mask, crop.w, crop.h), w, h))
     }
   }

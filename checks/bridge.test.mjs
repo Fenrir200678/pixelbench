@@ -171,6 +171,22 @@ test('text-to-image profiles set the latent size and upload no input image', () 
       /template image/
     )
 
+    // Detailer with an upscaler: the small crop is enlarged by the model, then stretched to the size and encoded.
+    const crop = { ...template, image: png(304, 208), upscaler: '4xNomos8kSC.safetensors' }
+    const upscaleProfile = { ...profile, upscalerCatalog: [crop.upscaler] }
+    const enlarged = buildGraph(upscaleProfile, crop, 'job')
+    assert.equal(enlarged.graph.templateUpscaleModel.inputs.model_name, crop.upscaler)
+    assert.deepEqual(enlarged.graph.templateUpscaled.inputs.image, ['template', 0])
+    assert.deepEqual(
+      [enlarged.graph.templateScaled.inputs.width, enlarged.graph.templateScaled.inputs.height],
+      [1216, 832]
+    )
+    assert.deepEqual(enlarged.graph.templateLatent.inputs.pixels, ['templateScaled', 0])
+    assert.equal(enlarged.files[0].size, undefined)
+    assert.equal(enlarged.upscaler, crop.upscaler)
+    assert.throws(() => buildGraph(profile, crop, 'job'), /not available/)
+    assert.throws(() => buildGraph(upscaleProfile, { ...crop, image: png(1600, 900) }, 'job'), /exceeds/)
+
     // Hires fix on an existing image: tiles with the upscale model, then Lanczos to the exact size.
     const upscaler = '4x-UltraSharpV2.safetensors'
     const hiresProfile = { ...profile, upscalerCatalog: [upscaler] }

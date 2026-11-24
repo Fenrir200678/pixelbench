@@ -34,6 +34,21 @@ export function useTemplate(graph, point, pixels, strength) {
   }
 }
 
+// Detailer: a small template crop is enlarged with the upscale model and stretched to the generation size with
+// Lanczos, so the sampler starts from sharp pixels instead of a blurry browser upscale.
+export function useTemplateUpscale(graph, upscaler, [width, height]) {
+  graph.templateUpscaleModel = { class_type: 'UpscaleModelLoader', inputs: { model_name: upscaler } }
+  graph.templateUpscaled = {
+    class_type: 'ImageUpscaleWithModel',
+    inputs: { upscale_model: ['templateUpscaleModel', 0], image: ['template', 0] }
+  }
+  graph.templateScaled = {
+    class_type: 'ImageScale',
+    inputs: { image: ['templateUpscaled', 0], upscale_method: 'lanczos', width, height, crop: 'disabled' }
+  }
+  return ['templateScaled', 0]
+}
+
 // Hires fix as one image to image pass at the target size, as in Forge: upscale model, Lanczos to the profile grid,
 // then the profile samples the whole image with the hires strength. Lanczos restores the exact size afterwards.
 // Hires fixes run as their own job: right after sampling in the same ComfyUI prompt, the upscale model ran up to ten

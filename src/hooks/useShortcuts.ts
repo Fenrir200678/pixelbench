@@ -77,8 +77,11 @@ export function useShortcuts(actions: Actions) {
     if (
       target instanceof HTMLElement &&
       (target.matches('input:not([type="range"], [type="checkbox"]), textarea, select') || target.isContentEditable)
-    )
+    ) {
+      // Escape leaves the field so the shortcuts work again. Open suggestion lists handle it first.
+      if (key === 'escape') target.blur()
       return
+    }
     if (ctrl && (key === 'z' || key === 'y')) {
       event.preventDefault()
       actions.travel(key === 'y' || event.shiftKey ? 'redo' : 'undo')

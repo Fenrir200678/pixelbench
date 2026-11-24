@@ -175,7 +175,7 @@ export function useEditorGeneration({
   function detailStages(base: Omit<DetailBase, 'profile'> | undefined, source?: Frame) {
     const { detector, settings } = detailer
     if (!profile || !detector || !base) return []
-    return [detailStage(settings, { ...base, profile }, detector, source)]
+    return [detailStage(settings, { ...base, profile, upscaler: detailer.upscaler }, detector, source)]
   }
   const currentBase = () =>
     profile && {

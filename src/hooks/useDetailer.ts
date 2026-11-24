@@ -13,10 +13,18 @@ export function useDetailer(tool: Tool, status: Status | undefined, profile: Pro
     ...readStorage<Partial<DetailerSettings>>(detailerKey, {})
   }))
   const detector = status?.detectors?.[0]
+  const upscalers = status?.upscalers ?? []
+  // Without a chosen model the browser scales the crop: softer than a sharpening upscale model.
+  const choice = upscalers.includes(settings.upscaler) ? settings.upscaler : 'lanczos'
+  const upscaler = choice === 'lanczos' ? undefined : choice
   const available = tool === 'create' && Boolean(profile?.img2img)
   return {
     settings,
     detector,
+    upscalers,
+    // The combobox value, 'lanczos' without a model. upscaler: the model sent with the jobs.
+    upscalerChoice: choice,
+    upscaler,
     available,
     active: available && settings.on && Boolean(detector),
     update(patch: Partial<DetailerSettings>) {

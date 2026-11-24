@@ -523,6 +523,9 @@ export const english: Record<string, string> = {
   'Maske erweitern': 'Grow mask',
   'Rendert jedes Objekt einzeln mit Modell, LoRAs und Seed des Renders. Um 0,4 bleibt das Gesicht ähnlich.':
     'Re-renders each object on its own with the model, LoRAs and seed of the render. Around 0.4 the face stays similar.',
+  'Vergrößert kleine Objekte vor dem Neurendern mit dem Upscale-Modell. Das hält die Vorlage scharf.':
+    'Enlarges small objects with the upscale model before re-rendering. This keeps the template sharp.',
+  'Ohne Modell (weicheres Inpainting)': 'No model (softer inpainting)',
   'Der Detailer braucht ComfyUI mit SAM3 und das Modell „sam3.1_multiplex_fp16.safetensors“ unter „checkpoints“.':
     'The detailer needs ComfyUI with SAM3 and the model “sam3.1_multiplex_fp16.safetensors” under “checkpoints”.',
   'Ohne neuen Render: die gewählte Variante oder das geöffnete Bild nachbessern':
