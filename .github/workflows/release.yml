@@ -47,6 +47,8 @@ jobs:
           $items = 'dist', 'server', 'scripts', 'profiles', 'workflows', 'docs',
             'install.cmd', 'install.ps1', 'Pixelbench.cmd', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE'
           foreach ($item in $items) { Copy-Item -Recurse $item $folder }
+          # The release script is for maintainers only.
+          Remove-Item "$folder/scripts/release.ps1"
           # The bridge shares the prompt weight parser with the editor and imports it from src/.
           New-Item -ItemType Directory -Force "$folder/src/editor" | Out-Null
           Copy-Item src/editor/promptWeights.ts "$folder/src/editor/"
