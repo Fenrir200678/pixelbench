@@ -23,7 +23,8 @@ function Fail($text) { throw $text }
 
 # Runs a native command and stops when it fails.
 function Run {
-  & $args[0] $args[1..($args.Count - 1)]
+  $rest = @($args | Select-Object -Skip 1)
+  & $args[0] @rest
   if ($LASTEXITCODE -ne 0) { Fail "Failed: $($args -join ' ')" }
 }
 
