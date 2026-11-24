@@ -6,11 +6,13 @@
   ./scripts/release.ps1 0.3.0-beta.1
   ./scripts/release.ps1 0.3.0-beta.1 -DryRun     # only validates, changes nothing
   ./scripts/release.ps1 0.3.0-beta.1 -SkipChecks # skips lint, format check and tests
+  ./scripts/release.ps1 0.3.0-beta.1 -Yes        # skips the confirmation prompt
 #>
 param(
   [Parameter(Mandatory)][string]$Version,
   [switch]$DryRun,
-  [switch]$SkipChecks
+  [switch]$SkipChecks,
+  [switch]$Yes
 )
 
 $ErrorActionPreference = 'Stop'
@@ -61,7 +63,7 @@ if (-not $SkipChecks) {
   Run npm test
 }
 
-$answer = Read-Host "`nBump to $Version, commit, tag $tag and push '$branch' plus the tag to origin? [y/N]"
+$answer = if ($Yes) { 'y' } else { Read-Host "`nBump to $Version, commit, tag $tag and push '$branch' plus the tag to origin? [y/N]" }
 if ($answer -notmatch '^(y|yes|j|ja)$') { Write-Host 'Aborted. Nothing was changed.'; return }
 
 Step 'Bumping the version'
