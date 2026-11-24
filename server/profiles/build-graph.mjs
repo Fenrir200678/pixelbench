@@ -7,6 +7,9 @@ import {
   useHiresPass,
   useTemplate,
   useTemplateMask,
+  useTemplateUpscale,
+  useColorMatch,
+  colorMatchStrength,
   useTiledHiresFix,
   validSize
 } from './image-to-image.mjs'
@@ -124,14 +127,27 @@ export function buildGraph(profile, data, jobId) {
     set(profile.bindings.image, jobId + '/image.png')
   }
   const template = data.tool === 'create' && data.image !== undefined
+  let colorMatch = 0
+  let templateUpscaler
   if (template) {
     if (!profile.img2img) throw new Error('This profile does not support a template image.')
     const strength = data.strength
     if (typeof strength !== 'number' || !Number.isFinite(strength) || strength < 0.05 || strength > 1)
       throw new Error('Invalid template strength.')
     graph.template = { class_type: 'LoadImage', inputs: { image: jobId + '/image.png' } }
-    useTemplate(graph, profile.img2img, ['template', 0], strength)
-    files.push({ name: 'image.png', payload: data.image, size })
+    let pixels = ['template', 0]
+    // upscaler: the template comes at its own smaller size and the upscale model enlarges it.
+    if (data.upscaler !== undefined) {
+      if (!profile.upscalerCatalog?.includes(data.upscaler))
+        throw new Error('Upscale model is not available in the loader · ' + data.upscaler)
+      const [w, h] = pngDimensions(data.image)
+      if (!w || !h || w > size[0] || h > size[1]) throw new Error('The template to enlarge exceeds the generation size.')
+      templateUpscaler = data.upscaler
+      pixels = useTemplateUpscale(graph, templateUpscaler, size)
+    }
+    useTemplate(graph, profile.img2img, pixels, strength)
+    colorMatch = colorMatchStrength(data.colorMatch)
+    files.push({ name: 'image.png', payload: data.image, size: templateUpscaler ? undefined : size })
     if (data.mask !== undefined) {
       useTemplateMask(graph, jobId + '/mask.png')
       files.push({ name: 'mask.png', payload: data.mask, size })
@@ -236,7 +252,12 @@ export function buildGraph(profile, data, jobId) {
     if (!profile.variance) throw new Error('This profile does not support extra variation.')
     useSeedVariance(graph, profile.variance, data.seed, variance)
   }
-  if (hires) (hires.tiled ? useTiledHiresFix : useHiresPass)(graph, profile, hires)
+  if (hires) {
+    if (hires.tiled) useTiledHiresFix(graph, profile, hires)
+    else useHiresPass(graph, profile, hires)
+    // The source before the upscale model is the color reference, since the model can shift colors as well.
+    useColorMatch(graph, ['upscaleSource', 0], hires.colorMatch)
+  } else if (colorMatch) useColorMatch(graph, ['template', 0], colorMatch)
   return {
     graph,
     files,
@@ -244,7 +265,8 @@ export function buildGraph(profile, data, jobId) {
     models,
     loras,
     strength: template ? data.strength : undefined,
-    upscaler: upscaler ?? hires?.upscaler,
+    colorMatch: colorMatch || hires?.colorMatch || undefined,
+    upscaler: upscaler ?? hires?.upscaler ?? templateUpscaler,
     // tiles and prescale let the job report which tile is sampling. prescale: the model upscale runs first.
     hires: hires && {
       strength: hires.strength,

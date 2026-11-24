@@ -73,6 +73,8 @@ export type Status = {
   upscalers?: string[]
   tiledUpscale?: boolean
   seedVariance?: boolean
+  /** KJNodes ColorMatchV2 for the img2img and hires fix color correction. */
+  colorMatch?: boolean
   /** SAM3 checkpoints for the detailer. Empty when the model or the core SAM3 nodes are missing. */
   detectors?: string[]
   memory?: Config['memory']
@@ -117,3 +119,15 @@ export type Job = {
   detections?: Detection[]
 }
 export type JobPhase = { label: string; seconds: number; note?: string }
+
+/** State of the in-app update, see server/app/update.mjs. */
+export type UpdateRelease = { version: string; name: string; url: string; prerelease: boolean; publishedAt?: string }
+export type UpdateStatus = {
+  version: string
+  /** A git checkout only learns about new releases and updates with git pull. */
+  mode: 'release' | 'git'
+  checkedAt?: number
+  release?: UpdateRelease
+  installing: boolean
+  lastResult?: { ok: boolean; from?: string; to?: string; error?: string; at: number }
+}

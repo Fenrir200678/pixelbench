@@ -11,6 +11,8 @@ import { handlePng, serveStatic } from './app/files.mjs'
 import { badInput, json, notFound, readJson, reject } from './app/http.mjs'
 import { createSession, expireSessions, handleSession, touchSession } from './app/sessions.mjs'
 import { checkPath, pickPath } from './app/paths.mjs'
+import { createUpdates } from './app/update.mjs'
+import { clearStaging } from './update/download.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const web = join(root, 'dist')
@@ -30,6 +32,8 @@ let backendChange
 let closing = false
 let setupError = ''
 const instance = randomUUID()
+const handleUpdate = createUpdates({ root, runtime })
+const exitCodes = { shutdown: 0, restart: 75, update: 76 }
 const externalNotice =
   'The external instance is reachable. Its API cannot securely delete uploaded inputs and temporary previews. Use the private process to generate images.'
 
@@ -69,6 +73,7 @@ async function status(fresh = false) {
       upscalers: backend.inspected.upscalers,
       tiledUpscale: backend.inspected.tiledUpscale,
       seedVariance: backend.inspected.seedVariance,
+      colorMatch: backend.inspected.colorMatch,
       detectors: backend.inspected.detectors,
       memory: config.memory,
       address: backend.address,
@@ -260,6 +265,18 @@ const server = createServer(async (req, res) => {
       await changeBackend(restartBackend)
       return json(res, 200, { ok: true })
     }
+    if (path === '/api/update' || path.startsWith('/api/update/'))
+      return await handleUpdate(req, res, path, {
+        busy: () => Boolean(closing || changing || active),
+        sameOrigin: req.headers.origin === origin,
+        install: (response) => {
+          closing = true
+          response.setHeader('Connection', 'close')
+          // The download can outlast the page. Without a connection left, the update starts right away.
+          if (response.destroyed) void terminate('update')
+          else response.once('close', () => void terminate('update'))
+        }
+      })
     if (req.method === 'POST' && path === '/api/session') return createSession(res, worker)
     if (path.startsWith('/api/session/')) return await handleSession(req, res, url, getBackend)
 
@@ -276,6 +293,7 @@ server.listen(port, '127.0.0.1', () => {
   log('Brücke', 'Pixelbench ready · ' + origin)
   void changeBackend(async () => {
     await mkdir(runtime, { recursive: true })
+    await clearStaging(runtime).catch(() => {})
     try {
       config = validateConfig(JSON.parse(await readFile(settings, 'utf8')))
     } catch (error) {
@@ -306,7 +324,7 @@ async function terminate(action) {
     await sweepWorkers(config, runtime)
     await drained
     // The launcher starts a replacement only after this process exits.
-    process.exit(action === 'restart' ? 75 : 0)
+    process.exit(exitCodes[action] ?? 0)
   } catch (error) {
     console.error('Pixelbench could not shut down cleanly:', error.message)
     process.exit(1)

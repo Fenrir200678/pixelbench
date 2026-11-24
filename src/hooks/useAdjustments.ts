@@ -46,7 +46,7 @@ function proxyMask(mask: Uint8ClampedArray, image: Frame, proxy: Frame) {
   return result
 }
 
-/** Brightness, contrast, color and sharpness for the open image, previewed live and applied as one undo step. */
+/** Brightness, contrast, color, blur and sharpness for the open image, previewed live and applied as one undo step. */
 export function useAdjustments({ work, mask, commit }: Options) {
   const image = work?.image
   // A session belongs to the image it was opened on. Any other image, by undo or a new file, ends it.
@@ -69,7 +69,7 @@ export function useAdjustments({ work, mask, commit }: Options) {
   useEffect(() => {
     if (!proxy || isNeutral(values)) return
     const frame = requestAnimationFrame(() => {
-      const adjusted = adjustFrame(proxy, values, previewMask)
+      const adjusted = adjustFrame(proxy, values, previewMask, proxy.w / (openImage?.w ?? proxy.w))
       let next = surfaces.current.find((surface) => surface !== rendered?.surface)
       if (!next || next.width !== proxy.w || next.height !== proxy.h) {
         next = canvas(proxy.w, proxy.h)
@@ -104,7 +104,7 @@ export function useAdjustments({ work, mask, commit }: Options) {
   // Auto works on the image as the other settings leave it, before any levels.
   function autoLevel() {
     if (!active || !proxy) return
-    const before = { ...active.values, levels: neutralAdjustments.levels, sharpness: 0 }
+    const before = { ...active.values, levels: neutralAdjustments.levels, blur: 0, sharpness: 0 }
     setLevels('rgb', autoLevels(histogram(adjust(proxy.pixels, proxy.w, proxy.h, before))))
   }
 

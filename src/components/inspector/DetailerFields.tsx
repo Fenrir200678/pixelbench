@@ -3,6 +3,7 @@ import type { Detailer } from '../../hooks/useDetailer.js'
 import { Button } from '../../ui/Button.js'
 import { Icon } from '../../ui/Icon.js'
 import { CollapsibleSection } from '../../ui/CollapsibleSection.js'
+import { Combobox } from '../../ui/Combobox.js'
 import { NumberField } from '../../ui/NumberField.js'
 
 // ComfyUI's SAM3 guide: short noun phrases, commas between object types, ":N" per type.
@@ -19,7 +20,7 @@ export function DetailerFields({
   onApply: () => void
 }) {
   const { t } = useTranslation()
-  const { settings, update, detector } = detailer
+  const { settings, update, detector, upscalers, upscalerChoice } = detailer
   const on = settings.on
   const title = t('Detailer') + (on && settings.terms.trim() ? ' · ' + settings.terms.trim() : '')
   return (
@@ -89,6 +90,21 @@ export function DetailerFields({
         slider
         onChange={(strength) => update({ strength })}
       />
+      <label
+        className="stack"
+        title={t('Vergrößert kleine Objekte vor dem Neurendern mit dem Upscale-Modell. Das hält die Vorlage scharf.')}
+      >
+        <span>{t('Upscale-Modell')}</span>
+        <Combobox
+          id="detailer-upscaler"
+          value={upscalerChoice}
+          options={[
+            ...upscalers.map((file) => ({ value: file })),
+            { value: 'lanczos', label: t('Ohne Modell (weicheres Inpainting)') }
+          ]}
+          onChange={(upscaler) => update({ upscaler })}
+        />
+      </label>
       <label
         className="stack"
         title={t('Eigener Prompt für die Objekte, z. B. „detailed face, sharp eyes“. Leer verwendet den Hauptprompt.')}

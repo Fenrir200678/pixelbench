@@ -20,6 +20,7 @@ Create an image from a prompt without a starting image.
 - **Apply** or **Set as starting image** makes a variant the working image and switches to Edit. If an image is open, Pixelbench asks first, and **Ctrl+Z** restores it.
 - **New** in the header closes the document (after asking about unexported changes), deletes the variants and starts a new image in Create. The prompt stays.
 - **Template.** You can use the current image or a dropped image as a template for img2img. The box is only ticked for you when you open or drop an image in Create. **Apply** on a variant leaves it as it is, and **New** clears it. Low strength stays close to the template, high strength is freer. Without a template, the image comes from the prompt only.
+- **Color correction** in the Img2Img section matches the colors of the result to the template, like the Forge option "Apply color correction to img2img results". It helps when img2img shifts saturation or contrast. 0 is off, 1 is full. Turn it off when the prompt is meant to change colors. It needs the KJNodes node `ColorMatchV2`, which the installer adds.
   The Img2Img section shows the source image as a thumbnail. Img2Img always uses the source image, not a variant you are only looking at. While another variant is shown, a note offers **Use variant N as source**.
 - **Variation** (Krea 2 Turbo) adds seed-dependent noise to the prompt embedding in the first quarter of the steps. 0 is off, 1 is the node author's recommendation and values up to 5 vary more and follow the prompt less. The same seed still gives the same image. See [Profiles and models](profiles-and-models.md#more-variation-with-krea-2-turbo).
 
@@ -31,6 +32,7 @@ The hires fix lives in Create. It enlarges an image and re-renders it with low s
 - **Render in tiles** switches to Ultimate SD Upscale. Above the profile's maximum size (usually 2048 px or 4.2 MP) a notice warns about the higher VRAM and time needs without tiles. Tiled mode uses a Chess pattern with 64 px overlap.
 - The same prompt, seed and LoRAs apply.
 - **Details** sets the strength. Around 0.3 stays close to the first render.
+- **Color correction** matches the colors of the result to the image before upscaling. 0 is off.
 - **Hires steps** of 0 uses the steps under **Render**.
 - **Lock seed** in the section keeps the seed of the last created or selected variant, like the lock under **Render**. It is set automatically when you turn the hires fix on, and you can unset it. With a locked seed the first render comes from the cache and only the hires fix is recomputed.
 - **Apply hires fix to open image** runs the same pass without a new render.
@@ -85,11 +87,11 @@ The drawing layer is for color and shape sketches in all workflows.
 
 ## Detailer
 
-The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. **Apply to current image** refines the selected variant or open image without a new render.
+The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. Each crop is rendered at least at the profile's target size; small crops can first be enlarged with an upscale model for sharper results. By default the browser scales them, which gives a softer result. **Apply to current image** refines the selected variant or open image without a new render.
 
 ## Image adjustments
 
-**A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.
+**A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, blur, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.
 
 ## Variants and compare
 

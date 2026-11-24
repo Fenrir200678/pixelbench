@@ -6,7 +6,8 @@ import { ui } from './ui.mjs'
 
 const marker = '.pixelbench-node.json'
 // Windows ships bsdtar, which reads .tar.gz. Git for Windows puts a GNU tar first on PATH that mangles C:\ paths.
-const tar = process.platform === 'win32' ? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar'
+export const tar =
+  process.platform === 'win32' ? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar'
 
 const exists = (path) =>
   stat(path).then(

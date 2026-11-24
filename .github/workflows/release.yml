@@ -45,11 +45,17 @@ jobs:
           $folder = Join-Path release 'pixelbench'
           New-Item -ItemType Directory -Force $folder | Out-Null
           $items = 'dist', 'server', 'scripts', 'profiles', 'workflows', 'docs',
-            'install.cmd', 'install.ps1', 'Pixelbench.cmd', 'package.json', 'package-lock.json', 'README.md', 'LICENSE'
+            'install.cmd', 'install.ps1', 'Pixelbench.cmd', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE'
           foreach ($item in $items) { Copy-Item -Recurse $item $folder }
           # The bridge shares the prompt weight parser with the editor and imports it from src/.
           New-Item -ItemType Directory -Force "$folder/src/editor" | Out-Null
           Copy-Item src/editor/promptWeights.ts "$folder/src/editor/"
+          # The in-app update replaces exactly these files and removes those an older release listed but this one does not.
+          $base = (Resolve-Path $folder).Path
+          $files = Get-ChildItem -Recurse -File $folder |
+            ForEach-Object { $_.FullName.Substring($base.Length + 1).Replace('\', '/') } | Sort-Object
+          [ordered]@{ version = $env:TAG.Substring(1); files = @($files) } | ConvertTo-Json -Depth 3 |
+            Set-Content -Encoding utf8NoBOM "$folder/release.json"
           Compress-Archive -Path $folder -DestinationPath "release/$name.zip"
           "ZIP=release/$name.zip" >> $env:GITHUB_ENV
 
@@ -58,6 +64,10 @@ jobs:
         run: |
           Expand-Archive $env:ZIP smoke
           Push-Location smoke/pixelbench
+          $manifest = Get-Content release.json -Raw | ConvertFrom-Json
+          if ($manifest.version -ne $env:TAG.Substring(1) -or $manifest.files -notcontains 'scripts/update.mjs') {
+            throw 'release.json is missing or incomplete.'
+          }
           npm ci --omit=dev --no-audit --no-fund
           $env:PIXELBENCH_PORT = '3799'
           $env:PIXELBENCH_STATE = (New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/state").FullName
@@ -79,5 +89,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $flags = @('--generate-notes', '--title', "Pixelbench $env:TAG")
+          # The section of this version in CHANGELOG.md comes first, GitHub's generated notes follow.
+          $version = [regex]::Escape($env:TAG.Substring(1))
+          $section = [regex]::Match((Get-Content CHANGELOG.md -Raw), "(?ms)^## \[$version\][^\n]*\n(.*?)(?=^## \[|^\[[^\]]+\]: |\z)")
+          if ($section.Success) {
+            Set-Content -Encoding utf8NoBOM "$env:RUNNER_TEMP/notes.md" $section.Groups[1].Value.Trim()
+            $flags += @('--notes-file', "$env:RUNNER_TEMP/notes.md")
+          }
           if ($env:TAG.Contains('-')) { $flags += '--prerelease' }
           gh release create $env:TAG $env:ZIP @flags

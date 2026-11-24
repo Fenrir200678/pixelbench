@@ -34,6 +34,9 @@ export const english: Record<string, string> = {
   'Feste Sigma-Kurve der Turbo-Vorlage': 'Fixed sigma schedule from the Turbo workflow',
   '{{model}} · ausgewählte Datei fehlt ({{file}}).': '{{model}} · selected file is missing ({{file}}).',
   'Bitte {{model}} auswählen.': 'Select {{model}}.',
+  '{{model}} fehlt': '{{model}} is missing',
+  'Erwartete Dateien': 'Expected files',
+  Suchpfad: 'Search path',
   '{{node}} läuft': 'Running {{node}}',
   'Prompt verbessern': 'Refine prompt',
   'Prompt wird verbessert …': 'Refining prompt …',
@@ -402,6 +405,11 @@ export const english: Record<string, string> = {
   Vorlage: 'Template',
   'Aktuelles Bild als Vorlage für Img2Img verwenden': 'Use current image as template for img2img',
   'Niedrig bleibt nah an der Vorlage, hoch wird freier.': 'Low stays close to the template, high is freer.',
+  Farbkorrektur: 'Color correction',
+  'Gleicht die Farben des Ergebnisses an die Vorlage an, wie in Forge. 0 aus, 1 voll.':
+    "Matches the result's colors to the template, as in Forge. 0 is off, 1 is full.",
+  'Gleicht die Farben des Ergebnisses an das Bild vor dem Hochskalieren an. 0 aus, 1 voll.':
+    "Matches the result's colors to the image before upscaling. 0 is off, 1 is full.",
   'Aus: Das Bild entsteht nur aus dem Prompt.': 'Off: the image is created from the prompt only.',
   'Seitenverhältnis der Vorlage halten': 'Keep template aspect ratio',
   'Auf die Zielfläche des Profils skalieren': "Scale to the profile's target area",
@@ -515,6 +523,9 @@ export const english: Record<string, string> = {
   'Maske erweitern': 'Grow mask',
   'Rendert jedes Objekt einzeln mit Modell, LoRAs und Seed des Renders. Um 0,4 bleibt das Gesicht ähnlich.':
     'Re-renders each object on its own with the model, LoRAs and seed of the render. Around 0.4 the face stays similar.',
+  'Vergrößert kleine Objekte vor dem Neurendern mit dem Upscale-Modell. Das hält die Vorlage scharf.':
+    'Enlarges small objects with the upscale model before re-rendering. This keeps the template sharp.',
+  'Ohne Modell (weicheres Inpainting)': 'No model (softer inpainting)',
   'Der Detailer braucht ComfyUI mit SAM3 und das Modell „sam3.1_multiplex_fp16.safetensors“ unter „checkpoints“.':
     'The detailer needs ComfyUI with SAM3 and the model “sam3.1_multiplex_fp16.safetensors” under “checkpoints”.',
   'Ohne neuen Render: die gewählte Variante oder das geöffnete Bild nachbessern':
@@ -528,6 +539,7 @@ export const english: Record<string, string> = {
   Sättigung: 'Saturation',
   Farbton: 'Hue',
   Farbtemperatur: 'Temperature',
+  Weichzeichnen: 'Blur',
   Schärfe: 'Sharpness',
   Anwenden: 'Apply',
   'Doppelklick setzt zurück': 'Double-click to reset',

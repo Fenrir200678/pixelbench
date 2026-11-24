@@ -20,6 +20,8 @@ export type Adjustments = {
   hue: number
   /** -100 (cool) … 100 (warm) */
   temperature: number
+  /** Gaussian blur sigma in image pixels, 0 … 10. Softens oversharpened images, the counterpart to sharpness. */
+  blur: number
   /** 0 … 100 */
   sharpness: number
   /** Applied after the other tone settings: first the combined channel, then each color channel. */
@@ -34,6 +36,7 @@ export const neutralAdjustments: Readonly<Adjustments> = {
   saturation: 0,
   hue: 0,
   temperature: 0,
+  blur: 0,
   sharpness: 0,
   levels: { rgb: neutralLevels, r: neutralLevels, g: neutralLevels, b: neutralLevels }
 }
@@ -44,6 +47,7 @@ export const adjustmentLimits: Record<AdjustmentKey, { min: number; max: number;
   saturation: { min: -100, max: 100, step: 1 },
   hue: { min: -180, max: 180, step: 1 },
   temperature: { min: -100, max: 100, step: 1 },
+  blur: { min: 0, max: 10, step: 0.1 },
   sharpness: { min: 0, max: 100, step: 1 }
 }
 
@@ -62,10 +66,30 @@ export function levelValue(l: Levels, v: number) {
   return l.outBlack + x ** (1 / l.gamma) * (l.outWhite - l.outBlack)
 }
 
+/**
+ * Contrast curve on 0 … 1 around mid gray. Positive amounts use an S-curve (normalized sigmoid) that keeps
+ * black and white in place, so shadows and highlights roll off instead of clipping. Negative amounts compress
+ * linearly toward mid gray, reaching flat gray at -100.
+ */
+export function contrastValue(amount: number, x: number) {
+  if (amount < 0) return 0.5 + (x - 0.5) * (1 + amount / 100)
+  if (amount === 0) return x
+  const beta = amount / 10
+  const sigmoid = (t: number) => 1 / (1 + Math.exp(-beta * (t - 0.5)))
+  const low = sigmoid(0)
+  return (sigmoid(x) - low) / (sigmoid(1) - low)
+}
+
+/**
+ * Brightness as a midtone gamma on 0 … 1: black and white stay in place, so highlights and shadows do not clip.
+ * ±100 is a gamma of 2 or 1/2, lifting mid gray to about 180 or lowering it to about 64.
+ */
+export function brightnessValue(amount: number, x: number) {
+  return amount === 0 ? x : x ** (2 ** (-amount / 100))
+}
+
 // Per-channel tone curve: temperature, brightness and contrast, then the levels.
 function toneTables(a: Adjustments) {
-  const shift = a.brightness * 1.275
-  const factor = ((100 + a.contrast) / 100) ** 2
   const warmth = a.temperature * 0.3
   const { rgb } = a.levels
   return (['r', 'g', 'b'] as const).map((channel, index) => {
@@ -73,7 +97,8 @@ function toneTables(a: Adjustments) {
     const own = a.levels[channel]
     const table = new Uint8ClampedArray(256)
     for (let v = 0; v < 256; v++) {
-      const toned = Math.min(255, Math.max(0, (v + offset + shift - 127.5) * factor + 127.5))
+      const warmed = Math.min(1, Math.max(0, (v + offset) / 255))
+      const toned = contrastValue(a.contrast, brightnessValue(a.brightness, warmed)) * 255
       table[v] = levelValue(own, levelValue(rgb, toned))
     }
     return table
@@ -187,8 +212,117 @@ function sharpen(pixels: Uint8ClampedArray, w: number, h: number, sharpness: num
   return result
 }
 
-/** Applies the adjustments to straight RGBA pixels and returns a new array. Alpha stays as it is. */
-export function adjust(pixels: Uint8ClampedArray, w: number, h: number, a: Adjustments) {
+// Gaussian blur of the color channels, separable, with clamped edges. Alpha stays.
+type Line = { count: number; length: number; step: number; start: (line: number) => number }
+
+const rows = (w: number, h: number): Line => ({ count: h, length: w, step: 4, start: (y) => y * w * 4 })
+const columns = (w: number, h: number): Line => ({ count: w, length: h, step: w * 4, start: (x) => x * 4 })
+
+function gaussianKernel(sigma: number) {
+  const radius = Math.max(1, Math.ceil(sigma * 3))
+  const kernel = new Float32Array(radius * 2 + 1)
+  let sum = 0
+  for (let k = -radius; k <= radius; k++) sum += kernel[k + radius] = Math.exp(-(k * k) / (2 * sigma * sigma))
+  return kernel.map((weight) => weight / sum)
+}
+
+// Copies one line's color channels, interleaved, into buf with radius edge pixels repeated on both sides.
+function padLine(source: Float32Array, line: Line, base: number, radius: number, buf: Float32Array) {
+  const last = line.length - 1
+  for (let i = -radius; i <= last + radius; i++) {
+    const from = base + Math.min(last, Math.max(0, i)) * line.step,
+      to = (i + radius) * 3
+    buf[to] = source[from]
+    buf[to + 1] = source[from + 1]
+    buf[to + 2] = source[from + 2]
+  }
+}
+
+function convolve(source: Float32Array, line: Line, kernel: Float32Array) {
+  const result = new Float32Array(source)
+  const radius = (kernel.length - 1) / 2
+  const buf = new Float32Array((line.length + radius * 2) * 3)
+  for (let l = 0; l < line.count; l++) {
+    const base = line.start(l)
+    padLine(source, line, base, radius, buf)
+    for (let i = 0; i < line.length; i++) {
+      let r = 0,
+        g = 0,
+        b = 0
+      for (let k = 0, p = i * 3; k < kernel.length; k++, p += 3) {
+        const weight = kernel[k]
+        r += weight * buf[p]
+        g += weight * buf[p + 1]
+        b += weight * buf[p + 2]
+      }
+      const out = base + i * line.step
+      result[out] = r
+      result[out + 1] = g
+      result[out + 2] = b
+    }
+  }
+  return result
+}
+
+// Box filter with a running sum, so its cost does not grow with the radius.
+function box(source: Float32Array, line: Line, radius: number) {
+  const result = new Float32Array(source)
+  const size = radius * 2 + 1
+  const buf = new Float32Array((line.length + radius * 2 + 1) * 3)
+  for (let l = 0; l < line.count; l++) {
+    const base = line.start(l)
+    padLine(source, line, base, radius, buf)
+    let r = 0,
+      g = 0,
+      b = 0
+    for (let p = 0; p < size * 3; p += 3) {
+      r += buf[p]
+      g += buf[p + 1]
+      b += buf[p + 2]
+    }
+    for (let i = 0; i < line.length; i++) {
+      const out = base + i * line.step,
+        add = (i + size) * 3,
+        drop = i * 3
+      result[out] = r / size
+      result[out + 1] = g / size
+      result[out + 2] = b / size
+      r += buf[add] - buf[drop]
+      g += buf[add + 1] - buf[drop + 1]
+      b += buf[add + 2] - buf[drop + 2]
+    }
+  }
+  return result
+}
+
+// Radii of three box filters that together approximate a Gaussian of this sigma.
+function boxRadii(sigma: number, passes = 3) {
+  let lower = Math.floor(Math.sqrt((12 * sigma * sigma) / passes + 1))
+  if (lower % 2 === 0) lower--
+  const lowerCount = Math.round(
+    (12 * sigma * sigma - passes * lower * lower - 4 * passes * lower - 3 * passes) / (-4 * lower - 4)
+  )
+  return Array.from({ length: passes }, (_, i) => ((i < lowerCount ? lower : lower + 2) - 1) / 2)
+}
+
+// Exact kernel for small sigmas, three box passes for large ones.
+function gaussianBlur(pixels: Uint8ClampedArray, w: number, h: number, sigma: number) {
+  if (sigma <= 0) return new Uint8ClampedArray(pixels)
+  let data = Float32Array.from(pixels)
+  if (sigma <= 2) {
+    const kernel = gaussianKernel(sigma)
+    data = convolve(convolve(data, rows(w, h), kernel), columns(w, h), kernel)
+  } else {
+    for (const radius of boxRadii(sigma)) data = box(box(data, rows(w, h), radius), columns(w, h), radius)
+  }
+  return Uint8ClampedArray.from(data)
+}
+
+/**
+ * Applies the adjustments to straight RGBA pixels and returns a new array. Alpha stays as it is.
+ * scale is the size of these pixels relative to the image, so a downscaled preview blurs alike.
+ */
+export function adjust(pixels: Uint8ClampedArray, w: number, h: number, a: Adjustments, scale = 1) {
   if (isNeutral(a)) return new Uint8ClampedArray(pixels)
   const [red, green, blue] = toneTables(a)
   const colored = a.saturation !== 0 || a.hue !== 0
@@ -209,13 +343,14 @@ export function adjust(pixels: Uint8ClampedArray, w: number, h: number, a: Adjus
     }
     result[i + 3] = pixels[i + 3]
   }
+  if (a.blur > 0) result = gaussianBlur(result, w, h, a.blur * scale)
   if (a.sharpness > 0) result = sharpen(result, w, h, a.sharpness)
   return result
 }
 
 /** A new frame with the adjustments applied, only inside mask (w×h alpha) when one is given. */
-export function adjustFrame(frame: Frame, a: Adjustments, mask?: Uint8ClampedArray): Frame {
-  const adjusted = adjust(frame.pixels, frame.w, frame.h, a)
+export function adjustFrame(frame: Frame, a: Adjustments, mask?: Uint8ClampedArray, scale = 1): Frame {
+  const adjusted = adjust(frame.pixels, frame.w, frame.h, a, scale)
   if (mask) {
     // Alpha is unchanged by adjust, so a soft mask is a plain mix of the color channels.
     for (let i = 0; i < mask.length; i++) {

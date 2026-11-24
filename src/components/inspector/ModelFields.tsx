@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { isMainModel, modelKey } from '../../editor/models.js'
+import { isMainModel, modelKey, type MissingModel, type Problem } from '../../editor/models.js'
 import { Combobox } from '../../ui/Combobox.js'
 import type { Workflow } from '../../hooks/useWorkflow.js'
 import { appMessage } from '../../i18n/appMessages.js'
@@ -8,17 +8,36 @@ import type { ModelSlot, Profile, Status } from '../../types/api.js'
 /** Why the current profile cannot run yet. The profile picker itself lives in the top bar. */
 export function ProfileNote({ workflow, status }: { workflow: Workflow; status?: Status }) {
   const { profile, problems } = workflow
-  const warnings = profile ? [...profile.blockers.map((blocker) => appMessage(blocker)), ...problems] : []
-  const reason =
-    status && (status.mode === 'external' || status.state === 'error')
-      ? appMessage(status.message)
-      : status?.state === 'ready'
-        ? warnings.join('\n\n')
-        : ''
+  const warnings: Problem[] = profile ? [...profile.blockers.map((blocker) => appMessage(blocker)), ...problems] : []
+  const statusText =
+    status && (status.mode === 'external' || status.state === 'error') ? appMessage(status.message) : ''
+  const items = statusText ? [statusText] : status?.state === 'ready' ? warnings : []
   return (
-    <p id="profile-note" className="field-note warn profile-note" hidden={!reason}>
-      {reason}
-    </p>
+    <div id="profile-note" className="field-note warn profile-note" hidden={!items.length}>
+      {items.map((item, index) =>
+        typeof item === 'string' ? <p key={index}>{item}</p> : <MissingModelNote key={index} {...item} />
+      )}
+    </div>
+  )
+}
+
+function MissingModelNote({ model, files, paths, note }: MissingModel) {
+  const { t } = useTranslation()
+  return (
+    <div className="model-missing">
+      <p className="model-missing-title">{t('{{model}} fehlt', { model })}</p>
+      <ul className="model-missing-files" aria-label={t('Erwartete Dateien')}>
+        {files.map((file) => (
+          <li key={file}>{file}</li>
+        ))}
+      </ul>
+      {(paths.length > 0 || note) && (
+        <details className="model-missing-paths">
+          <summary>{t('Suchpfad')}</summary>
+          {note ? <p>{note}</p> : paths.map((path) => <code key={path}>{path}</code>)}
+        </details>
+      )}
+    </div>
   )
 }
 

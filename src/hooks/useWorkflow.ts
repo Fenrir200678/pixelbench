@@ -30,6 +30,8 @@ type Prefs = {
   templateW: number
   templateH: number
   strength: number
+  // Img2img color correction toward the template, as in Forge. 0 is off.
+  colorMatch: number
   // Seed variance strength in Erstellen, where the profile and ComfyUI support it. 0 is off.
   variance: number
 }
@@ -49,9 +51,17 @@ export type HiresSettings = {
   strength: number
   steps: number
   tiled: boolean
+  colorMatch: number
 }
 const initialUpscale: UpscaleSettings = { scale: initialScale }
-const initialHires: HiresSettings = { on: false, scale: initialScale, strength: 0.35, steps: 0, tiled: false }
+const initialHires: HiresSettings = {
+  on: false,
+  scale: initialScale,
+  strength: 0.35,
+  steps: 0,
+  tiled: false,
+  colorMatch: 0
+}
 const modelsKey = 'pixelbench-models-v1'
 const preferencesKey = 'pixelbench-preferences-v1'
 const profileChoicesKey = 'pixelbench-profile-choices-v1'
@@ -74,6 +84,7 @@ const initialPrefs: Prefs = {
   templateW: 1024,
   templateH: 1024,
   strength: 0.6,
+  colorMatch: 0,
   variance: 0
 }
 
@@ -166,6 +177,7 @@ export function useWorkflow(
       : (preferredUpscaler ?? 'lanczos')
   const hiresUpscaler = hires.upscaler && upscalers.includes(hires.upscaler) ? hires.upscaler : preferredUpscaler
   const hiresReady = status?.tiledUpscale !== false
+  const colorMatchAvailable = Boolean(status?.colorMatch)
   const upscaling = tool === 'upscale'
   // Hires fix needs a profile that renders from a latent and the tiled upscale nodes.
   const hiresAvailable = tool === 'create' && Boolean(profile?.img2img && profile.tools.includes('upscale'))
@@ -256,7 +268,8 @@ export function useWorkflow(
     const size = scaledSize(source, hires.scale)
     const tiled = hires.tiled
     if (!hiresUpscaler || (tiled && !hiresReady)) return undefined
-    return { upscaler: hiresUpscaler, strength: hires.strength, steps: hires.steps, size, tiled }
+    const colorMatch = colorMatchAvailable ? Number(hires.colorMatch) || 0 : 0
+    return { upscaler: hiresUpscaler, strength: hires.strength, steps: hires.steps, size, tiled, colorMatch }
   }
 
   return {
@@ -270,6 +283,7 @@ export function useWorkflow(
     hiresLarge: Boolean(profile && hiresSize && !hires.tiled && exceedsProfile(profile.sizes, hiresSize)),
     hiresRunnable: !hiresActive || Boolean(hiresUpscaler && (!hiresTiledNow || hiresReady)),
     hiresReady,
+    colorMatchAvailable,
     varianceAvailable: tool === 'create' && Boolean(profile?.variance && status?.seedVariance),
     hiresFor,
     updateUpscale: storeUpscale,

@@ -12,10 +12,12 @@ const rows: { key: AdjustmentKey; label: string }[] = [
   { key: 'saturation', label: 'Sättigung' },
   { key: 'hue', label: 'Farbton' },
   { key: 'temperature', label: 'Farbtemperatur' },
+  { key: 'blur', label: 'Weichzeichnen' },
   { key: 'sharpness', label: 'Schärfe' }
 ]
 
-const format = (key: AdjustmentKey, value: number) => (key === 'hue' ? value + '°' : (value > 0 ? '+' : '') + value)
+const format = (key: AdjustmentKey, value: number) =>
+  key === 'hue' ? value + '°' : key === 'blur' ? value.toFixed(1) + ' px' : (value > 0 ? '+' : '') + value
 
 /** Floating panel over the canvas with the image adjustments of the open image. */
 export function AdjustPanel({ adjustments }: { adjustments: AdjustmentsState }) {

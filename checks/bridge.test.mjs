@@ -146,6 +146,16 @@ test('text-to-image profiles set the latent size and upload no input image', () 
     }
     assert.equal(result.strength, 0.4)
     assert.throws(() => buildGraph(profile, { ...template, strength: 0 }, 'job'))
+    assert.equal(result.graph.colorMatch, undefined)
+
+    // Color correction: the decoded result is matched to the template before the preview.
+    const matched = buildGraph(profile, { ...template, colorMatch: 0.8 }, 'job')
+    assert.deepEqual(matched.graph.colorMatch.inputs.image_target, result.graph.preview.inputs.images)
+    assert.deepEqual(matched.graph.colorMatch.inputs.image_ref, ['template', 0])
+    assert.equal(matched.graph.colorMatch.inputs.strength, 0.8)
+    assert.deepEqual(matched.graph.preview.inputs.images, ['colorMatch', 0])
+    assert.equal(matched.colorMatch, 0.8)
+    assert.throws(() => buildGraph(profile, { ...template, colorMatch: 2 }, 'job'), /color correction/)
 
     // Detailer: a mask limits the new noise to the object, the sampler reads the masked latent.
     const masked = buildGraph(profile, { ...template, mask: 'png' }, 'job')
@@ -160,6 +170,22 @@ test('text-to-image profiles set the latent size and upload no input image', () 
       () => buildGraph(profile, { tool: 'create', prompt: 'x', seed: 7, size: [1216, 832], mask: 'png' }, 'job'),
       /template image/
     )
+
+    // Detailer with an upscaler: the small crop is enlarged by the model, then stretched to the size and encoded.
+    const crop = { ...template, image: png(304, 208), upscaler: '4xNomos8kSC.safetensors' }
+    const upscaleProfile = { ...profile, upscalerCatalog: [crop.upscaler] }
+    const enlarged = buildGraph(upscaleProfile, crop, 'job')
+    assert.equal(enlarged.graph.templateUpscaleModel.inputs.model_name, crop.upscaler)
+    assert.deepEqual(enlarged.graph.templateUpscaled.inputs.image, ['template', 0])
+    assert.deepEqual(
+      [enlarged.graph.templateScaled.inputs.width, enlarged.graph.templateScaled.inputs.height],
+      [1216, 832]
+    )
+    assert.deepEqual(enlarged.graph.templateLatent.inputs.pixels, ['templateScaled', 0])
+    assert.equal(enlarged.files[0].size, undefined)
+    assert.equal(enlarged.upscaler, crop.upscaler)
+    assert.throws(() => buildGraph(profile, crop, 'job'), /not available/)
+    assert.throws(() => buildGraph(upscaleProfile, { ...crop, image: png(1600, 900) }, 'job'), /exceeds/)
 
     // Hires fix on an existing image: tiles with the upscale model, then Lanczos to the exact size.
     const upscaler = '4x-UltraSharpV2.safetensors'
@@ -186,6 +212,12 @@ test('text-to-image profiles set the latent size and upload no input image', () 
     }
     const fixed = buildGraph(hiresProfile, hires, 'job')
     checkHires(fixed.graph, 9)
+    assert.equal(fixed.graph.colorMatch, undefined)
+    const corrected = buildGraph(hiresProfile, { ...hires, hires: { ...settings, colorMatch: 1 } }, 'job').graph
+    assert.deepEqual(corrected.colorMatch.inputs.image_target, ['upscaleScale', 0])
+    assert.deepEqual(corrected.colorMatch.inputs.image_ref, ['upscaleSource', 0])
+    assert.deepEqual(corrected.preview.inputs.images, ['colorMatch', 0])
+    assert.ok(resolves(corrected))
     assert.equal(fixed.graph.sample, undefined)
     assert.equal(fixed.graph.latent, undefined)
     assert.deepEqual(fixed.graph.upscale.inputs.image, ['upscaleSource', 0])

@@ -129,7 +129,17 @@
   background: var(--status-error);
 }
 .settings-icon {
+  position: relative;
   color: var(--text-tertiary);
+}
+.topbar-update-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-round);
+  background: var(--accent);
 }
 #open,
 #new-image,

@@ -40,6 +40,7 @@ function sameRender(
     request.size[1] === inputs.size[1] &&
     variant.prepared.source === inputs.source &&
     (!inputs.source || request.strength === inputs.strength) &&
+    (request.colorMatch ?? 0) === (inputs.colorMatch ?? 0) &&
     Object.entries(inputs.parameters).every(([key, value]) => request.parameters[key] === value) &&
     Object.entries(inputs.models).every(([key, value]) => request.models?.[key] === value) &&
     same(request.loras, inputs.loras?.length ? inputs.loras : undefined)
@@ -174,7 +175,7 @@ export function useEditorGeneration({
   function detailStages(base: Omit<DetailBase, 'profile'> | undefined, source?: Frame) {
     const { detector, settings } = detailer
     if (!profile || !detector || !base) return []
-    return [detailStage(settings, { ...base, profile }, detector, source)]
+    return [detailStage(settings, { ...base, profile, upscaler: detailer.upscaler }, detector, source)]
   }
   const currentBase = () =>
     profile && {
@@ -238,6 +239,7 @@ export function useEditorGeneration({
       const inputs = {
         source: template,
         strength: workflow.prefs.strength,
+        colorMatch: template && workflow.colorMatchAvailable ? Number(workflow.prefs.colorMatch) || 0 : 0,
         crop: measurement.crop,
         target: measurement.target,
         size: measurement.effective,

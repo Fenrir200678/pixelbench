@@ -163,7 +163,7 @@ try {
 
   await page.locator('[data-tool=edit]').click()
   await pick(locator('profile'), 'qwen21')
-  assert.match(await locator('profile-note').textContent(), /Qwen-Image 2.1 Diffusionsmodell fehlt.*Suchpfad:/)
+  assert.match(await locator('profile-note').textContent(), /Qwen-Image 2.1 Diffusionsmodell fehlt.*Suchpfad/)
   assert.equal(await locator('generate').isDisabled(), true)
   await pick(locator('profile'), 'qwen21-turbo')
   const diffusion = page.locator('[data-model="unet.unet_name"]')

@@ -98,6 +98,21 @@ function TemplateFields({
         disabled={!on}
         onChange={(strength) => workflow.updatePrefs({ strength })}
       />
+      {workflow.colorMatchAvailable && (
+        <NumberField
+          id="template-color-match"
+          label={t('Farbkorrektur')}
+          title={t('Gleicht die Farben des Ergebnisses an die Vorlage an, wie in Forge. 0 aus, 1 voll.')}
+          value={Number(workflow.prefs.colorMatch) || 0}
+          min={0}
+          max={1}
+          step={0.05}
+          row
+          slider
+          disabled={!on}
+          onChange={(colorMatch) => workflow.updatePrefs({ colorMatch })}
+        />
+      )}
       <p className="field-note">
         {on
           ? t('Niedrig bleibt nah an der Vorlage, hoch wird freier.')
