@@ -55,7 +55,7 @@ export const english: Record<string, string> = {
   'Export ': 'Export ',
   'JPG konnte nicht erzeugt werden.': 'Could not create JPG.',
   'Variante als Arbeitsbild übernehmen': 'Apply variant as working image',
-  'Alle Vorschauen löschen':'Delete all variants',
+  'Alle Vorschauen löschen': 'Delete all variants',
   'Alle Vorschauen löschen?': 'Delete all variants?',
   'Rechts gedrückt halten zum Radieren': 'Hold right mouse button to erase',
   'Breite der Seitenleiste ändern': 'Resize sidebar width',
@@ -306,7 +306,8 @@ export const english: Record<string, string> = {
   Erweitern: 'Outpaint',
   'Bild erstellen': 'Create image',
   Erstellen: 'Create',
-  'Wie soll sich das Bild im neuen Bereich fortsetzen?': 'How should the image continue into the new area?',
+  'Wie soll sich das Bild im neuen Bereich fortsetzen? Oder leer lassen und „Prompt verbessern“ nutzen, um eine Beschreibung erzeugen zu lassen.':
+    'How should the image continue into the new area? Or leave it empty and use Refine prompt to generate a description.',
   'Zielrahmen ziehen': 'Drag the target frame',
   'Diese Variante basiert auf einem früheren Arbeitsstand. Den aktuellen Stand durch die Vorschau ersetzen?':
     'This variant is based on an earlier version. Replace the current version with the preview?',

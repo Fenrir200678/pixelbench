@@ -123,6 +123,7 @@ export function Inspector({
           value={workflow.prompt}
           onChange={workflow.setPrompt}
           canRefine={canRefine}
+          refineEmpty={tool === 'outpaint'}
           refining={refining}
           onRefine={onRefine && ((value) => onRefine(value, tool, profile?.id, refinementModel || undefined))}
           notice={notice}

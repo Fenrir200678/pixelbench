@@ -76,7 +76,8 @@ export const tools = {
     label: 'Erweitern',
     key: '4',
     glyph: 'expand',
-    prompt: 'Wie soll sich das Bild im neuen Bereich fortsetzen?',
+    prompt:
+      'Wie soll sich das Bild im neuen Bereich fortsetzen? Oder leer lassen und „Prompt verbessern“ nutzen, um eine Beschreibung erzeugen zu lassen.',
     profiles: ['sdxl-inpaint', 'flux-fill', 'qwen21-turbo-fun']
   },
   upscale: {

@@ -138,8 +138,13 @@ async function execute(worker, config, job, data, refine) {
       const models = worker.inspected.refinementModels
       const model = data.model ? models.find(({ file }) => file === data.model) : models[0]
       if (!model) throw new Error('The prompt refinement model is unavailable.')
-      graph = refinementGraph(model, data)
+      graph = refinementGraph(model, data, job.id)
       job.models = { 'clip.clip_name': model.file }
+      if (data.image !== undefined) {
+        if (job.cancel) return
+        await mkdir(folder)
+        await writeFile(join(folder, 'image.png'), pngPayload(data.image), { flag: 'wx' })
+      }
     } else {
       let prepared, label
       if (detect) {
@@ -292,7 +297,7 @@ async function execute(worker, config, job, data, refine) {
     if (worker.onOutput === progress?.output) worker.onOutput = undefined
     progress?.endPhase()
     try {
-      if (!refine) await rm(folder, { recursive: true, force: true })
+      await rm(folder, { recursive: true, force: true })
       if (existingPreviews) await clearPreviews(worker, existingPreviews)
     } catch (error) {
       failure = 'Could not remove all temporary job files. ' + error.message

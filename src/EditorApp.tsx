@@ -12,6 +12,7 @@ import { BackendStatus, Topbar } from './components/Topbar.js'
 import { CanvasToolbar, ZoomControls } from './components/canvas/CanvasToolbar.js'
 import { VramMeter } from './components/VramMeter.js'
 import { VariantActions, VariantStrip, VariantsToggle } from './components/variants/VariantStrip.js'
+import { outpaintSides, referenceImage } from './editor/generation.js'
 import { fitView, sizeLabel, suggestExpansion } from './editor/geometry.js'
 import { useAdjustments } from './hooks/useAdjustments.js'
 import { useBridge } from './hooks/useBridge.js'
@@ -172,8 +173,18 @@ export function EditorApp() {
           ' px' +
           (workflow.hiresSize ? ' · Hires-Fix ' + sizeLabel(...workflow.hiresSize) + ' px' : '')
         : image && tool === 'outpaint'
-          ? t('Zielrahmen ziehen')
+          ? t('Zielrahmen ziehen') +
+            (measurement ? ' · ' + sizeLabel(measurement.target.w, measurement.target.h) + ' px' : '')
           : undefined
+
+  // Outpaint refinement looks at the image, so it can also write a prompt from an empty field.
+  async function refinePrompt(prompt: string, refineTool: Tool, profile?: string, model?: string) {
+    const vision =
+      refineTool === 'outpaint' && image && measurement
+        ? { image: await referenceImage(image), sides: outpaintSides(image, measurement.target) }
+        : undefined
+    return generation.refine(prompt, refineTool, profile, model, vision?.sides.length ? vision : undefined)
+  }
 
   function selectVariant(index: number) {
     setSourceShown(false)
@@ -581,7 +592,7 @@ export function EditorApp() {
               tool={tool}
               status={status}
               workflow={workflow}
-              onRefine={jobBlocked ? undefined : generation.refine}
+              onRefine={jobBlocked ? undefined : refinePrompt}
               refining={generation.refining}
               onReload={() => void bridge.reload()}
               reloading={bridge.reloading}

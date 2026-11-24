@@ -12,6 +12,7 @@ import { setTimeout as pause } from 'node:timers/promises'
 import { defaults } from '../server/comfy.mjs'
 import { buildGraph, profiles } from '../server/profiles.mjs'
 import { detectionBoxes, detectionGraph, detectionTerms, detectorFile } from '../server/jobs/detection.mjs'
+import { refinementGraph } from '../server/jobs/refinement.mjs'
 
 const qwenGguf = 'QwenImage\\qwen-image-2.1-step90000-Q5_K_M.gguf'
 
@@ -70,6 +71,16 @@ test('Qwen Fun uses edges for edits and a mask for inpainting and outpainting', 
     () => buildGraph(profile, { ...args, tool: 'edit', parameters: { controlStrength: 1.5 } }, 'job'),
     /Invalid value for ControlNet-Stärke/
   )
+})
+
+test('outpaint refinement with an image lets the vision model describe the new area', () => {
+  const model = { file: 'qwen3vl_8b_int8_convrot.safetensors', type: 'qwen_image' }
+  const data = { prompt: '', tool: 'outpaint', image: 'png', sides: ['bottom', 'left'] }
+  const graph = refinementGraph(model, data, 'job')
+  assert.deepEqual(graph.image.inputs, { image: 'job/image.png' })
+  assert.deepEqual(graph.refine.inputs['images.image1'], ['image', 0])
+  assert.equal(graph.refine.inputs.prompt, 'Describe the new area below and to the left of the image.')
+  assert.equal(refinementGraph(model, { prompt: 'a cat', tool: 'outpaint' }, 'job').image, undefined)
 })
 
 test('Qwen 2.1 routes GGUF and safetensors to their respective diffusion loaders', () => {
