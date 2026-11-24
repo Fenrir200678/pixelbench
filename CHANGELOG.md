@@ -2,6 +2,22 @@
 
 All notable changes to Pixelbench. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.3.0-beta.1]
+
+### Added
+
+- Outpainting prompt refinement can now look at the image: the vision model describes only the new area around it, so the extension continues the picture seamlessly.
+- Press **Enter** to apply the shown variant as the working image.
+
+### Changed
+
+- Reworked variant strip with new variant actions, and a tidier canvas toolbar and responsive layout.
+- The variant toggle moved out of the backend console and into the editor. **Shift+D** and the docs now say "variants" instead of "previews".
+
+### Fixed
+
+- Frame records are kept when pixel adjustments are applied, so the frame information stays correct.
+
 ## [0.2.0-beta.1]
 
 > [!IMPORTANT]
@@ -23,5 +39,6 @@ All notable changes to Pixelbench. Versions follow [Semantic Versioning](https:/
 
 First public beta.
 
+[0.3.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.3.0-beta.1
 [0.2.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.1.0-beta.1

@@ -38,6 +38,8 @@ type Actions = {
   setBaseline: () => void
   toggleAdjust: () => void
   toggleCompare: () => void
+  canApply: boolean
+  apply: () => void
   dismiss: () => void
   remove: () => void
   clearVariants: () => void
@@ -134,6 +136,7 @@ export function useShortcuts(actions: Actions) {
     else if (shortcut === canvasKeys.fit) actions.fit()
     else if (shortcut === toggleVariantsKey && actions.hasVariants && !event.repeat) actions.toggleVariants()
     else if (key === 'v') actions.toggleCompare()
+    else if (key === 'enter' && !focusedControl && actions.canApply && !event.repeat) actions.apply()
     else if (key === 'escape') actions.dismiss()
     else if (key === 'delete') actions.remove()
     else if (shortcut === clearVariantsKey && actions.hasVariants && !event.repeat) actions.clearVariants()

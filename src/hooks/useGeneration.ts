@@ -181,13 +181,20 @@ export function useGeneration(
     }
   }
 
-  async function refine(prompt: string, tool: Tool, profile?: string, model?: string) {
+  // vision: an image the model looks at, with the sides an outpaint extends. The prompt may then be empty.
+  async function refine(
+    prompt: string,
+    tool: Tool,
+    profile?: string,
+    model?: string,
+    vision?: { image: string; sides: string[] }
+  ) {
     if (task.current) return
     const active = (task.current = { cancel: false } as Task)
     setRefining(true)
     setProgress({ message: 'Eingaben vorbereiten', progress: 0 })
     try {
-      const submitted = await submit(active, 'refine-prompt?background=1', { prompt, tool, profile, model })
+      const submitted = await submit(active, 'refine-prompt?background=1', { prompt, tool, profile, model, ...vision })
       if (submitted) {
         const job = await follow(active, submitted)
         if (!active.cancel && job.stage === 'complete') return job.prompt

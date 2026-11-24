@@ -14,6 +14,7 @@ export function PromptFields({
   value,
   onChange,
   canRefine,
+  refineEmpty,
   refining,
   onRefine,
   notice,
@@ -37,6 +38,8 @@ export function PromptFields({
   value: string
   onChange: (value: string) => void
   canRefine: boolean
+  /** The refinement can write a prompt from an empty field. */
+  refineEmpty?: boolean
   refining: boolean
   onRefine?: (value: string) => Promise<string | undefined>
   notice: Notice
@@ -215,7 +218,7 @@ export function PromptFields({
               className="quiet compact"
               icon="edit"
               aria-busy={refining}
-              disabled={refining || !onRefine || !value.trim()}
+              disabled={refining || !onRefine || (!value.trim() && !refineEmpty)}
               onClick={refine}
             >
               {t(refining ? 'Prompt wird verbessert …' : 'Prompt verbessern')}

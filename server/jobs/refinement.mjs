@@ -69,7 +69,43 @@ const refinementByTool = {
     'Follow explicit continuation directions closely and keep existing scene elements consistent.'
 }
 
-export function refinementGraph({ file, type }, { prompt, tool, profile }) {
+const areas = { top: 'above', bottom: 'below', left: 'to the left of', right: 'to the right of' }
+const list = (items) => (items.length > 1 ? items.slice(0, -1).join(', ') + ' and ' + items.at(-1) : items[0])
+
+// Outpainting with an image: the vision model describes the new area from what the image shows.
+function visionGraph({ file, type }, { prompt, sides }, jobId) {
+  const where = list(sides.map((side) => areas[side])) + ' the image'
+  return {
+    clip: { class_type: 'CLIPLoader', inputs: { clip_name: file, type, device: 'default' } },
+    image: { class_type: 'LoadImage', inputs: { image: jobId + '/image.png' } },
+    refine: {
+      class_type: 'TextGenerateV2',
+      inputs: {
+        clip: ['clip', 0],
+        'images.image1': ['image', 0],
+        prompt: prompt.trim() || 'Describe the new area ' + where + '.',
+        system_prompt:
+          'You write prompts for an image outpainting model. The attached image will be extended into a new area ' +
+          where +
+          '. Describe only what should appear in that new area so that it continues the image seamlessly: ' +
+          'first the parts of cut-off subjects and objects that continue there, then the ground, background or sky around them. ' +
+          'Briefly name the medium, style, lighting and color palette of the image. ' +
+          'Do not describe what is only visible in the existing image and do not add new main subjects. ' +
+          'If the user asks for specific content, include it. ' +
+          'Write one or two concise English sentences. Return only the prompt, without Markdown, explanations or alternatives.',
+        max_length: 256,
+        sampling_mode: 'off',
+        thinking: false
+      }
+    },
+    preview: { class_type: 'PreviewAny', inputs: { source: ['refine', 0] } }
+  }
+}
+
+export function refinementGraph(model, data, jobId) {
+  if (data.image !== undefined) return visionGraph(model, data, jobId)
+  const { file, type } = model
+  const { prompt, tool, profile } = data
   const instruction = (profile && refinementPresets[tool][profile]) || fallbackInstructions[tool]
   return {
     clip: { class_type: 'CLIPLoader', inputs: { clip_name: file, type, device: 'default' } },

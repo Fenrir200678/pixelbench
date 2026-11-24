@@ -8,6 +8,17 @@ const sessions = new Map()
 const maxSessions = 64
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
+const sides = ['top', 'bottom', 'left', 'right']
+// Vision refinement is for outpainting: the image and the sides it extends.
+const validVision = ({ tool, image, sides: extended }) =>
+  tool === 'outpaint' &&
+  typeof image === 'string' &&
+  image.length > 0 &&
+  Array.isArray(extended) &&
+  extended.length > 0 &&
+  extended.length <= 4 &&
+  extended.every((side) => sides.includes(side))
+
 export function createSession(res, worker) {
   const session = randomUUID()
   // Cap the map. Release the session with the oldest activity first.
@@ -44,11 +55,13 @@ export async function handleSession(req, res, url, getBackend) {
   }
   if (req.method === 'POST' && (action === 'jobs' || action === 'refine-prompt') && !id) {
     const refine = action === 'refine-prompt'
-    const data = await readJson(req, refine ? 100_000 : undefined)
+    // A refinement may carry one downscaled image for the vision model.
+    const data = await readJson(req, refine ? 8_000_000 : undefined)
     if (
       refine &&
       (typeof data?.prompt !== 'string' ||
-        !data.prompt.trim() ||
+        (!data.prompt.trim() && data.image === undefined) ||
+        (data.image !== undefined && !validVision(data)) ||
         data.prompt.length > 16000 ||
         (data.model !== undefined && (typeof data.model !== 'string' || !data.model || data.model.length > 4096)) ||
         !['create', 'edit', 'inpaint', 'outpaint', 'upscale'].includes(data.tool) ||

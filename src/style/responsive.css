@@ -13,10 +13,10 @@
   }
 }
 @media (max-width: 950px) {
-  .variant-head .quiet {
+  .canvas-tool-actions .compact {
     font-size: 0;
   }
-  .variant-head .quiet svg {
+  .canvas-tool-actions .compact svg {
     margin: 0;
   }
 }
@@ -39,17 +39,8 @@
   .run-panel {
     padding-inline: var(--space-3);
   }
-  .variant-actions {
+  .canvas-tool-actions {
     gap: var(--space-0-5);
-  }
-  .variant-head h2 {
-    font-size: var(--text-xs);
-  }
-  .variant-head .compact {
-    font-size: 0;
-  }
-  .variant-head .icon {
-    width: var(--control-height-sm);
   }
 }
 @media (max-width: 620px) {

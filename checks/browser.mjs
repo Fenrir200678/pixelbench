@@ -215,7 +215,7 @@ try {
   await page.locator('#compare-state button', { hasText: 'Nachher' }).click()
   assert.equal(await shown(), 'Nachher')
   await page.keyboard.press('v')
-  assert.equal(await locator('variant-counter').textContent(), '1 / 2')
+  assert.equal(await locator('variant-counter').textContent(), '1/2')
   assert.equal(await locator('actual').textContent(), '125 %')
   await locator('console-toggle').click()
   await locator('console-panel').waitFor({ state: 'visible' })

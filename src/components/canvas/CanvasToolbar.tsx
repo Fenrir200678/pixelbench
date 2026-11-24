@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { brushLimits, canvasKeys } from '../../editor/tools.js'
 import type { Tool } from '../../types/editor.js'
@@ -32,6 +33,10 @@ type Props = {
   onClearMask: () => void
   onBrush: (size: number) => void
   onBaseline: () => void
+  /** Variant strip controls shown at the left edge of the bar. */
+  leading?: ReactNode
+  /** Variant actions shown at the right edge of the bar. */
+  actions?: ReactNode
 }
 
 export function CanvasToolbar({
@@ -62,7 +67,9 @@ export function CanvasToolbar({
   onToggleMask,
   onClearMask,
   onBrush,
-  onBaseline
+  onBaseline,
+  leading,
+  actions
 }: Props) {
   const { t } = useTranslation()
   const inpaint = tool === 'inpaint'
@@ -72,6 +79,7 @@ export function CanvasToolbar({
 
   return (
     <div id="canvas-tools" className="canvas-tools" role="group" aria-label={t('Canvas-Leiste')} hidden={!loaded}>
+      <div className="canvas-tool-lead">{leading}</div>
       <div className="canvas-tool-group" role="group" aria-label={t('Canvas-Werkzeuge')}>
         <Button
           id="pan"
@@ -236,6 +244,9 @@ export function CanvasToolbar({
           disabled={!canSetBaseline}
           onClick={onBaseline}
         />
+      </div>
+      <div className="canvas-tool-actions" role="group" aria-label={t('Übernehmen')}>
+        {actions}
       </div>
     </div>
   )

@@ -116,6 +116,26 @@ const requestFields = (inputs: Inputs) => ({
   variance: inputs.variance || undefined
 })
 
+export type Side = 'top' | 'bottom' | 'left' | 'right'
+
+// The sides of the frame that the outpaint target extends.
+export function outpaintSides(frame: Rect, target: Rect): Side[] {
+  const sides: [boolean, Side][] = [
+    [frame.y > target.y, 'top'],
+    [frame.y + frame.h < target.y + target.h, 'bottom'],
+    [frame.x > target.x, 'left'],
+    [frame.x + frame.w < target.x + target.w, 'right']
+  ]
+  return sides.filter(([extended]) => extended).map(([, side]) => side)
+}
+
+// Reference images go to the encoder at most 1024 px on the long edge, on a 32 px grid.
+export function referenceImage(frame: Frame) {
+  const scale = Math.min(1, 1024 / Math.max(frame.w, frame.h))
+  const snap = (n: number) => Math.max(32, Math.round((n * scale) / 32) * 32)
+  return asBase64(resized(surface(frame), snap(frame.w), snap(frame.h)))
+}
+
 export async function prepare(inputs: Inputs): Promise<Prepared> {
   const { crop, target, size, brushMask, drawing, profile, tool } = inputs
   // Text to image has no source pixels. The result replaces the whole target.
@@ -153,7 +173,10 @@ export async function prepare(inputs: Inputs): Promise<Prepared> {
     effectiveMask = featherInward(rawMask, crop.w, crop.h, inputs.edge)
   } else if (tool === 'outpaint') {
     input = outpaintSource(source, target)
-    rawMask = effectiveMask = outpaintMask(source, target, inputs.edge)
+    // The sampler regenerates the whole transition band, so the new content runs through it without a seam.
+    // The soft ramp only blends the result back over the original.
+    effectiveMask = outpaintMask(source, target, inputs.edge)
+    rawMask = effectiveMask.map((value) => (value ? 255 : 0))
   } else {
     input = cropped || drawing ? cropSource(source, crop) : surface(source)
     if (cropped && inputs.edge > 0) effectiveMask = editTransitionMask(source, crop, inputs.edge)
@@ -174,13 +197,7 @@ export async function prepare(inputs: Inputs): Promise<Prepared> {
   }
   const image = asBase64(flattened(input, w, h))
   const mask = rawMask ? asBase64(resized(maskSurface(rawMask, crop.w, crop.h), w, h)) : undefined
-  const references = await Promise.all(
-    (profile.reference ? (inputs.references ?? []) : []).map(async (ref) => {
-      const scale = Math.min(1, 1024 / Math.max(ref.w, ref.h))
-      const snap = (n: number) => Math.max(32, Math.round((n * scale) / 32) * 32)
-      return asBase64(resized(surface(ref), snap(ref.w), snap(ref.h)))
-    })
-  )
+  const references = await Promise.all((profile.reference ? (inputs.references ?? []) : []).map(referenceImage))
   return {
     source,
     target,

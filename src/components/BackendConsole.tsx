@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Panel } from 'react-resizable-panels'
 import { api } from '../api/client.js'
-import { consoleKey, toggleVariantsKey } from '../editor/tools.js'
+import { consoleKey } from '../editor/tools.js'
 import { bridgeLogMessage } from '../i18n/appMessages.js'
 import { Button } from '../ui/Button.js'
 import { ResizableLayout, ResizeHandle } from '../ui/ResizableLayout.js'
@@ -18,13 +18,11 @@ export function Workspace({
   loaded,
   hasVariants,
   variantsCollapsed,
-  onToggleVariants,
   consoleOpen: open,
   onToggleConsole,
   variants,
   backendStatus,
   zoomControls,
-  variantCount,
   children
 }: {
   fileName: string
@@ -33,14 +31,12 @@ export function Workspace({
   loaded: boolean
   hasVariants: boolean
   variantsCollapsed: boolean
-  onToggleVariants: () => void
   consoleOpen: boolean
   onToggleConsole: () => void
   variants: ReactNode
   backendStatus?: ReactNode
   /** Zoom and fit for the open image, shown in the status bar. */
   zoomControls?: ReactNode
-  variantCount: number
   children: ReactNode
 }) {
   const { t } = useTranslation()
@@ -85,21 +81,6 @@ export function Workspace({
           </span>
         </div>
         {loaded && zoomControls}
-        <Button
-          id="variants-toggle"
-          className="quiet compact workspace-panel-toggle"
-          icon="image"
-          aria-label={t('Varianten')}
-          aria-expanded={showVariants}
-          aria-controls={showVariants ? 'variants-panel' : undefined}
-          title={`${t('Varianten')} (${toggleVariantsKey.replace('Shift', t('Umschalt'))})`}
-          aria-keyshortcuts={toggleVariantsKey}
-          disabled={!hasVariants}
-          onClick={onToggleVariants}
-        >
-          <span>{t('Varianten')}</span>
-          {variantCount > 0 && <span className="toggle-count">{variantCount}</span>}
-        </Button>
         <Button
           id="console-toggle"
           className="quiet compact workspace-panel-toggle"

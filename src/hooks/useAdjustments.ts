@@ -13,6 +13,7 @@ import {
   type Levels
 } from '../image/adjust.js'
 import { canvas, context2d, pixelsAtSize } from '../image/canvas.js'
+import { inheritGeneration } from '../editor/frameInfo.js'
 import type { Work } from '../types/editor.js'
 import type { Frame } from '../types/image.js'
 
@@ -114,7 +115,8 @@ export function useAdjustments({ work, mask, commit }: Options) {
 
   function apply() {
     if (!active || !work) return
-    if (!isNeutral(active.values)) commit({ ...work, image: adjustFrame(work.image, active.values, mask) })
+    if (!isNeutral(active.values))
+      commit({ ...work, image: inheritGeneration(work.image, adjustFrame(work.image, active.values, mask)) })
     setSession(undefined)
   }
 
