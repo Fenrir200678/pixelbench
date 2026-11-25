@@ -14,6 +14,7 @@ type Inputs = {
   adoptCreated: (frame: Frame, strokes?: Stroke[]) => void
   resetAfterReplace: () => void
   selectVariant: (index: number) => void
+  showApplied: () => void
   notice: Notice
 }
 
@@ -23,6 +24,7 @@ export function useVariantActions({
   adoptCreated,
   resetAfterReplace,
   selectVariant,
+  showApplied,
   notice
 }: Inputs) {
   const { t } = useTranslation()
@@ -67,7 +69,7 @@ export function useVariantActions({
       sameBounds && !segmented ? mask : undefined
     )
     resetAfterReplace()
-    selectVariant(-1)
+    showApplied()
     if (segmented) notice('Die Segmentierungsmaske liegt unter „Ersetzen“ bereit.', true)
     else notice()
   }
