@@ -137,8 +137,8 @@ export class Viewport {
   }
 
   canMoveBox(point: Point) {
-    const { box, cropFrame, editBox } = this.presentation
-    return Boolean(box && cropFrame && editBox && this.inside(point, box))
+    const { box, editBox } = this.presentation
+    return Boolean(box && editBox && this.inside(point, box))
   }
 
   updateCursor(p?: Point) {

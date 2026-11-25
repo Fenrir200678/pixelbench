@@ -53,7 +53,33 @@ export function sizeOutpaint(image: Rect, margins: Margins, axis: Axis, value: n
   return { left, top, right: w - image.w - left, bottom: h - image.h - top }
 }
 
-export function dragMargins(image: Rect, margins: Margins, handle: Handle, dx: number, dy: number, ratio?: number) {
+// Snaps a frame edge length to the model grid. Lengths at the minimum (the image itself) stay untouched.
+function snapLength(value: number, min: number, grid: number) {
+  if (value <= min) return min
+  const max = Math.floor(maxEdge / grid) * grid
+  return Math.max(min, Math.min(Math.round(value / grid) * grid, max))
+}
+
+export function dragMargins(
+  image: Rect,
+  margins: Margins,
+  handle: Handle | 'move',
+  dx: number,
+  dy: number,
+  ratio?: number,
+  grid = 1
+) {
+  if (handle === 'move') {
+    // Shift the frame while keeping its size; the image must stay inside.
+    const left = clamp(margins.left - snap(dx, grid), 0, margins.left + margins.right)
+    const top = clamp(margins.top - snap(dy, grid), 0, margins.top + margins.bottom)
+    return {
+      left,
+      top,
+      right: margins.left + margins.right - left,
+      bottom: margins.top + margins.bottom - top
+    }
+  }
   if (ratio && (dx || dy)) {
     const target = expandedRect(image, margins)
     const horizontal = handle.includes('w') ? 'left' : 'right'
@@ -62,13 +88,19 @@ export function dragMargins(image: Rect, margins: Margins, handle: Handle, dx: n
     const minH = target.h - margins[vertical]
     const { axis, value } = resizeIntent(handle, dx, dy, target.w, target.h)
     const { w, h } = lockedSize(axis, value, ratio, maxEdge, maxEdge, minW, minH)
-    return { ...margins, [horizontal]: w - minW, [vertical]: h - minH }
+    return {
+      ...margins,
+      [horizontal]: snapLength(w, minW, grid) - minW,
+      [vertical]: snapLength(h, minH, grid) - minH
+    }
   }
   const next = { ...margins }
-  if (handle.includes('w')) next.left = clamp(margins.left - dx, 0, maxEdge - image.w - margins.right)
-  if (handle.includes('e')) next.right = clamp(margins.right + dx, 0, maxEdge - image.w - margins.left)
-  if (handle.includes('n')) next.top = clamp(margins.top - dy, 0, maxEdge - image.h - margins.bottom)
-  if (handle.includes('s')) next.bottom = clamp(margins.bottom + dy, 0, maxEdge - image.h - margins.top)
+  const edge = (margin: number, other: number, length: number) =>
+    snapLength(length + margin, length + other, grid) - length - other
+  if (handle.includes('w')) next.left = edge(margins.left - dx, margins.right, image.w)
+  if (handle.includes('e')) next.right = edge(margins.right + dx, margins.left, image.w)
+  if (handle.includes('n')) next.top = edge(margins.top - dy, margins.bottom, image.h)
+  if (handle.includes('s')) next.bottom = edge(margins.bottom + dy, margins.top, image.h)
   return next
 }
 

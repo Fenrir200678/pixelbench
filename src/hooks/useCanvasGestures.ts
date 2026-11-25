@@ -9,7 +9,7 @@ import type { Frame, Margins, Point, Rect, Stroke } from '../types/image.js'
 type Drag =
   | { kind: 'pan'; last: Point; revealOnClick: boolean }
   | { kind: 'brush'; stroke: Stroke; layer: Mask | Drawing; area: Rect }
-  | { kind: 'frame'; handle: Handle; start: Point; margins: Margins }
+  | { kind: 'frame'; handle: Handle | 'move'; start: Point; margins: Margins }
   | { kind: 'crop'; handle: Handle | 'move'; start: Point; crop: Rect }
 
 type Options = {
@@ -76,7 +76,7 @@ export function useCanvasGestures(viewRef: React.RefObject<Viewport | null>, opt
       action = { kind: 'pan', last: at, revealOnClick }
       view.setPanning(true)
     } else if (tool === 'outpaint' && !brushColor) {
-      const handle = view.handle(at)
+      const handle = view.handle(at) ?? (view.canMoveBox(at) ? 'move' : undefined)
       if (handle) action = { kind: 'frame', handle, start: point, margins: work.margins }
     } else if (frameMode && crop) {
       const handle = view.handle(at) ?? (view.canMoveBox(at) ? 'move' : undefined)
@@ -149,7 +149,7 @@ export function useCanvasGestures(viewRef: React.RefObject<Viewport | null>, opt
     } else if (action.kind === 'frame') {
       const dx = Math.round(point.x - action.start.x),
         dy = Math.round(point.y - action.start.y)
-      const next = dragMargins(image, action.margins, action.handle, dx, dy, frameRatio)
+      const next = dragMargins(image, action.margins, action.handle, dx, dy, frameRatio, grid)
       const { w, h } = expandedRect(image, next)
       if (validSize(w, h)) onMargins(next)
     }
