@@ -276,6 +276,12 @@ export function EditorApp() {
     notice()
   }
 
+  // After Apply the new source stays on the canvas and its variant card is marked, also in Create without a template.
+  function showApplied() {
+    selectVariant(-1)
+    setSourceShown(true)
+  }
+
   // strokes: a detailer segmentation. It continues in Ersetzen, where it is the mask.
   function adoptCreated(frame: Frame, strokes?: Stroke[]) {
     if (
@@ -287,7 +293,7 @@ export function EditorApp() {
       return
     document.adopt(frame, strokes)
     // Optionally continue in Ändern. toolAtImport only affects outpaint imports, so it can stay as it is.
-    selectVariant(-1)
+    showApplied()
     if (strokes?.length) setTool('inpaint')
     else if (continueInEdit) setTool('edit')
     tools.setPan(false)
@@ -309,6 +315,7 @@ export function EditorApp() {
     adoptCreated,
     resetAfterReplace: tools.resetAfterReplace,
     selectVariant,
+    showApplied,
     notice
   })
 
@@ -346,8 +353,21 @@ export function EditorApp() {
     if (adjustments.open) adjustments.cancel()
     else selectVariant(-1)
   }
+  // A document created from a variant goes with the variants, so no old source stays behind as the Img2Img template.
+  // An image opened from a file stays open.
   const clearVariants = () => {
-    if (confirmDiscard(t('Alle Vorschauen löschen?'))) variants.dispatch({ type: 'clear' })
+    const created = document.created
+    if (
+      !confirmDiscard(t(created ? 'Alle Vorschauen und das erstellte Quellbild löschen?' : 'Alle Vorschauen löschen?'))
+    )
+      return
+    selectVariant(-1)
+    variants.dispatch({ type: 'clear' })
+    if (!created) return
+    document.close(true)
+    workflow.toggleTemplate(false)
+    chooseTool('create')
+    notice()
   }
   useShortcuts({
     tool,

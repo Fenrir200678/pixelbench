@@ -289,7 +289,7 @@ export function VariantStrip({
   const activeCard = useRef<HTMLButtonElement>(null)
   useLayoutEffect(() => {
     activeCard.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [selected, items])
+  }, [selected, items, source?.frame])
   const strip = useRef<HTMLDivElement>(null)
   const rendering = Boolean(pending)
   useLayoutEffect(() => {
@@ -307,10 +307,10 @@ export function VariantStrip({
             key={item.id}
             item={item}
             index={i}
-            selected={i === index}
+            selected={i === index || (index < 0 && Boolean(source?.shown) && item.frame === source?.frame)}
             baseline={baseline === item.frame}
             status={status}
-            buttonRef={i === index ? activeCard : undefined}
+            buttonRef={i === index || (index < 0 && item.frame === source?.frame) ? activeCard : undefined}
             onSelect={onSelect}
           />
         ))}

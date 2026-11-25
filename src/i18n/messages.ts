@@ -59,6 +59,7 @@ export const english: Record<string, string> = {
   'Variante als Arbeitsbild übernehmen': 'Apply variant as working image',
   'Alle Vorschauen löschen': 'Delete all variants',
   'Alle Vorschauen löschen?': 'Delete all variants?',
+  'Alle Vorschauen und das erstellte Quellbild löschen?': 'Delete all variants and the created source image?',
   'Rechts gedrückt halten zum Radieren': 'Hold right mouse button to erase',
   'Breite der Seitenleiste ändern': 'Resize sidebar width',
   'Höhe der Variantenleiste ändern': 'Resize variant strip height',

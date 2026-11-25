@@ -20,6 +20,8 @@ type DocumentState = {
   fileName: string
   // Generation data of the opened file, such as Forge parameters or a ComfyUI graph.
   info?: GenerationInfo
+  // True when the document was created from a variant and not opened from a file.
+  created?: boolean
   mask?: Mask
   drawing?: Drawing
   past: Work[]
@@ -45,7 +47,8 @@ function reducer(state: DocumentState, change: Change): DocumentState {
         saved: change.saved === false ? undefined : change.work.image,
         mask: change.mask,
         fileName: change.fileName,
-        info: change.info
+        info: change.info,
+        created: change.saved === false
       }
     case 'commit': {
       if (!state.work) return state
@@ -196,8 +199,13 @@ export function useDocument(notice: Notice, onOpen: (previous: boolean) => void)
   }
 
   // Closes the document for a new image. Returns false when the user keeps unexported changes.
-  function close() {
-    if (dirty && !confirmDiscard(t('Übernommene Änderungen wurden noch nicht exportiert. Bearbeitung verwerfen?')))
+  // confirmed: the caller already asked the user.
+  function close(confirmed = false) {
+    if (
+      !confirmed &&
+      dirty &&
+      !confirmDiscard(t('Übernommene Änderungen wurden noch nicht exportiert. Bearbeitung verwerfen?'))
+    )
       return false
     importVersion.current++
     setImporting(false)
@@ -220,6 +228,7 @@ export function useDocument(notice: Notice, onOpen: (previous: boolean) => void)
     fileName,
     info,
     dirty,
+    created: Boolean(state.created),
     importing,
     exporting,
     exportFormat,
