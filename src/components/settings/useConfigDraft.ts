@@ -12,7 +12,8 @@ export const categories = [
   'loras',
   'controlnet',
   'model_patches',
-  'upscale_models'
+  'upscale_models',
+  'background_removal'
 ]
 
 const withDefaults = (config: Config): Config => ({

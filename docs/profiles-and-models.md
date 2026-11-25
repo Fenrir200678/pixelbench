@@ -10,7 +10,7 @@ A profile is a JSON file in `profiles/`. Its API workflow graph is in `workflows
 | Edit      | Qwen-Image 2.1, Qwen-Image 2.1 Turbo, FLUX.2 [klein] 4B Edit, Krea 2 Turbo Edit, Qwen-Image 2.1 Turbo · Fun ControlNet                                    |
 | Inpaint   | SDXL Inpainting, FLUX.1 Fill, Krea 2 Turbo Inpainting, Krea 2 Turbo · LanPaint, MOSS-Image Turbo Inpainting, MOSS-Image Turbo · LanPaint, Qwen-Image 2.1 Turbo · Fun ControlNet |
 | Outpaint  | SDXL Inpainting, FLUX.1 Fill, Qwen-Image 2.1 Turbo · Fun ControlNet                                                                                       |
-| Extras    | Upscaler only                                                                                                                                             |
+| Extras    | Upscaler only, Remove background · BiRefNet                                                                                                               |
 
 FLUX.2 [klein] 4B Edit is an edit workflow, so outpainting is not available in it. Pick a profile under **Workflow profile** in the inspector. The inspector shows the searched folders for a profile and lists missing files.
 
@@ -107,6 +107,10 @@ Forge's `[word]` is converted to `(word:0.91)` when you take over generation dat
 ## Upscale models and the hires fix
 
 Upscale models belong under `upscale_models`, `ESRGAN` or `RealESRGAN` in a model root folder. See [Editor and modes](editor.md#extras). The tiled hires fix needs [Ultimate SD Upscale](https://github.com/ssitu/ComfyUI_UltimateSDUpscale). Tiles have the profile's target size, with a Chess pattern and 64 px overlap. Profiles with a KSampler use `UltimateSDUpscale`, and Qwen-Image 2.1 Turbo with its fixed sigma schedule uses `UltimateSDUpscaleGuider`.
+
+## Background removal
+
+The BiRefNet model `birefnet.safetensors` from [Comfy-Org/BiRefNet](https://huggingface.co/Comfy-Org/BiRefNet/tree/main/background_removal) belongs under `background_removal` in a model root folder. ComfyUI 0.43 or later reads it with its core nodes, so no custom nodes are needed. See [Editor and modes](editor.md#extras).
 
 ## Custom nodes are installed for you
 

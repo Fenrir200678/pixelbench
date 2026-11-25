@@ -58,6 +58,8 @@ export type Hires = {
   tiled: boolean
   colorMatch?: number
 }
+// Plain Extras jobs (upscaler, background removal) have no prompt or seed worth showing or storing.
+export const seedless = (request: Request) => request.tool === 'upscale' && !request.hires
 export type Prepared = { request: Request; source?: Frame; target: Rect; crop: Rect; effectiveMask?: Uint8ClampedArray }
 // before: the template scaled to the result, so compare lines up when image to image changes the size.
 // detections: what the detailer found and re-rendered, shown as boxes on the canvas.

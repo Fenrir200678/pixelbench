@@ -208,6 +208,14 @@ export function editTransitionMask(image: Rect, crop: Rect, transition: number) 
   return mask
 }
 
+// The background of a cut-out as a binary mask. Soft edges count as background, so inpainting leaves no
+// half-transparent fringe around the subject.
+export function transparentMask(pixels: Uint8ClampedArray) {
+  const mask = new Uint8ClampedArray(pixels.length / 4)
+  for (let i = 0; i < mask.length; i++) if (pixels[i * 4 + 3] < 250) mask[i] = 255
+  return mask
+}
+
 export function blend(
   base: Uint8ClampedArray,
   patch: Uint8ClampedArray,

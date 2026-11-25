@@ -59,9 +59,14 @@
   display: flex;
   margin-bottom: var(--space-4);
 }
-.detailer-apply {
+.detailer-apply,
+.background-apply {
   width: 100%;
   justify-content: center;
+}
+.check.background-mask {
+  display: flex;
+  margin: var(--space-3) 0;
 }
 
 /* ---------- Dimensions ---------- */

@@ -2,6 +2,12 @@
 
 All notable changes to Pixelbench. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Remove background in Extras: BiRefNet cuts out the subject of the shown image and makes the background transparent, with ComfyUI's core nodes and the model in `background_removal`.
+
 ## [0.4.0-beta.1]
 
 ### Added

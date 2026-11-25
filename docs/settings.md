@@ -23,7 +23,7 @@ File format, JPG quality, **Store generation data** (PNG only; prompt, seed and 
 - **ComfyUI folder**: the folder that contains `main.py`.
 - **Python**: the `python.exe` of the environment ComfyUI is installed in, usually in `.venv\Scripts`. On macOS it is `python` in `.venv/bin`. It must have PyTorch.
 - **Model folders** (model roots): folders with subfolders such as `checkpoints`, `loras` or `vae`. Models inside the ComfyUI folder are always found.
-- **More folders per model type**: extra search folders for `diffusion_models`, `text_encoders`, `vae`, `checkpoints`, `loras`, `controlnet`, `model_patches` and `upscale_models`.
+- **More folders per model type**: extra search folders for `diffusion_models`, `text_encoders`, `vae`, `checkpoints`, `loras`, `controlnet`, `model_patches`, `upscale_models` and `background_removal`.
 - **Port**: leave empty to pick a free port on every start of the private process.
 - **Extra launch options**: ComfyUI flags separated by spaces, such as `--use-sage-attention` or `--reserve-vram 2`. Flags that Pixelbench sets itself (network, folder, cache and memory flags such as `--listen`, `--port`, `--highvram`, `--cpu`) are refused. Use the memory setting for memory behavior.
 

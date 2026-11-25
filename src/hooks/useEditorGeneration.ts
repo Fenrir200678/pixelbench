@@ -5,7 +5,7 @@ import { prepare, type Request, type Variant } from '../editor/generation.js'
 import { sizeLabel } from '../editor/geometry.js'
 import { scaledSize } from '../editor/upscale.js'
 import type { Mask } from '../image/mask.js'
-import { maskIntersects } from '../image/pixels.js'
+import { maskIntersects, transparentMask } from '../image/pixels.js'
 import type { RunOutcome } from '../settings/notify.js'
 import type { Profile } from '../types/api.js'
 import type { Notice, Tool } from '../types/editor.js'
@@ -16,6 +16,7 @@ import type { Detailer } from './useDetailer.js'
 import { jobStage, useGeneration } from './useGeneration.js'
 import type { useVariants } from './useVariants.js'
 import { upscaleMeasurement, type Workflow } from './useWorkflow.js'
+import { useBackgroundRemoval } from './useBackgroundRemoval.js'
 
 // Whether a created variant came from the same render inputs. Models and parameters are compared by the keys the
 // workflow sets, because a finished job stores the values the server resolved.
@@ -205,6 +206,42 @@ export function useEditorGeneration({
     void generation.run(detailStages(currentBase(), detailSource))
   }
 
+  // Background removal in Extras, on the same shown image as the detailer. The whole image keeps its size.
+  const background = useBackgroundRemoval(status, notice)
+  const canRemoveBackground = !jobBlocked && background.ready && Boolean(detailSource)
+
+  function removeBackground() {
+    const source = detailSource
+    const removal = background.profile
+    if (!canRemoveBackground || !source || !removal) return
+    const crop = { x: 0, y: 0, w: source.w, h: source.h }
+    const inputs = {
+      source,
+      crop,
+      target: { ...crop, x: source.x, y: source.y },
+      size: [source.w, source.h] as [number, number],
+      edge: 0,
+      tool: 'upscale' as const,
+      profile: removal,
+      prompt: '',
+      negative: '',
+      seed: 0,
+      parameters: {},
+      models: background.models
+    }
+    const keepMask = background.keepMask
+    const cutOut = jobStage(() => prepare(inputs))
+    // As with the detailer masks, the variant's mask becomes the Inpaint mask when it is applied.
+    void generation.run([
+      async (runner, previous) => {
+        const variant = await cutOut(runner, previous)
+        const mask = variant && keepMask ? transparentMask(variant.frame.pixels) : undefined
+        if (variant && mask?.some(Boolean)) variant.mask = mask
+        return variant
+      }
+    ])
+  }
+
   function quickUpscale() {
     if (candidate && quickRequest && quickProfile && canQuickUpscale)
       runHires(candidate.frame, quickRequest, quickProfile)
@@ -331,6 +368,7 @@ export function useEditorGeneration({
     hiresImage,
     canDetailImage,
     detailImage,
+    background: { ...background, canRun: canRemoveBackground, run: removeBackground },
     run
   }
 }

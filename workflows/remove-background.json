@@ -1,0 +1,8 @@
+{
+  "image": { "class_type": "LoadImage", "inputs": { "image": "" } },
+  "model": { "class_type": "LoadBackgroundRemovalModel", "inputs": { "bg_removal_name": "" } },
+  "remove": { "class_type": "RemoveBackground", "inputs": { "bg_removal_model": ["model", 0], "image": ["image", 0] } },
+  "invert": { "class_type": "InvertMask", "inputs": { "mask": ["remove", 0] } },
+  "join": { "class_type": "JoinImageWithAlpha", "inputs": { "image": ["image", 0], "alpha": ["invert", 0] } },
+  "preview": { "class_type": "PreviewImage", "inputs": { "images": ["join", 0] } }
+}

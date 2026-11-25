@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import { isMainModel, modelKey } from '../../editor/models.js'
 import { tools } from '../../editor/tools.js'
 import { readStorage, writeStorage } from '../../helpers/storage.js'
+import type { BackgroundRemoval } from '../../hooks/useBackgroundRemoval.js'
 import type { Detailer } from '../../hooks/useDetailer.js'
 
 import type { Workflow } from '../../hooks/useWorkflow.js'
@@ -13,6 +14,7 @@ import { Button } from '../../ui/Button.js'
 import { Combobox } from '../../ui/Combobox.js'
 import { CollapsibleSection } from '../../ui/CollapsibleSection.js'
 import { setAllSections, useAnySectionOpen } from '../../ui/sectionState.js'
+import { BackgroundFields } from './BackgroundFields.js'
 import { DetailerFields } from './DetailerFields.js'
 import { MetadataFields, type MetadataView } from './MetadataFields.js'
 import { ModelFields, ProfileNote } from './ModelFields.js'
@@ -53,6 +55,7 @@ export function Inspector({
   sourceSwitch,
   canDetailImage,
   onDetailImage,
+  background,
   children
 }: {
   tool: Tool
@@ -81,6 +84,7 @@ export function Inspector({
   sourceSwitch?: SourceSwitch
   canDetailImage: boolean
   onDetailImage: () => void
+  background: BackgroundRemoval
   children: ReactNode
 }) {
   const { t } = useTranslation()
@@ -103,13 +107,14 @@ export function Inspector({
     .filter(Boolean)
     .join(' · ')
   const toggleLabel = anyOpen ? t('Alle Abschnitte einklappen') : t('Alle Abschnitte ausklappen')
-  // Extras: the generation data of the opened file and the plain upscaler. No diffusion model, prompt or seed.
+  // Extras: the generation data of the opened file, the plain upscaler and background removal. No prompt or seed.
   if (tool === 'upscale')
     return (
       <aside className="inspector" aria-label={t('Bearbeitungseinstellungen')}>
         <div className="inspector-scroll">
           <MetadataFields {...metadata} />
           <UpscaleFields workflow={workflow} work={work} />
+          <BackgroundFields background={background} />
         </div>
         {children}
       </aside>

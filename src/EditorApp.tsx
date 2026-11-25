@@ -12,7 +12,7 @@ import { BackendStatus, Topbar } from './components/Topbar.js'
 import { CanvasToolbar, ZoomControls } from './components/canvas/CanvasToolbar.js'
 import { VramMeter } from './components/VramMeter.js'
 import { VariantActions, VariantStrip, VariantsToggle } from './components/variants/VariantStrip.js'
-import { outpaintSides, referenceImage } from './editor/generation.js'
+import { outpaintSides, referenceImage, seedless } from './editor/generation.js'
 import { fitView, sizeLabel, suggestExpansion } from './editor/geometry.js'
 import { useAdjustments } from './hooks/useAdjustments.js'
 import { useBridge } from './hooks/useBridge.js'
@@ -120,6 +120,7 @@ export function EditorApp() {
     canDetailImage,
     detailImage,
     hiresImage,
+    background,
     run
   } = useEditorGeneration({
     tool,
@@ -161,7 +162,7 @@ export function EditorApp() {
   const candidateLabel =
     candidate &&
     (replayProfile?.short ?? t('Vorschau')) +
-      (candidate.prepared.request.profile === 'upscale' ? '' : ' · Seed ' + candidate.prepared.request.seed)
+      (seedless(candidate.prepared.request) ? '' : ' · Seed ' + candidate.prepared.request.seed)
   const stageMode = candidate
     ? candidateLabel
     : upscaling && image && measurement
@@ -654,6 +655,7 @@ export function EditorApp() {
               }
               canDetailImage={canDetailImage}
               onDetailImage={detailImage}
+              background={background}
             >
               <RunPanel
                 generation={generation}

@@ -353,6 +353,20 @@ export const english: Record<string, string> = {
   'Vergrößert mit einem Upscale-Modell (ESRGAN und verwandte) und skaliert per Lanczos auf die Zielgröße. Ohne Diffusionsmodell und ohne Prompt.':
     'Enlarges with an upscale model (ESRGAN and related) and scales to the target size with Lanczos. No diffusion model, no prompt.',
   'Upscale-Modell': 'Upscale model',
+  'Hintergrund entfernen': 'Remove background',
+  'Hintergrund entfernen · BiRefNet': 'Remove background · BiRefNet',
+  'Stellt das Motiv mit BiRefNet frei und macht den Hintergrund transparent. Ohne Diffusionsmodell und ohne Prompt.':
+    'Cuts out the subject with BiRefNet and makes the background transparent. No diffusion model, no prompt.',
+  'BiRefNet-Modell': 'BiRefNet model',
+  'Hintergrund als Maske für „Ersetzen“ behalten': 'Keep the background as the Inpaint mask',
+  'Die gewählte Variante oder das geöffnete Bild freistellen': 'Cut out the selected variant or the open image',
+  'Braucht ComfyUI 0.43 oder neuer mit den Nodes „Remove Background“.':
+    'Needs ComfyUI 0.43 or later with the "Remove Background" nodes.',
+  'Kein BiRefNet-Modell gefunden. „birefnet.safetensors“ gehört unter „background_removal“ in einen Modell-Stammordner.':
+    'No BiRefNet model found. "birefnet.safetensors" belongs in "background_removal" inside a model root folder.',
+  Download: 'Download',
+  'Erzeugt eine Variante mit transparentem Hintergrund. Für die Transparenz als PNG exportieren.':
+    'Creates a variant with a transparent background. Export as PNG to keep the transparency.',
   'Kein Upscale-Modell gefunden': 'No upscale model found',
   'Kein Upscale-Modell gefunden. Es gehört unter „upscale_models“ oder „ESRGAN“ in einen Modell-Stammordner.':
     'No upscale model found. It belongs in "upscale_models" or "ESRGAN" inside a model root folder.',

@@ -1,0 +1,37 @@
+{
+  "id": "remove-background",
+  "name": "Hintergrund entfernen · BiRefNet",
+  "short": "Hintergrund entfernen",
+  "tools": ["upscale"],
+  "source": "https://docs.comfy.org/tutorials/utility/remove-background-birefnet",
+  "notes": "Stellt das Motiv mit BiRefNet frei und macht den Hintergrund transparent. Ohne Diffusionsmodell und ohne Prompt.",
+  "workflow": "remove-background.json",
+  "nodes": [
+    "LoadImage",
+    "LoadBackgroundRemovalModel",
+    "RemoveBackground",
+    "InvertMask",
+    "JoinImageWithAlpha",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 1,
+    "min": 64,
+    "max": 8192,
+    "area": 24000000,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "model",
+      "input": "bg_removal_name",
+      "category": "background_removal",
+      "label": "BiRefNet-Modell",
+      "files": ["birefnet.safetensors"]
+    }
+  ],
+  "parameters": {},
+  "bindings": {
+    "image": ["image", "image"]
+  }
+}

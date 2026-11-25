@@ -154,7 +154,8 @@ export function buildGraph(profile, data, jobId) {
     }
   } else if (data.tool === 'create' && data.mask !== undefined) throw new Error('A mask needs a template image.')
   let hires, upscaler
-  if (upscale) {
+  // Extras profiles with their own image binding, such as background removal, process the image at its size.
+  if (upscale && !profile.bindings.image) {
     const source = pngDimensions(data.image)
     graph.upscaleSource = { class_type: 'LoadImage', inputs: { image: jobId + '/image.png' } }
     files.push({ name: 'image.png', payload: data.image })

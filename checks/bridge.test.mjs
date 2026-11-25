@@ -385,6 +385,34 @@ test('the upscale-only profile scales with the chosen model and needs no prompt'
   assert.throws(() => buildGraph(profile, { ...data, size: [6400, 4000] }, 'job'))
 })
 
+test('background removal keeps the image size and joins the BiRefNet mask as alpha', () => {
+  const { definition } = profiles.find(({ definition }) => definition.id === 'remove-background')
+  const model = 'birefnet.safetensors'
+  const profile = {
+    ...definition,
+    choices: {},
+    selected: { 'model.bg_removal_name': model },
+    catalog: { 'model.bg_removal_name': [model] },
+    modelMissing: {}
+  }
+  const data = { tool: 'upscale', prompt: '', seed: 0, size: [1500, 1000], image: png(1500, 1000) }
+  const { graph, files, models } = buildGraph(profile, data, 'job')
+  assert.equal(graph.image.inputs.image, 'job/image.png')
+  assert.equal(graph.model.inputs.bg_removal_name, model)
+  assert.deepEqual(models, { 'model.bg_removal_name': model })
+  // RemoveBackground returns the foreground. JoinImageWithAlpha inverts its alpha input, hence InvertMask first.
+  assert.deepEqual(graph.invert.inputs.mask, ['remove', 0])
+  assert.deepEqual(graph.join.inputs, { image: ['image', 0], alpha: ['invert', 0] })
+  assert.deepEqual(graph.preview.inputs.images, ['join', 0])
+  assert.deepEqual(
+    files.map(({ name }) => name),
+    ['image.png']
+  )
+  // The job writes the PNG with this size check, so the mask lines up with the source pixels.
+  assert.deepEqual(files[0].size, [1500, 1000])
+  assert.throws(() => buildGraph(profile, { ...data, models: { 'model.bg_removal_name': 'other.pth' } }, 'job'))
+})
+
 test('LoRAs are chained after the model loader and every consumer is rewired', () => {
   const lora = 'Krea2\\style.safetensors'
   const find = (id) => profiles.find(({ definition }) => definition.id === id).definition
@@ -431,7 +459,9 @@ test('LoRAs are chained after the model loader and every consumer is rewired', (
   ).graph
   assert.deepEqual(inpaint.lora1.inputs.model, ['unet', 0])
   assert.deepEqual(inpaint.cache.inputs.model, ['lora1', 0])
-  assert.ok(profiles.every(({ definition }) => definition.lora || definition.id === 'upscale'))
+  assert.ok(
+    profiles.every(({ definition }) => definition.lora || ['upscale', 'remove-background'].includes(definition.id))
+  )
 })
 
 async function listen(server) {

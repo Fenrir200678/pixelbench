@@ -63,7 +63,7 @@ The **Transition** setting can blend inside the original along the extended edge
 
 ## Extras
 
-Extras has two jobs.
+Extras has three jobs.
 
 **Generation data.** Drop an image on the field at the top of the section, or click the field to choose a file, to read its stored generation data (prompt, negative prompt, seed, settings and raw data). The image appears there as a thumbnail next to its data, and the canvas keeps the open image. The × button clears the field. You can copy values, **Send to canvas** to open the image, or send the settings to Create, Edit or Inpaint (everything except the model). An image dropped on the canvas always opens, as in the other modes, and does not fill this section. Data written by Forge, ComfyUI tools and Pixelbench is readable.
 
@@ -75,6 +75,13 @@ Extras has two jobs.
 - Upscale models such as `4x-UltraSharpV2.safetensors` belong in `upscale_models`, `ESRGAN` or `RealESRGAN` in a model root folder. UltraSharp is preselected when found. You can add folders in Settings under `upscale_models`. DAT models like UltraSharpV2 are much slower than ESRGAN models.
 
 For more detail than a plain upscale, use the hires fix in Create.
+
+**Remove background.** Cuts out the subject of the shown image (the selected variant or the open image) with BiRefNet and makes the background transparent. **Apply to current image** creates a variant at the same size. There is no prompt and no diffusion model.
+
+- The canvas shows transparent areas as a checkerboard. Export as PNG to keep the transparency. JPG fills them with white.
+- Later jobs in other modes see transparent areas as neutral gray.
+- With **Keep the background as the Inpaint mask** (on by default), applying the variant turns the transparent area, including the soft edges, into the mask for Inpaint. Switch to Inpaint and describe the new background to fill it.
+- It needs ComfyUI 0.43 or later, whose core nodes `LoadBackgroundRemovalModel` and `RemoveBackground` do the work, and the model [`birefnet.safetensors`](https://huggingface.co/Comfy-Org/BiRefNet/tree/main/background_removal) (444 MB, MIT license) in `background_removal` in a model root folder. If several files are there, you can pick one.
 
 ## Drawing layer
 

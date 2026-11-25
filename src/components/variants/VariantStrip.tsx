@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useLayoutEffect, useRef, useState, type Ref } from 'react'
-import type { Variant } from '../../editor/generation.js'
+import { seedless, type Variant } from '../../editor/generation.js'
 import { sizeLabel } from '../../editor/geometry.js'
 import { applyVariantKey, clearVariantsKey, toggleVariantsKey } from '../../editor/tools.js'
 import type { Status } from '../../types/api.js'
@@ -27,8 +27,8 @@ function VariantCard({
 }) {
   const { t } = useTranslation()
   const run = item.prepared.request
-  // The plain upscaler has no seed. Its variants show the result size instead.
-  const detail = run.profile === 'upscale' ? sizeLabel(...run.size) + ' px' : 'Seed ' + run.seed
+  // Plain Extras jobs have no seed. Their variants show the result size instead.
+  const detail = seedless(run) ? sizeLabel(...run.size) + ' px' : 'Seed ' + run.seed
   const name = t('Variante ') + (index + 1) + ' · ' + detail
   const workflow = status?.profiles.find((p) => p.id === run.profile)
   const title = [

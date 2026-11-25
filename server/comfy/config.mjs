@@ -13,7 +13,8 @@ export const categories = [
   'loras',
   'controlnet',
   'model_patches',
-  'upscale_models'
+  'upscale_models',
+  'background_removal'
 ]
 export const memoryModes = {
   balanced: { name: 'Ausgewogen', flags: ['--cache-classic'] },
@@ -43,7 +44,8 @@ export const defaults = {
     loras: [],
     controlnet: [],
     model_patches: [],
-    upscale_models: []
+    upscale_models: [],
+    background_removal: []
   }
 }
 const subdirs = {
@@ -54,7 +56,8 @@ const subdirs = {
   loras: ['loras', 'Lora'],
   controlnet: ['controlnet'],
   model_patches: ['model_patches'],
-  upscale_models: ['upscale_models', 'ESRGAN', 'RealESRGAN']
+  upscale_models: ['upscale_models', 'ESRGAN', 'RealESRGAN'],
+  background_removal: ['background_removal']
 }
 
 // Flags Pixelbench sets itself or that would open the private process to the network or to other folders.
