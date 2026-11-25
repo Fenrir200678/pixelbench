@@ -5,6 +5,7 @@ import { appMessage } from '../i18n/appMessages.js'
 import { Button } from '../ui/Button.js'
 import type { Bridge } from '../hooks/useBridge.js'
 import type { Tool } from '../types/editor.js'
+import { modKey } from '../helpers/platform.js'
 
 type Props = {
   tool: Tool
@@ -75,7 +76,7 @@ export function Topbar({
           className="quiet"
           icon="open"
           aria-label={t('Öffnen')}
-          title={t('Bild öffnen (Strg+O)')}
+          title={t('Bild öffnen ({{mod}}+O)', { mod: modKey(t) })}
           disabled={openDisabled}
           onClick={onOpen}
         >
@@ -99,7 +100,7 @@ export function Topbar({
             className="icon"
             icon="undo"
             aria-label={t('Rückgängig')}
-            title={t('Rückgängig (Strg+Z)')}
+            title={t('Rückgängig ({{mod}}+Z)', { mod: modKey(t) })}
             disabled={!canUndo}
             onClick={onUndo}
           />
@@ -108,7 +109,7 @@ export function Topbar({
             className="icon"
             icon="redo"
             aria-label={t('Wiederholen')}
-            title={t('Wiederholen (Strg+Umschalt+Z)')}
+            title={t('Wiederholen ({{mod}}+Umschalt+Z)', { mod: modKey(t) })}
             disabled={!canRedo}
             onClick={onRedo}
           />

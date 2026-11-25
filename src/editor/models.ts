@@ -10,14 +10,16 @@ export function selectModels(profile: Profile, saved: SavedModels): ModelChoices
   return Object.fromEntries(
     profile.models.flatMap((slot) => {
       const key = modelKey(slot)
-      const file = saved[profile.id]?.[key] ?? profile.selected[key]
+      const stored = saved[profile.id]?.[key]
+      // A file chosen earlier that this backend cannot run falls back to the recommended one.
+      const file = stored && !profile.unsupported?.[key]?.includes(stored) ? stored : profile.selected[key]
       return typeof file === 'string' ? [[key, file]] : []
     })
   )
 }
 
 /** A model slot with no file anywhere in the search path. Rendered as a card instead of a sentence. */
-export type MissingModel = { model: string; files: string[]; paths: string[]; note?: string }
+export type MissingModel = { model: string; files: string[]; paths: string[]; note?: string; unsupported?: string[] }
 export type Problem = string | MissingModel
 
 const searchPathNote = /^\w+ in this instance’s search configuration$/
@@ -36,6 +38,8 @@ export function modelProblems(profile: Profile, selected: ModelChoices): Problem
     if (file && profile.catalog[key]?.includes(file)) return []
     const model = i18n.t(slot.label)
     const missing = profile.modelMissing[key]
+    const unsupported = profile.unsupported?.[key]
+    if (missing && unsupported?.length) return [{ model, files: slot.files, unsupported, ...parseSearchPath(missing) }]
     if (file) return [i18n.t('{{model}} · ausgewählte Datei fehlt ({{file}}).', { model, file })]
     if (missing) return [{ model, files: slot.files, ...parseSearchPath(missing) }]
     return [i18n.t('Bitte {{model}} auswählen.', { model })]

@@ -10,7 +10,7 @@ import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { setTimeout as pause } from 'node:timers/promises'
 import { defaults } from '../server/comfy.mjs'
-import { buildGraph, profiles } from '../server/profiles.mjs'
+import { buildGraph, inspect, profiles } from '../server/profiles.mjs'
 import { detectionBoxes, detectionGraph, detectionTerms, detectorFile } from '../server/jobs/detection.mjs'
 import { refinementGraph } from '../server/jobs/refinement.mjs'
 
@@ -444,6 +444,42 @@ async function listen(server) {
     await new Promise((resolve) => server.close(resolve))
   }
 }
+
+test('fp8 diffusion models are left out on Apple Silicon, fp8 text encoders stay', async () => {
+  const fp8 = 'krea2_turbo_fp8_scaled.safetensors'
+  const encoder = 'qwen3vl_4b_fp8_scaled.safetensors'
+  const server = createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.end(
+      JSON.stringify({
+        PreviewImage: {},
+        LoadImage: {},
+        UNETLoader: { input: { required: { unet_name: [[fp8]] } } },
+        CLIPLoader: { input: { required: { clip_name: [[encoder]] } } }
+      })
+    )
+  })
+  const port = await listen(server)
+  try {
+    const run = async (type) => {
+      const backend = { address: 'http://127.0.0.1:' + port, owned: true, stats: { devices: [{ type }] } }
+      return (await inspect(backend, defaults)).find((profile) => profile.id === 'krea2-t2i')
+    }
+    const mac = await run('mps')
+    assert.deepEqual(mac.unsupported['unet.unet_name'], [fp8])
+    assert.deepEqual(mac.catalog['unet.unet_name'], [])
+    assert.equal(mac.selected['unet.unet_name'], undefined)
+    assert.ok(!mac.models.find((slot) => slot.node === 'unet').files.some((file) => /fp8/.test(file)))
+    assert.doesNotMatch(mac.modelMissing['unet.unet_name'], /fp8/)
+    const textEncoder = mac.models.find((slot) => slot.category === 'text_encoders')
+    assert.equal(mac.selected[textEncoder.node + '.' + textEncoder.input], encoder)
+    const cuda = await run('cuda')
+    assert.equal(cuda.selected['unet.unet_name'], fp8)
+    assert.deepEqual(cuda.unsupported, {})
+  } finally {
+    await new Promise((resolve) => server.close(resolve))
+  }
+})
 
 test('external ComfyUI is inspected without mutation, unavailable jobs are blocked, owned orphans are swept', async () => {
   const calls = []

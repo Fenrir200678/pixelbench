@@ -7,6 +7,7 @@ import type { Job } from '../types/api.js'
 import type { NoticeValues } from '../types/editor.js'
 import { Button } from '../ui/Button.js'
 import { Icon } from '../ui/Icon.js'
+import { modKey } from '../helpers/platform.js'
 
 // "1.2 it/s · ~3 s left" while a sampler reports steps. Slow samplers read better as seconds per step.
 function useStepDetail(step?: Job['step']) {
@@ -128,7 +129,7 @@ export function RunPanel({
         onClick={onRun}
       >
         <span>{t('Generieren')}</span>
-        <kbd>{t('Strg ↵')}</kbd>
+        <kbd>{modKey(t) + ' ↵'}</kbd>
       </Button>
       <Button
         id="cancel"

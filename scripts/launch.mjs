@@ -48,7 +48,11 @@ async function openWhenReady(server) {
 }
 
 if (!(await exists(join(state, '.settings.json'))) || !(await exists(join(root, 'dist', 'index.html')))) {
-  console.error('Pixelbench is not set up yet. Run install.cmd first.')
+  console.error(
+    'Pixelbench is not set up yet. Run ' +
+      (process.platform === 'win32' ? 'install.cmd' : 'install.command') +
+      ' first.'
+  )
   process.exit(1)
 }
 const running = await probe()

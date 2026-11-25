@@ -1,9 +1,14 @@
 import { open, stat } from 'node:fs/promises'
-import { win32 } from 'node:path'
+import { join } from 'node:path'
 import { request, searchPaths } from '../comfy.mjs'
 import { profiles } from './definitions.mjs'
 import { ggufFile, ggufLoader, modelFile } from './model-files.mjs'
 import { detectionNodes, detectorFile } from '../jobs/detection.mjs'
+
+// PyTorch on Apple Silicon (MPS) cannot convert fp8 tensors, and ComfyUI dequantizes the weights of a diffusion model
+// on the GPU in every step. fp8 text encoders run there, so only diffusion models are left out.
+const fp8File = /(?:^|[_.-])(?:fp8|float8|e4m3fn|e5m2)(?:[_.-]|$)/i
+const fp8Unsupported = (model, mps) => mps && model.category === 'diffusion_models'
 
 const basename = (value) => value.split(/[\\/]/).at(-1).toLowerCase()
 const inspectInput = (info, node, key) => info[node]?.input?.required?.[key] ?? info[node]?.input?.optional?.[key]
@@ -76,7 +81,7 @@ async function inspectLoras(info, folders) {
       // Many LoRAs carry no metadata; their path (such as MOSS\turbo.safetensors) then names the family.
       for (const folder of folders) {
         try {
-          const header = await loraHeader(win32.join(folder, file))
+          const header = await loraHeader(join(folder, file))
           return { file, ...header, family: header.family ?? familyOf(file) }
         } catch {
           // Not in this folder, or no readable header.
@@ -100,13 +105,23 @@ async function fetchInspection(backend, config) {
   const response = await request(backend, '/object_info', { timeout: 15000 })
   const info = await response.json()
   if (!info.PreviewImage && !info.LoadImage) throw new Error('No ComfyUI API is responding at this address.')
+  const stats =
+    backend.stats ??
+    (await request(backend, '/system_stats', { timeout: 5000 })
+      .then((res) => res.json())
+      .catch(() => undefined))
+  const mps = stats?.devices?.[0]?.type === 'mps'
   const result = profiles.map(({ definition: p, graph }) => {
     const blockers = p.nodes.filter((name) => !info[name]).map((name) => 'Missing node: ' + name)
     const selected = {}
     const candidates = {}
     const catalog = {}
     const modelMissing = {}
-    for (const model of p.models) {
+    const unsupported = {}
+    const models = p.models.map((model) =>
+      fp8Unsupported(model, mps) ? { ...model, files: model.files.filter((file) => !fp8File.test(file)) } : model
+    )
+    for (const model of models) {
       const id = model.node + '.' + model.input
       const choices = options(inspectInput(info, graph[model.node].class_type, model.input))
       const ggufChoices = model.gguf ? options(inspectInput(info, ggufLoader, model.input)) : []
@@ -116,6 +131,13 @@ async function fetchInspection(backend, config) {
           ...ggufChoices.filter((name) => typeof name === 'string' && ggufFile.test(name))
         ])
       ]
+      if (fp8Unsupported(model, mps)) {
+        const skipped = catalog[id].filter((label) => fp8File.test(basename(label)))
+        if (skipped.length) {
+          unsupported[id] = skipped
+          catalog[id] = catalog[id].filter((label) => !skipped.includes(label))
+        }
+      }
       const matches = (candidates[id] = model.files.flatMap((file) =>
         catalog[id].filter((label) => basename(label) === file.toLowerCase())
       ))
@@ -143,8 +165,10 @@ async function fetchInspection(backend, config) {
     const ready = backend.owned && blockers.length === 0
     return {
       ...p,
+      models,
       blockers,
       modelMissing,
+      unsupported,
       missing,
       ready,
       available: ready && missing.length === 0,

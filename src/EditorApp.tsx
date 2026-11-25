@@ -36,6 +36,7 @@ import type { Frame, Stroke } from './types/image.js'
 import { ResizableLayout, ResizeHandle } from './ui/ResizableLayout.js'
 import { announceRunEnd } from './settings/notify.js'
 import { confirmDiscard, getPreferences, usePreferences } from './settings/preferences.js'
+import { modKey } from './helpers/platform.js'
 
 const acceptedImages = 'image/png,image/jpeg,image/webp'
 
@@ -279,7 +280,9 @@ export function EditorApp() {
   function adoptCreated(frame: Frame, strokes?: Stroke[]) {
     if (
       work &&
-      !confirmDiscard(t('Das geöffnete Bild durch das erstellte Bild ersetzen? Strg+Z stellt es wieder her.'))
+      !confirmDiscard(
+        t('Das geöffnete Bild durch das erstellte Bild ersetzen? {{mod}}+Z stellt es wieder her.', { mod: modKey(t) })
+      )
     )
       return
     document.adopt(frame, strokes)

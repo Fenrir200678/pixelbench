@@ -4,12 +4,12 @@ import { access, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { encode, decode } from '../server/png.mjs'
+import { chromePath } from './chrome.mjs'
 
 const origin = process.env.PIXELBENCH_URL ?? 'http://127.0.0.1:3720'
-const chrome = process.env.PIXELBENCH_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const screenshots = process.env.PIXELBENCH_SCREENSHOTS
 const testRoot = await mkdtemp(join(tmpdir(), 'pixelbench-browser-'))
-const browser = await chromium.launch({ executablePath: chrome, headless: true })
+const browser = await chromium.launch({ executablePath: chromePath, headless: true })
 const context = await browser.newContext({
   viewport: { width: 1360, height: 880 },
   acceptDownloads: true,

@@ -19,6 +19,7 @@ import type { Tool, Work } from '../../types/editor.js'
 import type { Detection, Frame, Margins, Rect, Stroke } from '../../types/image.js'
 import { Button } from '../../ui/Button.js'
 import { Icon } from '../../ui/Icon.js'
+import { isMac } from '../../helpers/platform.js'
 
 type Props = {
   viewRef: RefObject<Viewport | null>
@@ -212,7 +213,9 @@ export function CanvasStage({
       event.preventDefault()
       const at = viewport.point(event)
       const delta = -event.deltaY * (event.deltaMode === 1 ? 0.065 : 0.0017)
-      if (hasBrush && !frameMode && event.ctrlKey && event.target === viewport.element) {
+      // A trackpad pinch arrives as a wheel event with ctrlKey. On macOS it zooms, and ⌘ + scroll sizes the brush.
+      const brushWheel = isMac ? event.metaKey : event.ctrlKey
+      if (hasBrush && !frameMode && brushWheel && event.target === viewport.element) {
         if (delta === 0) return
         viewport.updateCursor(at)
         onBrush((size) => {

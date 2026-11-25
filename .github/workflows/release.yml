@@ -45,7 +45,7 @@ jobs:
           $folder = Join-Path release 'pixelbench'
           New-Item -ItemType Directory -Force $folder | Out-Null
           $items = 'dist', 'server', 'scripts', 'profiles', 'workflows', 'docs',
-            'install.cmd', 'install.ps1', 'Pixelbench.cmd', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE'
+            'install.cmd', 'install.ps1', 'install.command', 'Pixelbench.cmd', 'Pixelbench.command', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE'
           foreach ($item in $items) { Copy-Item -Recurse $item $folder }
           # The release script is for maintainers only.
           Remove-Item "$folder/scripts/release.ps1"

@@ -21,7 +21,7 @@ export function ProfileNote({ workflow, status }: { workflow: Workflow; status?:
   )
 }
 
-function MissingModelNote({ model, files, paths, note }: MissingModel) {
+function MissingModelNote({ model, files, paths, note, unsupported }: MissingModel) {
   const { t } = useTranslation()
   return (
     <div className="model-missing">
@@ -31,6 +31,13 @@ function MissingModelNote({ model, files, paths, note }: MissingModel) {
           <li key={file}>{file}</li>
         ))}
       </ul>
+      {unsupported && (
+        <p className="model-missing-unsupported">
+          {t('Vorhanden, aber auf Apple Silicon nicht nutzbar, da fp8: {{files}}', {
+            files: unsupported.map((file) => file.split(/[\\/]/).at(-1)).join(', ')
+          })}
+        </p>
+      )}
       {(paths.length > 0 || note) && (
         <details className="model-missing-paths">
           <summary>{t('Suchpfad')}</summary>

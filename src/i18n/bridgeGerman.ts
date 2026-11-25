@@ -4,8 +4,8 @@
 export const bridgeGerman: Record<string, string> = {
   'Could not check for updates · ': 'Suche nach Updates fehlgeschlagen · ',
   'Could not download the update · ': 'Update konnte nicht geladen werden · ',
-  'A git checkout updates with git pull and install.cmd.':
-    'Ein Git-Checkout wird mit git pull und install.cmd aktualisiert.',
+  'A git checkout updates with git pull and the installer.':
+    'Ein Git-Checkout wird mit git pull und dem Installer aktualisiert.',
   'An update is already being installed.': 'Ein Update wird bereits installiert.',
   'The setup step failed. The Pixelbench window shows the details.':
     'Die Einrichtung ist fehlgeschlagen. Details zeigt das Pixelbench-Fenster.',
@@ -23,6 +23,8 @@ export const bridgeGerman: Record<string, string> = {
   'The ComfyUI port must be between 1024 and 65535.': 'Der ComfyUI-Port muss zwischen 1024 und 65535 liegen.',
   'Enter an absolute Windows path with a drive letter.':
     'Bitte einen absoluten Windows-Pfad mit Laufwerksbuchstaben eingeben.',
+  'Enter an absolute path.': 'Bitte einen absoluten Pfad eingeben.',
+  'Invalid path.': 'Ungültiger Pfad.',
   'The external instance is reachable. Its API cannot securely delete uploaded inputs and temporary previews. Use the private process to generate images.':
     'Externe Instanz ist erreichbar. Ihre API stellt keine sichere Löschung der hochgeladenen Eingaben und temporären Vorschauen bereit. Für Generierung bitte den privaten Prozess verwenden.',
   'Private ComfyUI is starting …': 'Privates ComfyUI startet …',
@@ -114,7 +116,7 @@ export const bridgeGerman: Record<string, string> = {
   'Private ComfyUI is currently unavailable.': 'Privates ComfyUI steht gerade nicht zur Verfügung.',
   'A generation is already running.': 'Es läuft bereits eine Generierung.',
   'Job not found.': 'Job wurde nicht gefunden.',
-  'The folder picker is only available on Windows.': 'Die Ordnerauswahl gibt es nur unter Windows.',
+  'The folder picker is not available on this system.': 'Die Ordnerauswahl ist auf diesem System nicht verfügbar.',
   'Unknown picker.': 'Unbekannte Auswahl.',
   'A picker is already open.': 'Ein Auswahldialog ist bereits geöffnet.',
   'PowerShell was not found.': 'PowerShell wurde nicht gefunden.',

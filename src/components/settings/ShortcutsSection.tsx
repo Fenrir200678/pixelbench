@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Fragment } from 'react'
 import { shortcutGroups } from '../../editor/shortcutList.js'
+import { isMac } from '../../helpers/platform.js'
 
 const keyNames: Record<string, string> = {
-  Ctrl: 'Strg',
+  Ctrl: isMac ? '⌘' : 'Strg',
   Shift: 'Umschalt',
   Space: 'Leertaste',
   Enter: 'Eingabe',

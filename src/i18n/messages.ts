@@ -35,6 +35,8 @@ export const english: Record<string, string> = {
   '{{model}} · ausgewählte Datei fehlt ({{file}}).': '{{model}} · selected file is missing ({{file}}).',
   'Bitte {{model}} auswählen.': 'Select {{model}}.',
   '{{model}} fehlt': '{{model}} is missing',
+  'Vorhanden, aber auf Apple Silicon nicht nutzbar, da fp8: {{files}}':
+    'Present, but fp8 cannot run on Apple Silicon: {{files}}',
   'Erwartete Dateien': 'Expected files',
   Suchpfad: 'Search path',
   '{{node}} läuft': 'Running {{node}}',
@@ -87,7 +89,7 @@ export const english: Record<string, string> = {
   Pinselfarbe: 'Brush color',
   'Bildfläche zum Zeichnen und Maskieren': 'Canvas for drawing and masking',
   Radierer: 'Eraser',
-  'Strg + Mausrad auf der Bildfläche': 'Ctrl + mouse wheel over image',
+  '{{mod}} + Mausrad auf der Bildfläche': '{{mod}} + mouse wheel over image',
   Pinselgröße: 'Brush size',
   Maskenanzeige: 'Mask visibility',
   'Maske ausblenden': 'Hide mask',
@@ -216,7 +218,6 @@ export const english: Record<string, string> = {
   'Weitere Loader-Dateien': 'Other loader files',
   'Bereite vor …': 'Preparing …',
   Generieren: 'Generate',
-  'Strg ↵': 'Ctrl ↵',
   Abbrechen: 'Cancel',
   'ComfyUI verwendet geladene Modelle für weitere Jobs wieder und lagert sie bei Bedarf in den RAM aus.':
     'ComfyUI reuses loaded models for subsequent jobs and offloads them to RAM when needed.',
@@ -262,12 +263,12 @@ export const english: Record<string, string> = {
   'Modelllisten neu laden': 'Reload model lists',
   'Alle Abschnitte einklappen': 'Collapse all sections',
   'Alle Abschnitte ausklappen': 'Expand all sections',
-  'Bild öffnen (Strg+O)': 'Open image (Ctrl+O)',
+  'Bild öffnen ({{mod}}+O)': 'Open image ({{mod}}+O)',
   Öffnen: 'Open',
   Rückgängig: 'Undo',
-  'Rückgängig (Strg+Z)': 'Undo (Ctrl+Z)',
+  'Rückgängig ({{mod}}+Z)': 'Undo ({{mod}}+Z)',
   Wiederholen: 'Redo',
-  'Wiederholen (Strg+Umschalt+Z)': 'Redo (Ctrl+Shift+Z)',
+  'Wiederholen ({{mod}}+Umschalt+Z)': 'Redo ({{mod}}+Shift+Z)',
   '{{format}} exportieren': 'Export {{format}}',
   Brücke: 'Bridge',
   Bildreferenzen: 'Image references',
@@ -420,8 +421,8 @@ export const english: Record<string, string> = {
     'The template is cropped from the center to the new aspect ratio.',
   'Beschreibe das Bild rechts im Prompt und starte die Generierung.':
     'Describe the image in the prompt on the right and start the generation.',
-  'Das geöffnete Bild durch das erstellte Bild ersetzen? Strg+Z stellt es wieder her.':
-    'Replace the open image with the created image? Ctrl+Z restores it.',
+  'Das geöffnete Bild durch das erstellte Bild ersetzen? {{mod}}+Z stellt es wieder her.':
+    'Replace the open image with the created image? {{mod}}+Z restores it.',
   'Bild übernommen. Weiter mit Ändern, Ersetzen oder Erweitern.':
     'Image applied. Continue with Edit, Inpaint or Outpaint.',
   'Workflow und Modellauswahl prüfen': 'Check the workflow and model selection',

@@ -2,7 +2,7 @@
 
 ## Open Pixelbench
 
-Start `Pixelbench.cmd`. Your browser opens at <http://127.0.0.1:3720>. The first start can take up to 90 seconds because a private ComfyUI process loads its nodes. The header shows when ComfyUI is connected.
+Start `Pixelbench.cmd` on Windows or `Pixelbench.command` on macOS. Your browser opens at <http://127.0.0.1:3720>. The first start can take up to 90 seconds because a private ComfyUI process loads its nodes. The header shows when ComfyUI is connected.
 
 The workspace has the tools below the canvas, the job settings on the right (the inspector) and the variants under the image. The five editing modes sit in the middle of the header: Create (1), Edit (2), Inpaint (3), Outpaint (4) and Extras (5).
 

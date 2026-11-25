@@ -24,18 +24,30 @@ async function scratch(run) {
   }
 }
 
-test('a portable root resolves to its ComfyUI folder and embedded Python', () =>
+const windows = process.platform === 'win32'
+const venvPython = windows ? ['Scripts', 'python.exe'] : ['bin', 'python']
+
+test('a portable root resolves to its ComfyUI folder and embedded Python', { skip: !windows }, () =>
   scratch(async (dir) => {
     await files(dir, ['ComfyUI/main.py', 'python_embeded/python.exe'])
     const install = await installAt(dir)
     assert.equal(install.source, join(dir, 'ComfyUI'))
     assert.equal(install.python, join(dir, 'python_embeded', 'python.exe'))
+  })
+)
+
+test('a Comfy Desktop root resolves to its ComfyUI folder and the venv inside it', () =>
+  scratch(async (dir) => {
+    await files(dir, ['ComfyUI/main.py', join('ComfyUI', '.venv', ...venvPython)])
+    const install = await installAt(dir)
+    assert.equal(install.source, join(dir, 'ComfyUI'))
+    assert.equal(install.python, join(dir, 'ComfyUI', '.venv', ...venvPython))
   }))
 
 test('a manual install uses the venv inside the source folder', () =>
   scratch(async (dir) => {
-    await files(dir, ['main.py', '.venv/Scripts/python.exe'])
-    assert.equal((await installAt(dir)).python, join(dir, '.venv', 'Scripts', 'python.exe'))
+    await files(dir, ['main.py', join('.venv', ...venvPython)])
+    assert.equal((await installAt(dir)).python, join(dir, '.venv', ...venvPython))
   }))
 
 test('a source folder without Python is reported without one, other folders not at all', () =>

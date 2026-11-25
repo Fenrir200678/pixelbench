@@ -41,7 +41,7 @@ export function createUpdates({ root, runtime }) {
   }
 
   async function download(data) {
-    if (await git) reject('A git checkout updates with git pull and install.cmd.', 409)
+    if (await git) reject('A git checkout updates with git pull and the installer.', 409)
     if (installing) reject('An update is already being installed.', 409)
     const release = (await status()).release
     if (!release || release.version !== data?.version) reject('This update is no longer offered. Check again.', 409)

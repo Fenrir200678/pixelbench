@@ -10,10 +10,10 @@ It brings together the concepts and features I found most useful in ComfyUI, Aut
 
 None of these tools are bad, and I still like all of them. For my workflow, though, each one on its own was either too bloated, too cluttered or too complicated. Pixelbench is my attempt to keep the parts I use every day and leave out the rest.
 
-Pixelbench is a local image editor for Windows. It drives a private ComfyUI process that it starts and stops itself, so you get create, edit, inpaint, outpaint and upscale tools on one canvas without building node graphs. Everything runs on your machine. Images and prompts never leave it.
+Pixelbench is a local image editor for Windows and for Macs with Apple Silicon. It drives a private ComfyUI process that it starts and stops itself, so you get create, edit, inpaint, outpaint and upscale tools on one canvas without building node graphs. Everything runs on your machine. Images and prompts never leave it.
 
 > [!NOTE]
-> **This is a first beta.** So far it has only been tested on my own machine: Windows 11 with an RTX 4090. Other GPUs, smaller amounts of VRAM and other ComfyUI setups may well run into problems I have never seen. Bug reports, feature requests and feedback of any kind are very welcome, so please open an issue.
+> **This is a first beta.** So far it has only been tested on my own machine: Windows 11 with an RTX 4090, and on a MacBook Pro M4 max. macOS support is new and less tested than Windows. Other GPUs, smaller amounts of VRAM and other ComfyUI setups may well run into problems I have never seen. Bug reports, feature requests and feedback of any kind are very welcome, so please open an issue.
 
 ## Features
 
@@ -44,24 +44,24 @@ Pixelbench does not download models. It uses the weights you already have in you
 
 ## Prerequisites
 
-- Windows 10 or 11.
+- Windows 10 or 11, or macOS on Apple Silicon (M-series).
 - A working ComfyUI install: Comfy Desktop, ComfyUI Desktop, the portable build or a manual install. Its Python environment must have PyTorch.
-- An NVIDIA GPU with CUDA is strongly recommended. Without CUDA, generating is very slow.
+- On Windows, an NVIDIA GPU with CUDA is strongly recommended. Without CUDA, generating is very slow. On a Mac, PyTorch uses the GPU through MPS (Metal). There is no CUDA on macOS.
 - Internet access during the install.
-- Node.js 24 or newer. The installer offers to install it with winget.
+- Node.js 24 or newer. On Windows, the installer offers to install it with winget. On macOS, the installer finds it (also via nvm, fnm or Homebrew) or offers `brew install node` if Homebrew is installed.
 
 ComfyUI is a separate prerequisite. Pixelbench uses it but never modifies it.
 
 ## Install
 
 1. Get the folder: `git clone` this repository or download and unpack a release zip.
-2. Double-click `install.cmd`.
+2. On Windows, double-click `install.cmd`. On macOS, double-click `install.command`, which opens Terminal. If macOS refuses to open it, see [Installation](docs/installation.md#macos).
 
-The installer finds ComfyUI, downloads the custom nodes Pixelbench needs, builds the editor and offers a desktop shortcut. See [Installation](docs/installation.md) for the details.
+The installer finds ComfyUI, downloads the custom nodes Pixelbench needs and builds the editor. On Windows it also offers a desktop shortcut. See [Installation](docs/installation.md) for the details.
 
 ## Start
 
-Double-click `Pixelbench.cmd` or the desktop shortcut. It opens Pixelbench in your default browser at <http://127.0.0.1:3720>. The first start can take up to 90 seconds while the private ComfyUI process loads its nodes. Close the window or press Ctrl+C to stop the server.
+On Windows, double-click `Pixelbench.cmd` or the desktop shortcut. On macOS, double-click `Pixelbench.command`. It opens Pixelbench in your default browser at <http://127.0.0.1:3720>. The first start can take up to 90 seconds while the private ComfyUI process loads its nodes. Close the window or press Ctrl+C to stop the server.
 
 ## Update or repair
 
@@ -71,7 +71,7 @@ To repair an install, run `install.cmd` again. It only changes what is missing o
 
 ## Uninstall
 
-Delete the Pixelbench folder and the desktop shortcut `Pixelbench.lnk`. ComfyUI is never modified, so there is nothing to undo there.
+Delete the Pixelbench folder. On Windows, also delete the desktop shortcut `Pixelbench.lnk`. ComfyUI is never modified, so there is nothing to undo there.
 
 ## Documentation
 

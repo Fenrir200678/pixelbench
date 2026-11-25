@@ -1,4 +1,5 @@
 import { readFile, rename, stat, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { defaults, validateConfig } from '../../server/comfy/config.mjs'
 import { extraModelRoots, findInstalls, installAt } from './comfy.mjs'
 import { ask, choose, ui } from './ui.mjs'
@@ -28,7 +29,7 @@ export async function writeSettings(file, config) {
 
 /** True when the configured source folder and Python still exist. */
 export async function usable(config) {
-  return (await exists(config.source + '\\main.py')) && (await exists(config.python))
+  return (await exists(join(config.source, 'main.py'))) && (await exists(config.python))
 }
 
 async function askForFolder() {

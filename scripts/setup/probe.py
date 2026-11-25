@@ -54,6 +54,9 @@ try:
     if report["cuda"]:
         report["device"] = torch.cuda.get_device_name(0)
         report["vram"] = round(torch.cuda.get_device_properties(0).total_memory / 1024**3, 1)
+    else:
+        mps = getattr(torch.backends, "mps", None)
+        report["mps"] = bool(mps and mps.is_available())
 except Exception as error:  # A broken torch install raises more than ImportError.
     report["torchError"] = str(error)
 print(json.dumps(report))

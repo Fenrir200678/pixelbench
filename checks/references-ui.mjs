@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright-core'
 import { profiles } from '../server/profiles.mjs'
+import { chromePath } from './chrome.mjs'
 
 // Focused UI check against Vite with mocked backend; no model generation.
 const profile = structuredClone(profiles.find((p) => p.definition.id === 'qwen21').definition)
@@ -24,7 +25,7 @@ for (const [key, field] of Object.entries(profile.parameters)) {
   if (typeof field.default === 'string') profile.choices[key] = [field.default]
 }
 const browser = await chromium.launch({
-  executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  executablePath: chromePath,
   headless: true
 })
 const screenshots = process.env.PIXELBENCH_SCREENSHOTS

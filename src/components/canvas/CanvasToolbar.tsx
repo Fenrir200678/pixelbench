@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { brushLimits, canvasKeys } from '../../editor/tools.js'
 import type { Tool } from '../../types/editor.js'
 import { Button } from '../../ui/Button.js'
+import { modKey } from '../../helpers/platform.js'
 
 type Props = {
   tool: Tool
@@ -149,7 +150,7 @@ export function CanvasToolbar({
           title={
             shortcut(t('Pinselgröße'), canvasKeys.smallerBrush + ' / ' + canvasKeys.largerBrush) +
             ' · ' +
-            t('Strg + Mausrad auf der Bildfläche')
+            t('{{mod}} + Mausrad auf der Bildfläche', { mod: modKey(t) })
           }
         >
           <span className="sr-only">{t('Pinselgröße')}</span>

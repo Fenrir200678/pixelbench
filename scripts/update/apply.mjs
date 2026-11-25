@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, normalize } from 'node:path'
 
 // release.json lists every file a release ships. Files outside that list, such as own profiles, stay untouched.
@@ -37,6 +37,8 @@ export async function readManifest(folder) {
 async function copy(from, to) {
   await mkdir(dirname(to), { recursive: true })
   await copyFile(from, to)
+  // The release zip is built on Windows and carries no Unix modes. Finder only starts executable .command files.
+  if (process.platform !== 'win32' && to.endsWith('.command')) await chmod(to, 0o755)
 }
 
 /** Puts the folder back as the backup recorded it. */

@@ -1,5 +1,4 @@
-"""Run or sweep Pixelbench's private ComfyUI instances (Windows)."""
-import msvcrt
+"""Run or sweep Pixelbench's private ComfyUI instances (Windows and macOS)."""
 import os
 from pathlib import Path
 import re
@@ -8,6 +7,25 @@ import stat
 import sys
 import threading
 
+if os.name == "nt":
+    import msvcrt
+
+    def lock(lease):
+        msvcrt.locking(lease.fileno(), msvcrt.LK_NBLCK, 1)
+
+    def is_link(directory):
+        return bool(directory.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+
+else:
+    import fcntl
+
+    def lock(lease):
+        # Raises BlockingIOError (an OSError) while a running worker holds the lease.
+        fcntl.flock(lease.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def is_link(directory):
+        return stat.S_ISLNK(directory.lstat().st_mode)
+
 
 def sweep(root, current):
     for directory in Path(root).glob("worker-*"):
@@ -15,13 +33,13 @@ def sweep(root, current):
             continue
         if not re.fullmatch(r"worker-[0-9a-f-]{36}", directory.name):
             continue
-        if directory.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+        if is_link(directory):
             continue
         try:
             marker = directory / ".pixelbench"
             signature = b"Pixelbench worker v1"
             with marker.open("r+b") as lease:
-                msvcrt.locking(lease.fileno(), msvcrt.LK_NBLCK, 1)
+                lock(lease)
                 if lease.read() != signature:
                     continue
             # This directory is never reused by a future worker.
@@ -36,7 +54,7 @@ if sys.argv[1] == "sweep":
 
 source, root = map(Path, sys.argv[1:3])
 lease = (root / ".pixelbench").open("r+b")
-msvcrt.locking(lease.fileno(), msvcrt.LK_NBLCK, 1)
+lock(lease)
 secret = os.environ.pop("PIXELBENCH_WORKER_TOKEN")
 
 

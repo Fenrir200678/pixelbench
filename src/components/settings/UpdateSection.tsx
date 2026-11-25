@@ -74,7 +74,9 @@ export function UpdateSection({ updates, busy }: { updates: Updates; busy: boole
       </SettingRow>
       {git && (
         <p className="setting-intro">
-          {t('Dieser Ordner ist ein Git-Checkout. Aktualisiere ihn mit git pull und danach install.cmd.')}
+          {t(
+            'Dieser Ordner ist ein Git-Checkout. Aktualisiere ihn mit git pull und starte danach install.cmd oder install.command.'
+          )}
         </p>
       )}
       <SettingRow

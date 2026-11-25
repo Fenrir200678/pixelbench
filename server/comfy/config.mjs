@@ -1,7 +1,9 @@
-import { win32 } from 'node:path'
+import { homedir } from 'node:os'
+import { isAbsolute, join, normalize } from 'node:path'
 
-// Placeholder until install.cmd or the settings point to a real ComfyUI.
-const install = 'C:/ComfyUI'
+const windows = process.platform === 'win32'
+// Placeholder until the installer or the settings point to a real ComfyUI.
+const install = windows ? 'C:\\ComfyUI' : join(homedir(), 'ComfyUI')
 
 export const categories = [
   'diffusion_models',
@@ -31,7 +33,7 @@ export const defaults = {
   // Extra ComfyUI command-line flags for the private process, such as --use-sage-attention.
   args: [],
   source: install,
-  python: install + '/.venv/Scripts/python.exe',
+  python: windows ? join(install, '.venv', 'Scripts', 'python.exe') : join(install, '.venv', 'bin', 'python'),
   roots: [],
   extra: {
     diffusion_models: [],
@@ -127,12 +129,14 @@ export function validateAddress(value) {
 
 export function validateConfig(input) {
   const localPath = (val) => {
-    // eslint-disable-next-line no-control-regex -- Reject control characters in Windows paths.
+    // eslint-disable-next-line no-control-regex -- Reject control characters in paths.
     const controlCharacters = /[\u0000-\u001f]/
-    if (typeof val !== 'string' || !/^[a-z]:[\\/]/i.test(val) || val.length > 1024 || controlCharacters.test(val)) {
-      throw new Error('Enter an absolute Windows path with a drive letter.')
+    if (typeof val !== 'string' || val.length > 1024 || controlCharacters.test(val)) throw new Error('Invalid path.')
+    // Windows paths need a drive letter: isAbsolute also accepts \folder there, which depends on the current drive.
+    if (windows ? !/^[a-z]:[\\/]/i.test(val) : !isAbsolute(val)) {
+      throw new Error(windows ? 'Enter an absolute Windows path with a drive letter.' : 'Enter an absolute path.')
     }
-    return win32.normalize(val)
+    return normalize(val)
   }
   const paths = (values) => {
     if (!Array.isArray(values) || values.length > 20) throw new Error('Invalid model paths.')
@@ -166,8 +170,8 @@ export function searchPaths(config, category) {
   return [
     ...new Set([
       ...config.extra[category],
-      ...config.roots.flatMap((root) => subdirs[category].map((dir) => win32.join(root, dir))),
-      ...subdirs[category].map((dir) => win32.join(config.source, 'models', dir))
+      ...config.roots.flatMap((root) => subdirs[category].map((dir) => join(root, dir))),
+      ...subdirs[category].map((dir) => join(config.source, 'models', dir))
     ])
   ]
 }

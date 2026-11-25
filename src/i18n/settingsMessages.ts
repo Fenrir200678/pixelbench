@@ -91,8 +91,8 @@ export const settingsEnglish: Record<string, string> = {
   'Der Ordner mit main.py.': 'The folder that contains main.py.',
   'ComfyUI-Ordner auswählen': 'Choose the ComfyUI folder',
   Python: 'Python',
-  'Das python.exe der Umgebung, in der ComfyUI installiert ist, meist in .venv\\Scripts.':
-    'The python.exe of the environment ComfyUI is installed in, usually in .venv\\Scripts.',
+  'Das Python der Umgebung, in der ComfyUI installiert ist, meist in .venv\\Scripts (Windows) oder .venv/bin (macOS).':
+    'The Python of the environment ComfyUI is installed in, usually in .venv\\Scripts (Windows) or .venv/bin (macOS).',
   'Python-Programm auswählen': 'Choose the Python executable',
   Modelle: 'Models',
   Modellordner: 'Model folders',
@@ -177,8 +177,8 @@ export const settingsEnglish: Record<string, string> = {
     'Update Pixelbench to version {{version}}? The server restarts during the update.',
   'Nach Updates suchen': 'Check for updates',
   'Jetzt aktualisieren': 'Update now',
-  'Dieser Ordner ist ein Git-Checkout. Aktualisiere ihn mit git pull und danach install.cmd.':
-    'This folder is a git checkout. Update it with git pull, then run install.cmd.',
+  'Dieser Ordner ist ein Git-Checkout. Aktualisiere ihn mit git pull und starte danach install.cmd oder install.command.':
+    'This folder is a git checkout. Update it with git pull, then run install.cmd or install.command.',
   'Beim Start nach Updates suchen': 'Check for updates on start',
   'Fragt höchstens einmal am Tag bei GitHub nach einer neuen Version. Bilder und Prompts werden dabei nicht übertragen.':
     'Asks GitHub for a new version at most once a day. No images or prompts are sent.',

@@ -79,7 +79,9 @@ export function ComfySection({ form, blocked }: { form: ConfigDraft; blocked: bo
             <SettingRow
               id="config-python"
               label={t('Python')}
-              note={t('Das python.exe der Umgebung, in der ComfyUI installiert ist, meist in .venv\\Scripts.')}
+              note={t(
+                'Das Python der Umgebung, in der ComfyUI installiert ist, meist in .venv\\Scripts (Windows) oder .venv/bin (macOS).'
+              )}
               wide
             >
               <PathField

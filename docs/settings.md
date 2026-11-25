@@ -21,7 +21,7 @@ File format, JPG quality, **Store generation data** (PNG only; prompt, seed and 
 - **Private** (default): Pixelbench starts its own ComfyUI for itself only and cleans up afterwards.
 - **External**: connects to a running ComfyUI on a local address (`127.0.0.1`, `localhost` or `[::1]`, plain HTTP). Use **Test connection**. Generating needs the private instance, see [Privacy](editor.md#privacy-and-the-private-comfyui-process).
 - **ComfyUI folder**: the folder that contains `main.py`.
-- **Python**: the `python.exe` of the environment ComfyUI is installed in, usually in `.venv\Scripts`. It must have PyTorch.
+- **Python**: the `python.exe` of the environment ComfyUI is installed in, usually in `.venv\Scripts`. On macOS it is `python` in `.venv/bin`. It must have PyTorch.
 - **Model folders** (model roots): folders with subfolders such as `checkpoints`, `loras` or `vae`. Models inside the ComfyUI folder are always found.
 - **More folders per model type**: extra search folders for `diffusion_models`, `text_encoders`, `vae`, `checkpoints`, `loras`, `controlnet`, `model_patches` and `upscale_models`.
 - **Port**: leave empty to pick a free port on every start of the private process.
@@ -47,6 +47,8 @@ Changing the mode restarts the private process. When an image session ends, the 
 
 Shows the connection status and device. **Restart server** stops ComfyUI and restarts both, and the page reconnects on its own. **Shut down server** stops Pixelbench and ComfyUI; you can only start it again from `Pixelbench.cmd` or a terminal. Ctrl+C in the start window also stops the server.
 
+Paths in Settings are normal absolute paths. On Windows they need a drive letter, such as `D:\ComfyUI`. On macOS they look like `/Users/name/ComfyUI`. The folder and file pickers work on both systems.
+
 ## About
 
 Version, author, license and the technology Pixelbench is built with.
@@ -59,10 +61,10 @@ Version, author, license and the technology Pixelbench is built with.
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `PIXELBENCH_PORT`       | Port of the Pixelbench server. Default 3720. Set it in every terminal when you also use the dev server.        |
 | `PIXELBENCH_STATE`      | Folder that holds `.settings.json` and `.runtime` instead of the Pixelbench folder.                            |
-| `PIXELBENCH_NO_BROWSER` | Set to `1` to keep `Pixelbench.cmd` from opening the browser.                                                  |
-| `PIXELBENCH_CHROME`     | Path to Chrome for the browser test in `checks/`.                                                              |
+| `PIXELBENCH_NO_BROWSER` | Set to `1` to keep `Pixelbench.cmd` or `Pixelbench.command` from opening the browser.                          |
+| `PIXELBENCH_CHROME`     | Path to Chrome for `checks/browser.mjs` and `checks/references-ui.mjs`. Defaults: `C:/Program Files/Google/Chrome/Application/chrome.exe` on Windows, `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS. |
 | `PIXELBENCH_UPDATE_FEED` | Release list the update check reads instead of GitHub's, for testing the updater against a local server.     |
 
 Existing browser settings from earlier versions are still read.
 
-In PowerShell, set a variable for the current window with `$env:PIXELBENCH_PORT = 3721`.
+In PowerShell, set a variable for the current window with `$env:PIXELBENCH_PORT = 3721`. In zsh or bash on macOS, use `export PIXELBENCH_PORT=3721` in the terminal you start from.

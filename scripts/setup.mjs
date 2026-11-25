@@ -20,6 +20,9 @@ const usage = `Usage: node scripts/setup.mjs [options]
   --yes             Accept the first choice for every question
   --help            Show this help`
 
+// The double-click scripts in the Pixelbench folder, named in the messages.
+const [installer, starter] =
+  process.platform === 'win32' ? ['install.cmd', 'Pixelbench.cmd'] : ['install.command', 'Pixelbench.command']
 const root = fileURLToPath(new URL('../', import.meta.url))
 const stateDirectory = process.env.PIXELBENCH_STATE
 const state = stateDirectory ? resolve(stateDirectory) : root
@@ -72,7 +75,8 @@ async function checkPython(config, requirements) {
   if (!report.torch)
     throw new Error('PyTorch does not load in this environment: ' + (report.torchError ?? 'not installed'))
   if (report.cuda) ui.ok('PyTorch ' + report.torch + ' · ' + report.device + ' · ' + report.vram + ' GB')
-  else ui.warn('PyTorch ' + report.torch + ' runs without CUDA. Generating will be very slow.')
+  else if (report.mps) ui.ok('PyTorch ' + report.torch + ' · Apple Silicon (MPS)')
+  else ui.warn('PyTorch ' + report.torch + ' runs without GPU support. Generating will be very slow.')
   const version = await comfyVersion(config.source)
   if (!version) ui.warn('Unknown ComfyUI version.')
   else if (compareVersions(version, manifest.comfyui) < 0)
@@ -109,7 +113,7 @@ async function main() {
   if (options.check) {
     const complete = await checkNodes()
     if (report.missing.length) ui.warn('Missing Python packages: ' + report.missing.join(', '))
-    if (!complete || report.missing.length || changed) throw new Error('Setup is incomplete. Run install.cmd.')
+    if (!complete || report.missing.length || changed) throw new Error('Setup is incomplete. Run ' + installer + '.')
     ui.step('Everything is in place.')
     return
   }
@@ -136,7 +140,7 @@ async function main() {
     ui.info('Model folders: ' + (config.roots.join(', ') || 'only the models folder inside ComfyUI'))
     ui.info('Both can be changed later in Pixelbench under Settings.')
   }
-  ui.step('Pixelbench is ready. Start it with Pixelbench.cmd.')
+  ui.step('Pixelbench is ready. Start it with ' + starter + '.')
 }
 
 try {

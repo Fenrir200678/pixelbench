@@ -35,6 +35,8 @@ export type Profile = {
   models: ModelSlot[]
   selected: ModelChoices
   candidates: Record<string, string[]>
+  /** Files the backend has but cannot run, such as fp8 diffusion models on Apple Silicon. */
+  unsupported?: Record<string, string[]>
   catalog: Record<string, string[]>
   parameters: Record<
     string,

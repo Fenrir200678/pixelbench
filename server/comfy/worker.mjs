@@ -215,8 +215,9 @@ async function sweepOnce(config, runtime, current) {
     () => []
   )
   if (!orphans.length) return
-  // System Python is a fallback for cleanup when the configured installation moved.
-  for (const python of [config.python, 'python']) {
+  // System Python is a fallback for cleanup when the configured installation moved. macOS only has python3.
+  const system = process.platform === 'win32' ? ['python'] : ['python3', 'python']
+  for (const python of [config.python, ...system]) {
     try {
       const child = spawn(python, ['-B', workerScript, 'sweep', runtime, current ?? ''], {
         windowsHide: true,

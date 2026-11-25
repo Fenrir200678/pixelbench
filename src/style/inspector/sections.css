@@ -179,6 +179,11 @@ summary::-webkit-details-marker {
   font-family: var(--font-mono);
   white-space: normal;
 }
+.model-missing-unsupported {
+  margin-top: var(--space-1-5);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
 .model-missing-paths {
   margin-top: var(--space-1-5);
 }
