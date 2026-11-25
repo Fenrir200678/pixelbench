@@ -2,6 +2,18 @@
 
 All notable changes to Pixelbench. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.4.0-beta.1]
+
+### Added
+
+- macOS support: Pixelbench can be installed and launched on macOS, including Apple Silicon, with its own install and launch commands and platform-specific keyboard shortcuts.
+- Models that are not supported on Apple Silicon are flagged in the inspector instead of failing silently.
+
+### Changed
+
+- Variant handling was reworked: applying a variant shows its source on the canvas, and clearing variants also works for newly created documents.
+- Shortcut hints in the editor and topbar follow the platform you are on.
+
 ## [0.3.0-beta.1]
 
 ### Added
@@ -39,6 +51,7 @@ All notable changes to Pixelbench. Versions follow [Semantic Versioning](https:/
 
 First public beta.
 
+[0.4.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.3.0-beta.1
 [0.2.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/Fenrir200678/pixelbench/releases/tag/v0.1.0-beta.1
