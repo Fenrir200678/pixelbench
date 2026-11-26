@@ -86,7 +86,7 @@ export function Topbar({
           <Button
             id="export"
             className="quiet icon"
-            icon="export"
+            icon="save"
             aria-label={exportLabel}
             aria-keyshortcuts={exportKey}
             title={`${exportLabel} (${exportKey.replace('Shift+', t('Umschalt') + '+')})`}

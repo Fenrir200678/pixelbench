@@ -7,6 +7,7 @@ import { WorkflowSwitch } from './components/inspector/WorkflowPresets.js'
 import { RunPanel } from './components/RunPanel.js'
 import { SettingsDialog } from './components/settings/SettingsDialog.js'
 import { Topbar } from './components/Topbar.js'
+import { exportKey } from './editor/tools.js'
 import { outpaintSides, referenceImage } from './editor/generation.js'
 import { fitView, suggestExpansion } from './editor/geometry.js'
 import { useAdjustments } from './hooks/useAdjustments.js'
@@ -518,6 +519,11 @@ export function EditorApp() {
                 disabled={!canRun}
                 title={runTitle}
                 onRun={() => run()}
+                save={{
+                  disabled: !(image && !document.exporting),
+                  title: `${t('{{format}} exportieren', { format: document.exportFormat.toUpperCase() })} (${exportKey.replace('Shift+', t('Umschalt') + '+')})`,
+                  onClick: document.download
+                }}
               />
             </Inspector>
           </Panel>

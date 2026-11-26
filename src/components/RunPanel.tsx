@@ -83,13 +83,16 @@ export function RunPanel({
   notice,
   disabled,
   title,
-  onRun
+  onRun,
+  save
 }: {
   generation: Generation
   notice?: { message: string; good: boolean; values?: NoticeValues }
   disabled: boolean
   title: string
   onRun: () => void
+  /** Saves the open image. Sits next to Generate so the result is one click away. */
+  save: { disabled: boolean; title: string; onClick: () => void }
 }) {
   const { t } = useTranslation()
   const { running, progress, history, refining, cancelling, cancel } = generation
@@ -119,28 +122,41 @@ export function RunPanel({
           value={refining ? undefined : (progress?.progress ?? 0)}
         />
       </div>
-      <Button
-        id="generate"
-        className="primary generate"
-        icon="edit"
-        title={title}
-        disabled={disabled}
-        hidden={running}
-        onClick={onRun}
-      >
-        <span>{t('Generieren')}</span>
-        <kbd>{modKey(t) + ' ↵'}</kbd>
-      </Button>
-      <Button
-        id="cancel"
-        className="secondary generate"
-        icon="close"
-        hidden={!running}
-        disabled={cancelling}
-        onClick={cancel}
-      >
-        {t('Abbrechen')}
-      </Button>
+      <div className="run-actions">
+        <Button
+          id="generate"
+          className="primary generate"
+          icon="edit"
+          title={title}
+          disabled={disabled}
+          hidden={running}
+          onClick={onRun}
+        >
+          <span>{t('Generieren')}</span>
+          <kbd>{modKey(t) + ' ↵'}</kbd>
+        </Button>
+        <Button
+          id="save-image"
+          className="secondary generate"
+          icon="save"
+          title={save.title}
+          disabled={save.disabled}
+          hidden={running}
+          onClick={save.onClick}
+        >
+          <span>{t('Speichern')}</span>
+        </Button>
+        <Button
+          id="cancel"
+          className="secondary generate"
+          icon="close"
+          hidden={!running}
+          disabled={cancelling}
+          onClick={cancel}
+        >
+          {t('Abbrechen')}
+        </Button>
+      </div>
     </div>
   )
 }
