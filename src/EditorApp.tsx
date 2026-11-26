@@ -102,8 +102,6 @@ export function EditorApp() {
     work,
     profile: workflow.profile,
     importVersion: document.importVersion,
-    prompt: workflow.prompt,
-    setPrompt: workflow.setPrompt,
     notice
   })
   const adjustments = useAdjustments({ work, mask: maskData?.alpha, commit: document.commit })
@@ -628,6 +626,8 @@ export function EditorApp() {
               onReference={() => referenceInput.current?.click()}
               onDropReferences={references.add}
               onRemoveReference={references.remove}
+              onMoveReference={references.move}
+              onReplaceReference={references.replace}
               opacity={opacity}
               onOpacity={setOpacity}
               onMargins={document.setMargins}

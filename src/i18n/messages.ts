@@ -49,8 +49,8 @@ export const english: Record<string, string> = {
   'Referenzbilder hinzufügen': 'Add reference images',
   'Bilder hierher ziehen · < im Prompt für Bildauswahl': 'Drop images here · type < in the prompt to choose an image',
   'Maximal {{count}} Referenzbilder.': 'Maximum {{count}} reference images.',
-  'Referenz entfernt. Bildnummern im Prompt wurden angepasst.':
-    'Reference removed. Image numbers in the prompt were updated.',
+  'Referenz entfernt. Die Bildverweise im Prompt bleiben unverändert.':
+    'Reference removed. Image tags in the prompt were left unchanged.',
   Exportformat: 'Export format',
   'Nach Übernehmen eines erstellten Bildes zu Ändern wechseln': 'Switch to Edit after applying a created image',
   'Bild übernommen.': 'Image applied.',

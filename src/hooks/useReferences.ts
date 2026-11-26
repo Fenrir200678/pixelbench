@@ -9,13 +9,11 @@ type Inputs = {
   work: Work | undefined
   profile: Profile | undefined
   importVersion: MutableRefObject<number>
-  prompt: string
-  setPrompt: (prompt: string) => void
   notice: Notice
 }
 
 /** Reference images for the active profile. Imports are queued and dropped when the document changes. */
-export function useReferences({ work, profile, importVersion, prompt, setPrompt, notice }: Inputs) {
+export function useReferences({ work, profile, importVersion, notice }: Inputs) {
   const [items, setItems] = useState<ReferenceImage[]>([])
   const queue = useRef(Promise.resolve())
   const version = useRef(0)
@@ -46,19 +44,37 @@ export function useReferences({ work, profile, importVersion, prompt, setPrompt,
     })
   }
 
+  /** The prompt is left untouched, so a replacement image keeps its <imageN> tags. */
   function remove(id: string) {
-    const index = items.findIndex((item) => item.id === id)
-    if (index < 0) return
     setItems((list) => list.filter((item) => item.id !== id))
-    // Keep <imageN> tags in the prompt aligned with the remaining references (image 1 is the source).
-    setPrompt(
-      prompt.replace(/<image(\d+)>/g, (tag, number) => {
-        const n = Number(number)
-        return n === index + 2 ? '' : n > index + 2 ? `<image${n - 1}>` : tag
-      })
-    )
-    notice('Referenz entfernt. Bildnummern im Prompt wurden angepasst.', true)
   }
 
-  return { items, add, remove, reset }
+  /** Moves the reference `from` to the position of the reference `to`. */
+  function move(from: string, to: string) {
+    setItems((list) => {
+      const source = list.findIndex((item) => item.id === from)
+      const target = list.findIndex((item) => item.id === to)
+      if (source < 0 || target < 0 || source === target) return list
+      const next = [...list]
+      next.splice(target, 0, ...next.splice(source, 1))
+      return next
+    })
+  }
+
+  /** Swaps the image of one reference for a dropped file. */
+  function replace(id: string, file: File) {
+    const current = version.current
+    const document = importVersion.current
+    queue.current = queue.current.then(async () => {
+      try {
+        const frame = await importImage(file)
+        if (current !== version.current || document !== importVersion.current) return
+        setItems((list) => list.map((item) => (item.id === id ? { ...item, frame, name: file.name } : item)))
+      } catch (error) {
+        notice(messageOf(error))
+      }
+    })
+  }
+
+  return { items, add, remove, move, replace, reset }
 }

@@ -10,6 +10,8 @@ import { Icon } from '../../ui/Icon.js'
 import { Thumbnail } from '../../ui/Thumbnail.js'
 import { WeightedTextarea } from './WeightedTextarea.js'
 
+const referenceDrag = 'application/x-pixelbench-reference'
+
 export function PromptFields({
   value,
   onChange,
@@ -29,6 +31,8 @@ export function PromptFields({
   onAdd,
   onDrop,
   onRemove,
+  onMove,
+  onReplace,
   weights,
   weightRange
 }: {
@@ -54,6 +58,8 @@ export function PromptFields({
   onAdd: () => void
   onDrop: (files: File[]) => void
   onRemove: (id: string) => void
+  onMove: (from: string, to: string) => void
+  onReplace: (id: string, file: File) => void
 }) {
   const { t } = useTranslation()
   const textarea = useRef<HTMLTextAreaElement>(null)
@@ -62,6 +68,9 @@ export function PromptFields({
   const [query, setQuery] = useState<{ start: number; end: number; text: string }>()
   const [active, setActive] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [dropTarget, setDropTarget] = useState<string>()
+  /** Reference count before the last removal; the notice shows until a reference is added again. */
+  const [removedFrom, setRemovedFrom] = useState(0)
   const [proposal, setProposal] = useState<{ original: string; text: string; image?: Frame }>()
   const currentProposal = proposal?.original === value && proposal.image === image ? proposal.text : undefined
   const weightMode = weights === 'on' ? 'on' : 'off'
@@ -294,7 +303,41 @@ export function PromptFields({
           <div className="section-content">
             <div className="reference-grid">
               {images.map((item, i) => (
-                <div key={item.id} className="reference-card" title={item.name}>
+                <div
+                  key={item.id}
+                  className="reference-card"
+                  title={item.name}
+                  draggable={i > 0}
+                  data-target={dropTarget === item.id}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData(referenceDrag, item.id)
+                    event.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragOver={(event) => {
+                    if (i === 0) return
+                    const types = event.dataTransfer.types
+                    if (!types.includes('Files') && !types.includes(referenceDrag)) return
+                    event.preventDefault()
+                    event.stopPropagation()
+                    event.dataTransfer.dropEffect = types.includes('Files') ? 'copy' : 'move'
+                    setDropTarget(item.id)
+                  }}
+                  onDragLeave={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTarget(undefined)
+                  }}
+                  onDragEnd={() => setDropTarget(undefined)}
+                  onDrop={(event) => {
+                    if (i === 0) return
+                    event.preventDefault()
+                    event.stopPropagation()
+                    setDropTarget(undefined)
+                    setDragging(false)
+                    const from = event.dataTransfer.getData(referenceDrag)
+                    const file = event.dataTransfer.files[0]
+                    if (from) onMove(from, item.id)
+                    else if (file) onReplace(item.id, file)
+                  }}
+                >
                   <Thumbnail frame={item.frame} />
                   <code>{`<image${i + 1}>`}</code>
                   <span>{i === 0 ? t('Startbild') : item.name}</span>
@@ -303,12 +346,20 @@ export function PromptFields({
                       className="reference-remove icon compact"
                       icon="close"
                       aria-label={t('Referenzbild entfernen') + ` <image${i + 1}>`}
-                      onClick={() => onRemove(item.id)}
+                      onClick={() => {
+                        setRemovedFrom(references.length)
+                        onRemove(item.id)
+                      }}
                     />
                   )}
                 </div>
               ))}
             </div>
+            {references.length < removedFrom && (
+              <p className="field-note reference-notice" role="status">
+                {t('Referenz entfernt. Die Bildverweise im Prompt bleiben unverändert.')}
+              </p>
+            )}
             <Button
               id="ref-add"
               className="reference-add quiet compact"

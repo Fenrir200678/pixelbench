@@ -42,6 +42,8 @@ export function Inspector({
   onDropReferences,
   onReference,
   onRemoveReference,
+  onMoveReference,
+  onReplaceReference,
   work,
   opacity,
   onOpacity,
@@ -70,6 +72,8 @@ export function Inspector({
   onDropReferences: (files: File[]) => void
   onReference: () => void
   onRemoveReference: (id: string) => void
+  onMoveReference: (from: string, to: string) => void
+  onReplaceReference: (id: string, file: File) => void
   work?: Work
   opacity: number
   onOpacity: (value: number) => void
@@ -143,6 +147,8 @@ export function Inspector({
           onAdd={onReference}
           onDrop={onDropReferences}
           onRemove={onRemoveReference}
+          onMove={onMoveReference}
+          onReplace={onReplaceReference}
           weights={profile?.weightsActive ? 'on' : profile?.weights === 'krea2' ? 'missing' : 'off'}
           weightRange={profile?.weights === 'krea2' ? [-1, 2] : [0, 2]}
         />
