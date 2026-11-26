@@ -204,7 +204,7 @@ export function EditorApp() {
     variants.deselect()
     if (next === activeTool.current) return
     changeTool(next)
-    tools.resetForTool()
+    tools.resetForTool(next)
     if (work && next === 'outpaint' && !Object.values(work.margins).some(Boolean)) {
       document.setMargins(suggestExpansion(work.image))
     }

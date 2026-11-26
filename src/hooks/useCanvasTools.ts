@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { brushLimits } from '../editor/tools.js'
 import type { Drawing } from '../image/mask.js'
 import { clamp } from '../image/pixels.js'
@@ -26,7 +26,7 @@ export type SessionTools = {
 
 /** Canvas interaction state: pan, frame, brush, eraser and mask visibility. */
 export function useCanvasTools({ tool, work, create, drawing, commit, deselect }: Inputs) {
-  const [pan, setPan] = useState(false)
+  const [pan, setPan] = useState(true)
   const [frameMode, setFrameMode] = useState(false)
   const [space, setSpace] = useState(false)
   const [eraser, setEraser] = useState(false)
@@ -34,6 +34,7 @@ export function useCanvasTools({ tool, work, create, drawing, commit, deselect }
   const [brushColor, setBrushColor] = useState('#b3263c')
   const [brushSize, setBrushSize] = useState(48)
   const [showMask, setShowMask] = useState(true)
+  const remembered = useRef<Partial<Record<Tool, Pick<SessionTools, 'pan' | 'frameMode' | 'paintBrush' | 'eraser'>>>>({})
   const sessionState = useMemo(
     () => ({ pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask }),
     [pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask]
@@ -68,12 +69,14 @@ export function useCanvasTools({ tool, work, create, drawing, commit, deselect }
     setShowMask(true)
   }
 
-  /** Resets every mode that does not carry over to another tool. */
-  function resetForTool() {
-    setPan(false)
-    setFrameMode(false)
-    setPaintBrush(false)
-    setEraser(false)
+  /** Remembers the active canvas mode of the current tool and restores the one last used in the next tool. */
+  function resetForTool(next: Tool) {
+    remembered.current[tool] = { pan, frameMode, paintBrush, eraser }
+    const saved = remembered.current[next]
+    setPan(saved?.pan ?? true)
+    setFrameMode(saved?.frameMode ?? false)
+    setPaintBrush(saved?.paintBrush ?? false)
+    setEraser(saved?.eraser ?? false)
   }
 
   /** Resets the state tied to the previous document. */

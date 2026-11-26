@@ -181,12 +181,12 @@ export function Inspector({
           </CollapsibleSection>
         )}
         <ModelToggleSections workflow={workflow} />
-        {workflow.hiresAvailable && (
-          <HiresFields workflow={workflow} work={work} canApply={canHiresImage} onApply={onHiresImage} />
-        )}
         {inpaint && <MaskFields workflow={workflow} opacity={opacity} onOpacity={onOpacity} />}
         <RenderFields workflow={workflow} />
         <SamplingFields workflow={workflow} />
+        {workflow.hiresAvailable && (
+          <HiresFields workflow={workflow} work={work} canApply={canHiresImage} onApply={onHiresImage} />
+        )}
         {detailer.available && (
           <DetailerFields
             detailer={detailer}
