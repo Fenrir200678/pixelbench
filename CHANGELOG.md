@@ -2,11 +2,25 @@
 
 All notable changes to Pixelbench. Versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.5.0-beta.1]
 
 ### Added
 
 - Remove background in Extras: BiRefNet cuts out the subject of the shown image and makes the background transparent, with ComfyUI's core nodes and the model in `background_removal`.
+- Detailer: optional own sampler, scheduler, steps and CFG for the detected objects, separate from the render.
+- Hires fix: optional own sampler and scheduler for the hires pass, next to its own steps.
+- A **Detailer** button in the variant toolbar, next to the hires fix button, runs the detailer on the selected variant with the current detailer settings.
+- Reference images can be reordered by dragging, and dropping an image file onto a reference replaces it.
+- The outpaint frame can be moved as a whole, and its edges snap to the model's size grid.
+- About Pixelbench links to the release notes of the installed version and to all releases.
+
+### Changed
+
+- The detailer and hires fix sections are split into **General** and **Advanced** tabs. A dot on the Advanced tab marks active custom settings there, such as own sampling.
+- Hires fix: **Details** is now called **Strength**, and its button is now **Apply to current image**, as in the detailer.
+- Scale by: the factor presets sit as marks under the factor slider instead of in a separate row.
+- Removing a reference image no longer renumbers the image tags in the prompt, so a replacement image keeps its tags.
+- Clearing variants is disabled while there is nothing to clear, and the variant strip stays visible while it only holds the source image.
 
 ## [0.4.0-beta.1]
 

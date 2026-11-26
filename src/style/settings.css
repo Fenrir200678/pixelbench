@@ -488,6 +488,11 @@ kbd {
   color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
+.server-facts .about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
 
 /* ---------- Fußzeile mit ungespeicherten Änderungen ---------- */
 

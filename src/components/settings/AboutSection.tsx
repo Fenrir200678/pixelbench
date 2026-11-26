@@ -3,6 +3,9 @@ import type { Updates } from '../../hooks/useUpdates.js'
 import { SettingGroup } from '../../ui/SettingRow.js'
 import { UpdateSection } from './UpdateSection.js'
 
+// The release workflow puts the version's CHANGELOG.md section at the top of its GitHub release.
+const releases = 'https://github.com/Fenrir200678/pixelbench/releases'
+
 export function AboutSection({ updates, busy }: { updates: Updates; busy: boolean }) {
   const { t } = useTranslation()
   return (
@@ -33,6 +36,15 @@ export function AboutSection({ updates, busy }: { updates: Updates; busy: boolea
           <dd>{__APP_LICENSE__}</dd>
           <dt>{t('Technik')}</dt>
           <dd>React, Vite, ComfyUI</dd>
+          <dt>{t('Neuigkeiten')}</dt>
+          <dd className="about-links">
+            <a href={releases + '/tag/v' + __APP_VERSION__} target="_blank" rel="noopener noreferrer">
+              {t('Was ist neu in v{{version}}', { version: __APP_VERSION__ })}
+            </a>
+            <a href={releases} target="_blank" rel="noopener noreferrer">
+              {t('Alle Versionen')}
+            </a>
+          </dd>
         </dl>
         <p className="setting-intro">
           {t('Läuft komplett auf deinem Rechner. Bilder und Prompts verlassen ihn nicht.')}
