@@ -3,9 +3,10 @@
 .topbar {
   z-index: var(--z-raised);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
   min-height: var(--topbar-height);
   padding: 0 var(--space-2) 0 var(--space-3);
   border-bottom: 1px solid var(--border-gutter);
@@ -71,6 +72,35 @@
 .history {
   display: flex;
   gap: var(--space-0-5);
+}
+.session-controls {
+  flex: none;
+  display: flex;
+  gap: var(--space-0-5);
+  padding-inline-start: var(--space-1);
+  border-inline-start: 1px solid var(--border-default);
+}
+.session-save {
+  position: relative;
+}
+.session-save[data-attention]::after {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-end: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-round);
+  background: var(--status-warn);
+  content: '';
+}
+.session-save[data-attention='busy']::after {
+  background: var(--accent-text);
+}
+.session-save[data-attention='error']::after {
+  background: var(--status-error);
+}
+.session-restore {
+  padding-inline: var(--space-2);
 }
 
 /* Moduswahl: segmentierte Steuerung */
@@ -150,6 +180,7 @@
 /* ---------- Arbeitsfläche & Panels ---------- */
 
 .editor {
+  min-width: 0;
   min-height: 0;
 }
 .workspace {

@@ -23,6 +23,11 @@ export function useReferences({ work, profile, importVersion, notice }: Inputs) 
     setItems([])
   }
 
+  function restore(next: ReferenceImage[]) {
+    version.current++
+    setItems(next)
+  }
+
   function add(files: File[]) {
     if (!work || !profile?.reference) return
     const current = version.current
@@ -76,5 +81,5 @@ export function useReferences({ work, profile, importVersion, notice }: Inputs) 
     })
   }
 
-  return { items, add, remove, move, replace, reset }
+  return { items, add, remove, move, replace, reset, restore }
 }

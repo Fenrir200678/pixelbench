@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { brushLimits } from '../editor/tools.js'
 import type { Drawing } from '../image/mask.js'
 import { clamp } from '../image/pixels.js'
@@ -14,6 +14,16 @@ type Inputs = {
   deselect: () => void
 }
 
+export type SessionTools = {
+  pan: boolean
+  frameMode: boolean
+  eraser: boolean
+  paintBrush: boolean
+  brushColor: string
+  brushSize: number
+  showMask: boolean
+}
+
 /** Canvas interaction state: pan, frame, brush, eraser and mask visibility. */
 export function useCanvasTools({ tool, work, create, drawing, commit, deselect }: Inputs) {
   const [pan, setPan] = useState(false)
@@ -24,6 +34,10 @@ export function useCanvasTools({ tool, work, create, drawing, commit, deselect }
   const [brushColor, setBrushColor] = useState('#b3263c')
   const [brushSize, setBrushSize] = useState(48)
   const [showMask, setShowMask] = useState(true)
+  const sessionState = useMemo(
+    () => ({ pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask }),
+    [pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask]
+  )
 
   function chooseEraser(value: boolean) {
     deselect()
@@ -83,6 +97,17 @@ export function useCanvasTools({ tool, work, create, drawing, commit, deselect }
   }
 
   return {
+    sessionState,
+    restore(next: SessionTools) {
+      setPan(next.pan)
+      setFrameMode(next.frameMode)
+      setSpace(false)
+      setEraser(next.eraser)
+      setPaintBrush(next.paintBrush)
+      setBrushColor(next.brushColor)
+      setBrushSize(next.brushSize)
+      setShowMask(next.showMask)
+    },
     pan,
     space,
     frameMode,

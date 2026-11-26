@@ -37,6 +37,7 @@ export function useDetailer(tool: Tool, status: Status | undefined, profile: Pro
   const available = tool === 'create' && Boolean(profile?.img2img)
   return {
     settings,
+    restore: setSettings,
     detector,
     yoloModels,
     // What the detailer looks for, such as "face".

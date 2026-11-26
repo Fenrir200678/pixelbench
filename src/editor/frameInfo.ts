@@ -27,6 +27,11 @@ export function rememberGeneration(frame: Frame, request: Request) {
 
 export const generationOf = (frame: Frame) => records.get(frame)
 
+export function restoreGeneration(frame: Frame, record?: PixelbenchRecord) {
+  if (record) records.set(frame, record)
+  return frame
+}
+
 // Pixel edits such as adjustments create a new frame from the same render, so it keeps that render's record.
 export function inheritGeneration(from: Frame, to: Frame) {
   const record = records.get(from)

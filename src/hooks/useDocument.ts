@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useReducer, useRef, useState, type RefObject } from 'react'
+import { useMemo, useReducer, useRef, useState, type RefObject } from 'react'
 import { emptyMargins, sizeLabel, suggestExpansion } from '../editor/geometry.js'
 import { messageOf } from '../helpers/async.js'
 import { exportImage, importImage } from '../image/files.js'
@@ -28,6 +28,7 @@ type DocumentState = {
   future: Work[]
 }
 const initial: DocumentState = { past: [], future: [], fileName: '' }
+export type SessionDocument = Omit<DocumentState, 'past' | 'future' | 'mask' | 'drawing'>
 type Change =
   | { type: 'open'; work: Work; mask: Mask; fileName: string; saved?: boolean; info?: GenerationInfo }
   | { type: 'commit'; work: Work; mask: Mask; drawing?: Drawing }
@@ -35,6 +36,7 @@ type Change =
   | { type: 'crop'; crop?: Rect }
   | { type: 'undo' | 'redo'; mask: Mask; drawing?: Drawing }
   | { type: 'saved'; image: Frame }
+  | { type: 'restore'; document: DocumentState }
   | { type: 'close' }
 
 function reducer(state: DocumentState, change: Change): DocumentState {
@@ -91,6 +93,8 @@ function reducer(state: DocumentState, change: Change): DocumentState {
     }
     case 'saved':
       return state.work?.image === change.image ? { ...state, saved: change.image } : state
+    case 'restore':
+      return change.document
     case 'close':
       return initial
   }
@@ -121,7 +125,11 @@ export function useDocument(notice: Notice, activeTool: RefObject<Tool>) {
   const { exportFormat, exportMetadata } = preferences
   const importVersion = useRef(0)
   const exportPending = useRef(false)
-  const { work, original, saved, fileName, info, mask, drawing } = state
+  const { work, original, saved, fileName, info, mask, drawing, created } = state
+  const sessionState = useMemo(
+    () => ({ work, original, saved, fileName, info, created }),
+    [work, original, saved, fileName, info, created]
+  )
   const dirty = Boolean(work && work.image !== saved && (work.image !== original || !saved))
 
   async function open(file: File, onOpen: (previous: boolean, importTool: Tool) => void): Promise<boolean> {
@@ -223,6 +231,20 @@ export function useDocument(notice: Notice, activeTool: RefObject<Tool>) {
   }
 
   return {
+    sessionState,
+    prepareRestore(next: SessionDocument) {
+      const restored = {
+        ...initial,
+        ...next,
+        mask: next.work && maskFor(next.work),
+        drawing: next.work && drawingFor(next.work)
+      }
+      return () => {
+        importVersion.current++
+        setImporting(false)
+        dispatch({ type: 'restore', document: restored })
+      }
+    },
     work,
     original,
     mask,

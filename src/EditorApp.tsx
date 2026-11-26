@@ -15,6 +15,7 @@ import { useUpdates } from './hooks/useUpdates.js'
 import { useCanvasTools } from './hooks/useCanvasTools.js'
 import { useConfig } from './hooks/useConfig.js'
 import { useDocument } from './hooks/useDocument.js'
+import { useEditorSession } from './hooks/useEditorSession.js'
 import { useEditorGeneration } from './hooks/useEditorGeneration.js'
 import { useReferences } from './hooks/useReferences.js'
 import { useShortcuts } from './hooks/useShortcuts.js'
@@ -25,6 +26,7 @@ import { useDetailer } from './hooks/useDetailer.js'
 import { useInspection } from './hooks/useInspection.js'
 import { useSendSettings, type SendTarget } from './hooks/useSendSettings.js'
 import type { Viewport } from './image/viewport.js'
+import type { Workspace } from './editor/session/workspace.js'
 import type { Notice, NoticeValues, Tool } from './types/editor.js'
 import type { Frame, Stroke } from './types/image.js'
 import { ResizableLayout, ResizeHandle } from './ui/ResizableLayout.js'
@@ -45,6 +47,7 @@ export function EditorApp() {
   const [opacity, setOpacity] = useState(52)
   const [variantsCollapsed, setVariantsCollapsed] = useState(false)
   const [consoleOpen, setConsoleOpen] = useState(false)
+  const [restored, setRestored] = useState(0)
   const { continueInEdit, consoleOnError } = usePreferences()
   const [message, setMessage] = useState<{ message: string; good: boolean; values?: NoticeValues }>()
   const notice = useCallback<Notice>(
@@ -124,6 +127,63 @@ export function EditorApp() {
   const canAdjust = Boolean(image && !generation.running)
   const { measurement } = workflow
   const canOpen = !generation.running && !serverAction
+  const snapshot = useMemo<Omit<Workspace, 'workflow'>>(
+    () => ({
+      tool,
+      opacity,
+      variantsCollapsed,
+      document: document.sessionState,
+      detailer: detailer.settings,
+      background: background.settings,
+      tools: tools.sessionState,
+      adjustments: adjustments.sessionState,
+      references: references.items,
+      variants: variants.sessionState,
+      inspection: inspection.inspected
+    }),
+    [
+      tool,
+      opacity,
+      variantsCollapsed,
+      document.sessionState,
+      detailer.settings,
+      background.settings,
+      tools.sessionState,
+      adjustments.sessionState,
+      references.items,
+      variants.sessionState,
+      inspection.inspected
+    ]
+  )
+  const sessionChanges = useMemo(() => [snapshot, workflow.sessionChanges], [snapshot, workflow.sessionChanges])
+  const session = useEditorSession({
+    workspace: { ...snapshot, workflow: workflow.sessionState },
+    changes: sessionChanges,
+    canRestore: canOpen && !generation.refining && !document.importing && !document.exporting,
+    notice,
+    prepareRestore(next) {
+      const restoreDocument = document.prepareRestore(next.document)
+      return () => {
+        bridge.closeSession()
+        restoreDocument()
+        changeTool(next.tool)
+        workflow.restore(next.workflow, next.tool)
+        detailer.restore(next.detailer)
+        background.restore(next.background)
+        tools.restore(next.tools)
+        adjustments.restore(next.document.work?.image, next.adjustments)
+        references.restore(next.references)
+        variants.dispatch({ type: 'restore', state: next.variants })
+        inspection.restore(next.inspection)
+        setOpacity(next.opacity)
+        setVariantsCollapsed(next.variantsCollapsed)
+        setRestored((version) => version + 1)
+        requestAnimationFrame(() =>
+          fitView(viewRef.current, next.tool, next.document.work, next.variants.items[next.variants.index]?.frame)
+        )
+      }
+    }
+  })
 
   // Outpaint refinement looks at the image, so it can also write a prompt from an empty field.
   async function refinePrompt(prompt: string, refineTool: Tool, profile?: string, model?: string) {
@@ -281,7 +341,7 @@ export function EditorApp() {
     tool,
     loaded: Boolean(image || (create && variants.items.length)),
     canOpen,
-    dirty: document.dirty,
+    dirty: document.dirty || session.unsaved,
     hasVariants: variants.items.length > 0,
     canFrame,
     canToggleMask,
@@ -350,6 +410,7 @@ export function EditorApp() {
       />
       <Topbar
         tool={tool}
+        session={session}
         canUndo={document.canUndo}
         canRedo={document.canRedo}
         openDisabled={!canOpen}
@@ -404,6 +465,7 @@ export function EditorApp() {
           <ResizeHandle label={t('Breite der Seitenleiste ändern')} />
           <Panel id="inspector-panel" className="layout-panel" defaultSize="320px" minSize="224px" maxSize="70%">
             <Inspector
+              key={restored}
               tool={tool}
               status={status}
               workflow={workflow}
@@ -466,6 +528,7 @@ export function EditorApp() {
           config={settings.config}
           bridge={bridge}
           updates={updates}
+          session={session}
           busy={generation.running || document.importing || document.exporting}
           onClose={settings.close}
         />

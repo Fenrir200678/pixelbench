@@ -3,12 +3,15 @@ import type { ReactNode } from 'react'
 import { exportKey, newImageKey, toolNames, tools } from '../editor/tools.js'
 import { appMessage } from '../i18n/appMessages.js'
 import { Button } from '../ui/Button.js'
+import { SessionControls } from './SessionControls.js'
 import type { Bridge } from '../hooks/useBridge.js'
+import type { EditorSession } from '../hooks/useEditorSession.js'
 import type { Tool } from '../types/editor.js'
 import { modKey } from '../helpers/platform.js'
 
 type Props = {
   tool: Tool
+  session: EditorSession
   canUndo: boolean
   canRedo: boolean
   canExport: boolean
@@ -30,6 +33,7 @@ type Props = {
 
 export function Topbar({
   tool,
+  session,
   canUndo,
   canRedo,
   canExport,
@@ -114,6 +118,7 @@ export function Topbar({
             onClick={onRedo}
           />
         </div>
+        <SessionControls session={session} />
       </div>
       <div className="mode-switcher" role="group" aria-label={t('Bearbeitungsmodi')}>
         {toolNames.map((mode) => {
@@ -129,7 +134,7 @@ export function Topbar({
               title={t(title) + ' (' + key + ')'}
               onClick={() => onTool(mode)}
             >
-              {t(label)}
+              <span>{t(label)}</span>
             </Button>
           )
         })}

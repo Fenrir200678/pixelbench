@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import i18n from '../i18n/index.js'
 import { createSize, matchingDimension, measureWorkflow, type GeometryPreferences } from '../editor/geometry.js'
 import { exceedsProfile, scaledSize } from '../editor/upscale.js'
@@ -9,7 +9,7 @@ import { fitSize } from '../image/pixels.js'
 import type { LoraChoice, Parameters, Profile, Status, Value } from '../types/api.js'
 import type { Notice, NoticeValues, Tool, Work } from '../types/editor.js'
 import type { Rect } from '../types/image.js'
-import { useUpscaleSettings } from './useUpscaleSettings.js'
+import { useUpscaleSettings, type SessionUpscale } from './useUpscaleSettings.js'
 
 type Prefs = GeometryPreferences & {
   parameters: Parameters
@@ -28,10 +28,29 @@ type Prefs = GeometryPreferences & {
 }
 type SavedPrefs = { defaults: Record<string, Prefs>; presets: Record<string, Record<string, Prefs>> }
 export type LoraEntry = LoraChoice & { id: string; enabled: boolean }
+type Prompts = Partial<Record<Tool, { prompt: string; negative: string }>>
+type ProfileChoices = Partial<Record<Tool, string>>
+type FrameRatios = Partial<Record<Tool, number>>
+export type SessionWorkflow = {
+  models: SavedModels
+  savedLoras: Record<string, LoraEntry[]>
+  profileChoices: ProfileChoices
+  prompts: Prompts
+  prefs: Prefs
+  profileId?: string
+  preset: string
+  ratio: number
+  frameRatios: FrameRatios
+  lastRandomSeed?: number
+  templateOn: boolean
+  refinementModel: string
+  upscale: SessionUpscale
+}
 const lorasKey = 'pixelbench-loras-v1'
 const modelsKey = 'pixelbench-models-v1'
 const preferencesKey = 'pixelbench-preferences-v1'
 const profileChoicesKey = 'pixelbench-profile-choices-v1'
+const refinementModelKey = 'pixelbench-refinement-model-v1'
 const initialPrefs: Prefs = {
   parameters: {},
   parametersByTool: {},
@@ -86,11 +105,10 @@ export function useWorkflow(
   const [saved, setSaved] = useState(() => readStorage<SavedPrefs>(preferencesKey, { defaults: {}, presets: {} }))
   const [models, setModels] = useState(() => readStorage<SavedModels>(modelsKey, {}))
   const [savedLoras, setSavedLoras] = useState(() => readStorage<Record<string, LoraEntry[]>>(lorasKey, {}))
-  const [profileChoices, setProfileChoices] = useState<Partial<Record<Tool, string>>>(() =>
-    readStorage(profileChoicesKey, {})
-  )
+  const [profileChoices, setProfileChoices] = useState<ProfileChoices>(() => readStorage(profileChoicesKey, {}))
+  const [refinementModel, setRefinementModel] = useState(() => readStorage(refinementModelKey, ''))
   // Each mode keeps its own prompts. Extras refines the created image and shares the prompts of Erstellen.
-  const [prompts, setPrompts] = useState<Partial<Record<Tool, { prompt: string; negative: string }>>>({})
+  const [prompts, setPrompts] = useState<Prompts>({})
   const promptKey: Tool = tool === 'upscale' ? 'create' : tool
   const prompt = prompts[promptKey]?.prompt ?? ''
   const negative = prompts[promptKey]?.negative ?? ''
@@ -103,20 +121,29 @@ export function useWorkflow(
   const [profileId, setProfileId] = useState<string>()
   const [preset, setPreset] = useState('')
   const [ratio, setRatio] = useState(1)
-  const [frameRatios, setFrameRatios] = useState<Partial<Record<Tool, number>>>({})
+  const [frameRatios, setFrameRatios] = useState<FrameRatios>({})
   const [lastRandomSeed, setLastRandomSeed] = useState<number>()
+  const [restoredTool, setRestoredTool] = useState<Tool>()
+  const [prefsEdits, setPrefsEdits] = useState(0)
   // Off until the user opens a template in Create or ticks the box. Applying a variant never turns it on.
   const [templateOn, setTemplateOn] = useState(false)
 
-  const options = tools[tool].profiles.flatMap((id) => (status?.profiles ?? []).filter((p) => p.id === id))
+  const optionsFor = (mode: Tool) =>
+    tools[mode].profiles.flatMap((id) => (status?.profiles ?? []).filter((p) => p.id === id))
+  const options = optionsFor(tool)
   const ready = (p: Profile, choices = selectModels(p, models)) => profileReady(p, choices)
-  const profile = options.find((p) => p.id === profileChoices[tool]) ?? options.find((p) => ready(p)) ?? options[0]
-  if (profile?.id !== profileId) {
+  const selectProfile = (items: Profile[], choice: string | undefined, savedModels: SavedModels) =>
+    items.find((p) => p.id === choice) ?? items.find((p) => ready(p, selectModels(p, savedModels))) ?? items[0]
+  const profile = selectProfile(options, profileChoices[tool], models)
+  if (restoredTool && (status || restoredTool !== tool)) setRestoredTool(undefined)
+  if (profile?.id !== profileId && status) {
     setProfileId(profile?.id)
-    setPreset('')
-    const defaults = profile && saved.defaults[profile.id]
-    setPrefs(defaults ? { ...initialPrefs, ...defaults } : { ...prefs, parameters: {}, parametersByTool: {} })
-    if (defaults) setRatio(defaults.w / defaults.h)
+    if (restoredTool !== tool) {
+      setPreset('')
+      const defaults = profile && saved.defaults[profile.id]
+      setPrefs(defaults ? { ...initialPrefs, ...defaults } : { ...prefs, parameters: {}, parametersByTool: {} })
+      if (defaults) setRatio(defaults.w / defaults.h)
+    }
   }
 
   const parameters = resolveParameters(profile, prefs, tool)
@@ -126,7 +153,34 @@ export function useWorkflow(
   const activeLoras = loras.filter((entry) => entry.enabled)
   const missingLoras = activeLoras.filter((entry) => !loraFiles.some(({ file }) => file === entry.name))
   const upscaleSettings = useUpscaleSettings(tool, profile, status, notice)
-  const { upscale, hires, hiresActive, hiresRunnable } = upscaleSettings
+  const { upscale, hires, hiresActive, hiresRunnable, sessionUpscale } = upscaleSettings
+  // Backend status can load a profile and its defaults into a pristine editor.
+  const sessionSettings = useMemo(
+    () => ({
+      models,
+      savedLoras,
+      profileChoices,
+      prompts,
+      frameRatios,
+      lastRandomSeed,
+      templateOn,
+      refinementModel,
+      upscale: sessionUpscale
+    }),
+    [
+      models,
+      savedLoras,
+      profileChoices,
+      prompts,
+      frameRatios,
+      lastRandomSeed,
+      templateOn,
+      refinementModel,
+      sessionUpscale
+    ]
+  )
+  const sessionChanges = useMemo(() => [sessionSettings, prefsEdits], [sessionSettings, prefsEdits])
+  const sessionState: SessionWorkflow = { ...sessionSettings, prefs, profileId, preset, ratio }
   const problems = [
     ...(profile ? modelProblems(profile, choices) : []),
     ...missingLoras.map((entry) => i18n.t('LoRA fehlt im Loader · {{file}}', { file: entry.name }))
@@ -156,6 +210,7 @@ export function useWorkflow(
   const presets = profile ? (saved.presets[profile.id] ?? {}) : {}
 
   function updatePrefs(next: Partial<Prefs>) {
+    setPrefsEdits((count) => count + 1)
     setPrefs((previous) => ({ ...previous, ...next }))
   }
 
@@ -166,6 +221,7 @@ export function useWorkflow(
   }
 
   function activatePreset(name: string) {
+    setPrefsEdits((count) => count + 1)
     setPreset(name)
     const next = presets[name]
     if (!next) return
@@ -175,6 +231,31 @@ export function useWorkflow(
 
   return {
     ...upscaleSettings,
+    sessionState,
+    sessionChanges,
+    restore(next: SessionWorkflow, mode: Tool) {
+      const nextChoices = next.profileId ? { ...next.profileChoices, [mode]: next.profileId } : next.profileChoices
+      setProfileChoices(nextChoices)
+      setProfileId(status ? selectProfile(optionsFor(mode), nextChoices[mode], next.models)?.id : next.profileId)
+      setRestoredTool(status ? undefined : mode)
+      setModels(next.models)
+      setSavedLoras(next.savedLoras)
+      setPrompts(next.prompts)
+      setPrefs(next.prefs)
+      setPreset(next.preset)
+      setRatio(next.ratio)
+      setFrameRatios(next.frameRatios)
+      setLastRandomSeed(next.lastRandomSeed)
+      setTemplateOn(next.templateOn)
+      setRefinementModel(next.refinementModel)
+      upscaleSettings.restoreUpscale(next.upscale)
+    },
+    refinementModel,
+    chooseRefinementModel(model: string) {
+      setRefinementModel(model)
+      if (!writeStorage(refinementModelKey, model))
+        notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
+    },
     hiresSize,
     hiresLarge: Boolean(profile && hiresSize && !hires.tiled && exceedsProfile(profile.sizes, hiresSize)),
     varianceAvailable: tool === 'create' && Boolean(profile?.variance && status?.seedVariance),
@@ -252,6 +333,7 @@ export function useWorkflow(
       notice()
     },
     updateParameter(key: string, value: Value) {
+      setPrefsEdits((count) => count + 1)
       if (profile?.parameters[key]?.defaultsByTool) {
         setPrefs((previous) => ({
           ...previous,
@@ -319,6 +401,7 @@ export function useWorkflow(
     },
     savePreset(name: string) {
       if (!profile) return
+      setPrefsEdits((count) => count + 1)
       save(
         { ...saved, presets: { ...saved.presets, [profile.id]: { ...presets, [name]: currentPrefs } } },
         'Preset „{{name}}“ gespeichert.',

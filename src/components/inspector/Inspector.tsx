@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { isMainModel, modelKey } from '../../editor/models.js'
 import { tools } from '../../editor/tools.js'
-import { readStorage, writeStorage } from '../../helpers/storage.js'
 import type { BackgroundRemoval } from '../../hooks/useBackgroundRemoval.js'
 import type { Detailer } from '../../hooks/useDetailer.js'
 
@@ -27,8 +26,6 @@ import { HiresFields } from './HiresFields.js'
 import { UpscaleFields } from './UpscaleFields.js'
 import { PromptFields } from './PromptFields.js'
 import { RenderFields, SamplingFields } from './RenderFields.js'
-
-const refinementModelKey = 'pixelbench-refinement-model-v1'
 
 export function Inspector({
   tool,
@@ -96,9 +93,8 @@ export function Inspector({
   const { prompt } = tools[tool]
   const profile = workflow.profile
   const inpaint = tool === 'inpaint'
-  const [savedModel, setSavedModel] = useState(() => readStorage(refinementModelKey, ''))
   const refinementModels = status?.refinementModels ?? []
-  const refinementModel = refinementModels.includes(savedModel) ? savedModel : ''
+  const refinementModel = refinementModels.includes(workflow.refinementModel) ? workflow.refinementModel : ''
   const canRefine = refinementModels.length > 0
   const anyOpen = useAnySectionOpen()
   const hasMainModel = Boolean(profile?.models.some(isMainModel))
@@ -213,11 +209,7 @@ export function Inspector({
                     { value: '', label: t('Standard') + ' · ' + refinementModels[0] },
                     ...refinementModels.map((file) => ({ value: file }))
                   ]}
-                  onChange={(model) => {
-                    setSavedModel(model)
-                    if (!writeStorage(refinementModelKey, model))
-                      notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
-                  }}
+                  onChange={workflow.chooseRefinementModel}
                 />
               </label>
             )}

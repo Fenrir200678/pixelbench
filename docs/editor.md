@@ -12,6 +12,12 @@ The editing modes are in the middle of the header and switch with the keys **1**
 
 Which profiles each mode offers is listed in [Profiles and models](profiles-and-models.md#profiles).
 
+## Resume an editing session
+
+Pixelbench saves one local session. By default, it saves automatically five seconds after the last edit. Change the delay or turn autosave off in **Settings → General → Session**. Use the disk icon in the header to save immediately, or **Restore session** to pick up after a reload or restart.
+
+The session includes prompts for each mode, workflow settings, the working image, masks, drawing, pending adjustments, references and finished variants. Running jobs and undo/redo history are not carried over. A newly opened editor keeps the old session until you restore it or explicitly replace it with **Save session now**.
+
 ## Create
 
 Create an image from a prompt without a starting image.
@@ -137,7 +143,7 @@ The **Console** in the footer (**Shift+C**) shows timestamps, running nodes, pha
 
 ## Sessions, files and export
 
-- Variants, inputs, masks and undo history stay in memory. Backend settings are saved in `.settings.json`. Defaults and presets are saved in the browser.
+- The editor keeps undo history in memory. Session backups, including images and masks, are stored locally under `.runtime/editor-session`. Backend settings are saved in `.settings.json`; defaults and presets are saved in the browser.
 - Export downloads a file with a new name. Inputs are PNG (up to 8 bits per channel), JPEG and WebP, up to 8192 px per side and 24 MP. PNG export has 8 bits per channel and contains every pixel of the working size. Metadata and color profiles of the input are left out, but generation data can be stored in exported PNGs (see Settings → Export).
 - Starting a new image ends the previous editing session.
 - When you close or leave the tab with an unexported applied result, the browser shows its native warning after you interacted with the page.

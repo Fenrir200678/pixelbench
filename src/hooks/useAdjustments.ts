@@ -27,6 +27,8 @@ type Options = {
   commit: (next: Work) => void
 }
 
+export type SessionAdjustments = { showPreview: boolean; values: Adjustments }
+
 function proxyFrame(image: Frame): Frame {
   const scale = Math.min(1, previewEdge / Math.max(image.w, image.h))
   if (scale === 1) return image
@@ -64,6 +66,10 @@ export function useAdjustments({ work, mask, commit }: Options) {
   const surfaces = useRef<HTMLCanvasElement[]>([])
   // Off shows the unadjusted image for a quick before/after.
   const [showPreview, setShowPreview] = useState(true)
+  const sessionState = useMemo(
+    () => (openImage ? { values, showPreview } : undefined),
+    [openImage, values, showPreview]
+  )
   const [rendered, setRendered] = useState<{ surface: HTMLCanvasElement; proxy: Frame; counts: Histogram }>()
   const sourceCounts = useMemo(() => (proxy ? histogram(proxy.pixels) : undefined), [proxy])
 
@@ -122,6 +128,11 @@ export function useAdjustments({ work, mask, commit }: Options) {
 
   const current = active && !isNeutral(values) && rendered && rendered.proxy === proxy ? rendered : undefined
   return {
+    sessionState,
+    restore(frame: Frame | undefined, next?: SessionAdjustments) {
+      setSession(frame && next ? { image: frame, values: next.values } : undefined)
+      setShowPreview(next?.showPreview ?? true)
+    },
     open: Boolean(active),
     values,
     masked: Boolean(mask),

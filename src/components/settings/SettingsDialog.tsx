@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import type { Bridge } from '../../hooks/useBridge.js'
+import type { EditorSession } from '../../hooks/useEditorSession.js'
 import type { Updates } from '../../hooks/useUpdates.js'
 import { appMessage } from '../../i18n/appMessages.js'
 import { confirmDiscard } from '../../settings/preferences.js'
@@ -60,12 +61,14 @@ export function SettingsDialog({
   config,
   bridge,
   updates,
+  session,
   busy,
   onClose
 }: {
   config: Config
   bridge: Bridge
   updates: Updates
+  session: EditorSession
   busy: boolean
   onClose: () => void
 }) {
@@ -131,7 +134,7 @@ export function SettingsDialog({
             <Button id="config-close" className="icon" aria-label={t('Schließen')} icon="close" onClick={close} />
           </header>
           <div className="settings-body" key={page}>
-            {page === 'general' && <GeneralSection />}
+            {page === 'general' && <GeneralSection session={session} />}
             {page === 'export' && <ExportSection />}
             {page === 'comfy' && <ComfySection form={form} blocked={blocked} />}
             {page === 'performance' && <PerformanceSection form={form} />}

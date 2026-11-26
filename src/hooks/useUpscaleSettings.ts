@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Hires } from '../editor/generation.js'
 import { initialScale, scaledSize, type Scale } from '../editor/upscale.js'
 import { readStorage, writeStorage } from '../helpers/storage.js'
@@ -16,6 +16,7 @@ type HiresSettings = UpscaleSettings & {
   sampler: string
   scheduler: string
 }
+export type SessionUpscale = { upscale: UpscaleSettings; hires: HiresSettings }
 
 export const hiresSamplingKeys = ['sampler', 'scheduler'] as const
 const upscaleKey = 'pixelbench-upscale-v2'
@@ -43,6 +44,7 @@ export function useUpscaleSettings(
     ...readStorage<Partial<UpscaleSettings>>(upscaleKey, {})
   }))
   const [hires, setHires] = useState(() => ({ ...initialHires, ...readStorage<Partial<HiresSettings>>(hiresKey, {}) }))
+  const sessionUpscale = useMemo(() => ({ upscale, hires }), [upscale, hires])
   const upscalers = status?.upscalers ?? []
   const preferred = upscalers.find((file) => /ultrasharp/i.test(file)) ?? upscalers[0] ?? 'lanczos'
   const resolveUpscaler = (choice?: string) =>
@@ -55,6 +57,11 @@ export function useUpscaleSettings(
   const hiresTiled = hiresActive && hires.tiled
 
   return {
+    sessionUpscale,
+    restoreUpscale(next: SessionUpscale) {
+      setUpscale(next.upscale)
+      setHires(next.hires)
+    },
     upscale: { ...upscale, upscaler: resolveUpscaler(upscale.upscaler) },
     upscalers,
     hires: { ...hires, upscaler: hiresUpscaler },
