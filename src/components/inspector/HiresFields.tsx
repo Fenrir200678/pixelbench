@@ -123,10 +123,11 @@ export function HiresFields({
               <span>{t('Upscale-Modell')}</span>
               <Combobox
                 id="hires-upscaler"
-                value={hires.upscaler ?? ''}
-                disabled={!upscalers.length}
-                placeholder={upscalers.length ? undefined : t('Kein Upscale-Modell gefunden')}
-                options={upscalers.map((file) => ({ value: file }))}
+                value={hires.upscaler}
+                options={[
+                  ...upscalers.map((file) => ({ value: file })),
+                  { value: 'lanczos', label: t('Lanczos (ohne Modell)') }
+                ]}
                 onChange={(upscaler) => workflow.updateHires({ upscaler })}
               />
             </label>

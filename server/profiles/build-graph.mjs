@@ -296,7 +296,7 @@ export function buildGraph(profile, data, jobId) {
       size: hires.size,
       tiled: hires.tiled,
       tiles: hires.tiles,
-      prescale: hires.factor !== 1
+      prescale: hires.factor !== 1 && hires.upscaler !== 'lanczos'
     }
   }
 }

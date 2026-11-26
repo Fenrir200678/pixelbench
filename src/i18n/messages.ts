@@ -370,7 +370,6 @@ export const english: Record<string, string> = {
   Download: 'Download',
   'Erzeugt eine Variante mit transparentem Hintergrund. Für die Transparenz als PNG exportieren.':
     'Creates a variant with a transparent background. Export as PNG to keep the transparency.',
-  'Kein Upscale-Modell gefunden': 'No upscale model found',
   'Kein Upscale-Modell gefunden. Es gehört unter „upscale_models“ oder „ESRGAN“ in einen Modell-Stammordner.':
     'No upscale model found. It belongs in "upscale_models" or "ESRGAN" inside a model root folder.',
   'Der Hires-Fix braucht die Custom-Nodes „Ultimate SD Upscale“ in ComfyUI.':

@@ -32,6 +32,7 @@ The hires fix lives in Create. It enlarges an image and re-renders it with low s
 - **Render in tiles** switches to Ultimate SD Upscale. Above the profile's maximum size (usually 2048 px or 4.2 MP) a notice warns about the higher VRAM and time needs without tiles. Tiled mode uses a Chess pattern with 64 px overlap.
 - The same prompt, seed and LoRAs apply.
 - **Strength** sets how strongly the enlarged image is re-rendered. Around 0.3 stays close to the first render.
+- **Upscale model** enlarges the image before the re-render. **Lanczos (no model)** enlarges without a model, which is faster but softer.
 - The **Advanced** tab holds **Color correction**, which matches the colors of the result to the image before upscaling (0 is off), the pass's own **Hires steps** (0 uses the steps under **Render**), **Sampler** and **Scheduler** (**Same as render** by default) and **Render in tiles**. A dot on the tab shows that one of them differs from the default.
 - **Lock seed** in the section keeps the seed of the last created or selected variant, like the lock under **Render**. It is set automatically when you turn the hires fix on, and you can unset it. With a locked seed the first render comes from the cache and only the hires fix is recomputed.
 - **Apply to current image** runs the same pass on the open image without a new render.

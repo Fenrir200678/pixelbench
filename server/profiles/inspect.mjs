@@ -186,7 +186,9 @@ async function fetchInspection(backend, config) {
   )
   for (const profile of result) if (profile.tools.includes('upscale')) profile.upscalerCatalog = upscalers
   // Hires fix renders in tiles through the Ultimate SD Upscale custom nodes.
-  const tiledUpscale = Boolean(info.UltimateSDUpscale && info.UltimateSDUpscaleGuider)
+  const tiledUpscale = Boolean(
+    info.UltimateSDUpscale && info.UltimateSDUpscaleGuider && info.UltimateSDUpscaleCustomSample
+  )
   const seedVariance = Boolean(info.KreaSeedVarianceEnhancer)
   // Img2img color correction uses the KJNodes color matcher.
   const colorMatch = Boolean(info.ColorMatchV2)

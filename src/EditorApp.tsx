@@ -138,13 +138,11 @@ export function EditorApp() {
     t
   })
 
-  // Create without a template starts from an empty canvas. With a template, while the image adjustments are open
-  // or after a click on the Source card, the open image is shown.
+  // The canvas is empty only in Create without an open image: at the start and after New image.
   const template = workflow.template
-  const [sourceShown, setSourceShown] = useState(false)
-  const blank = create && !template && !adjustments.open && !sourceShown
   const candidate = variants.selected
   const image = work?.image
+  const blank = create && !image
   const displayed = candidate?.frame ?? (blank ? undefined : image)
   const hasMask = Boolean(strokes?.length)
   const upscaling = tool === 'upscale'
@@ -188,18 +186,14 @@ export function EditorApp() {
   }
 
   function selectVariant(index: number) {
-    setSourceShown(false)
     const variant = variants.items[index]
     if (variant) workflow.showVariantSeed(variant.prepared.request.seed)
     variants.dispatch({ type: 'select', index })
   }
 
-  // The Source card shows the open image, also in Create without a template, where the canvas is otherwise empty.
+  // The Source card shows the open image.
   function showSource() {
     selectVariant(-1)
-    if (!create || template) return
-    setSourceShown(true)
-    requestAnimationFrame(() => fitView(viewRef.current, tool, work))
   }
 
   function movePreview(by: number) {
@@ -276,10 +270,9 @@ export function EditorApp() {
     notice()
   }
 
-  // After Apply the new source stays on the canvas and its variant card is marked, also in Create without a template.
+  // After Apply the new source stays on the canvas and its variant card is marked.
   function showApplied() {
     selectVariant(-1)
-    setSourceShown(true)
   }
 
   // strokes: a detailer segmentation. It continues in Ersetzen, where it is the mask.
@@ -345,8 +338,6 @@ export function EditorApp() {
     if (!adjustments.open && !canAdjust) return
     selectVariant(-1)
     adjustments.toggle()
-    // In Create without a template the open image only appears while the adjustments are open.
-    if (create && !template && !adjustments.open) requestAnimationFrame(() => fitView(viewRef.current, tool, work))
   }
   const dismiss = () => {
     if (adjustments.open) adjustments.cancel()

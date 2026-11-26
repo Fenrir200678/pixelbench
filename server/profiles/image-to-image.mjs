@@ -51,19 +51,24 @@ export function useTemplateUpscale(graph, upscaler, [width, height]) {
 
 // Hires fix as one image to image pass at the target size, as in Forge: upscale model, Lanczos to the profile grid,
 // then the profile samples the whole image with the hires strength. Lanczos restores the exact size afterwards.
+// With 'lanczos' as the upscaler, Lanczos alone enlarges the source.
 // Hires fixes run as their own job: right after sampling in the same ComfyUI prompt, the upscale model ran up to ten
 // times slower because the VRAM was still occupied.
 export function useHiresPass(graph, profile, hires) {
   const decode = Object.keys(graph).find((id) => graph[id].class_type === 'VAEDecode')
   const [w, h] = hires.render
-  graph.upscaleModel = { class_type: 'UpscaleModelLoader', inputs: { model_name: hires.upscaler } }
-  graph.upscaleModelImage = {
-    class_type: 'ImageUpscaleWithModel',
-    inputs: { upscale_model: ['upscaleModel', 0], image: ['upscaleSource', 0] }
+  let image = ['upscaleSource', 0]
+  if (hires.upscaler !== 'lanczos') {
+    graph.upscaleModel = { class_type: 'UpscaleModelLoader', inputs: { model_name: hires.upscaler } }
+    graph.upscaleModelImage = {
+      class_type: 'ImageUpscaleWithModel',
+      inputs: { upscale_model: ['upscaleModel', 0], image }
+    }
+    image = ['upscaleModelImage', 0]
   }
   graph.upscaleScale = {
     class_type: 'ImageScale',
-    inputs: { image: ['upscaleModelImage', 0], upscale_method: 'lanczos', width: w, height: h, crop: 'center' }
+    inputs: { image, upscale_method: 'lanczos', width: w, height: h, crop: 'center' }
   }
   useTemplate(graph, profile.img2img, ['upscaleScale', 0], hires.strength)
   if (hires.steps && profile.img2img.denoise) graph.sample.inputs.steps = hires.steps
@@ -83,11 +88,13 @@ export function useHiresPass(graph, profile, hires) {
 }
 
 // Tiled hires fix: Ultimate SD Upscale enlarges with the upscale model and re-renders in tiles at the profile's
-// target size. Lanczos then scales and crops the result to the exact size.
+// target size. Lanczos then scales and crops the result to the exact size. Without an upscale model ('lanczos'),
+// UltimateSDUpscaleCustomSample enlarges with Lanczos itself.
 export function useTiledHiresFix(graph, profile, hires) {
   const decode = Object.keys(graph).find((id) => graph[id].class_type === 'VAEDecode')
   const sample = graph.sample.inputs
-  graph.upscaleModel = { class_type: 'UpscaleModelLoader', inputs: { model_name: hires.upscaler } }
+  const lanczos = hires.upscaler === 'lanczos'
+  if (!lanczos) graph.upscaleModel = { class_type: 'UpscaleModelLoader', inputs: { model_name: hires.upscaler } }
   graph.upscaleScale = {
     class_type: 'ImageScale',
     inputs: {
@@ -102,7 +109,7 @@ export function useTiledHiresFix(graph, profile, hires) {
     image: ['upscaleSource', 0],
     vae: graph[decode].inputs.vae,
     upscale_by: hires.factor,
-    upscale_model: ['upscaleModel', 0],
+    ...(lanczos ? {} : { upscale_model: ['upscaleModel', 0] }),
     mode_type: 'Chess',
     tile_width: profile.sizes.target,
     tile_height: profile.sizes.target,
@@ -120,7 +127,7 @@ export function useTiledHiresFix(graph, profile, hires) {
   if (profile.img2img.denoise) {
     const { model, positive, negative, seed, steps, cfg, sampler_name, scheduler } = sample
     graph.upscale = {
-      class_type: 'UltimateSDUpscale',
+      class_type: lanczos ? 'UltimateSDUpscaleCustomSample' : 'UltimateSDUpscale',
       inputs: {
         ...common,
         model,
@@ -140,22 +147,44 @@ export function useTiledHiresFix(graph, profile, hires) {
       class_type: 'SplitSigmasDenoise',
       inputs: { sigmas: sample.sigmas, denoise: hires.strength }
     }
-    graph.upscale = {
-      class_type: 'UltimateSDUpscaleGuider',
-      inputs: {
-        ...common,
-        guider: sample.guider,
-        sampler: sample.sampler,
-        sigmas: ['upscaleSigmas', 1],
-        seed: graph[sample.noise[0]].inputs.noise_seed
-      }
-    }
+    const seed = graph[sample.noise[0]].inputs.noise_seed
+    graph.upscale = lanczos
+      ? lanczosGuiderUpscale(graph, sample, common, seed)
+      : {
+          class_type: 'UltimateSDUpscaleGuider',
+          inputs: { ...common, guider: sample.guider, sampler: sample.sampler, sigmas: ['upscaleSigmas', 1], seed }
+        }
     delete graph[sample.noise[0]]
   }
   graph.preview.inputs.images = ['upscaleScale', 0]
   delete graph.sample
   delete graph.latent
   delete graph[decode]
+}
+
+// The guider variant needs an upscale model. Without one, the custom sample variant takes the CFGGuider's model,
+// conditioning and CFG with the same sampler and sigmas. sampler_name, scheduler, steps and denoise are then unused.
+function lanczosGuiderUpscale(graph, sample, common, seed) {
+  const guider = graph[sample.guider[0]]
+  if (guider?.class_type !== 'CFGGuider') throw new Error('This profile needs an upscale model for the tiled hires fix.')
+  const { model, positive, negative, cfg } = guider.inputs
+  return {
+    class_type: 'UltimateSDUpscaleCustomSample',
+    inputs: {
+      ...common,
+      model,
+      positive,
+      negative,
+      cfg,
+      seed,
+      steps: 1,
+      sampler_name: 'euler',
+      scheduler: 'simple',
+      denoise: 1,
+      custom_sampler: sample.sampler,
+      custom_sigmas: ['upscaleSigmas', 1]
+    }
+  }
 }
 
 // Color correction as in Forge: after decoding, the result's color distribution is matched to the reference.
@@ -204,7 +233,7 @@ export function hiresSettings(profile, hires, size, source) {
   if (!profile.img2img || !profile.tools.includes('upscale'))
     throw new Error('This profile does not support a hires fix.')
   if (!hires || typeof hires !== 'object') throw new Error('Hires-Fix-Einstellungen fehlen.')
-  if (!profile.upscalerCatalog?.includes(hires.upscaler))
+  if (hires.upscaler !== 'lanczos' && !profile.upscalerCatalog?.includes(hires.upscaler))
     throw new Error('Upscale model is not available in the loader · ' + hires.upscaler)
   const { strength } = hires
   const steps = hires.steps ?? 0

@@ -272,6 +272,27 @@ test('text-to-image profiles set the latent size and upload no input image', () 
     const largePass = buildGraph(hiresProfile, large, 'job').graph
     assert.equal(largePass.upscale, undefined)
     assert.deepEqual(largePass.templateLatent.inputs.pixels, ['upscaleScale', 0])
+
+    // Lanczos without an upscale model: the single pass scales the source, tiles enlarge inside Ultimate SD Upscale.
+    const lanczos = { ...settings, upscaler: 'lanczos' }
+    const plainPass = buildGraph(
+      hiresProfile,
+      { ...single, image: png(1000, 500), hires: { ...lanczos, size: [1500, 750], tiled: false } },
+      'job'
+    )
+    assert.equal(plainPass.graph.upscaleModel, undefined)
+    assert.deepEqual(plainPass.graph.upscaleScale.inputs.image, ['upscaleSource', 0])
+    assert.ok(resolves(plainPass.graph))
+    const plainTiles = buildGraph(hiresProfile, { ...hires, hires: lanczos }, 'job')
+    const tile = plainTiles.graph.upscale
+    assert.equal(tile.class_type, 'UltimateSDUpscaleCustomSample')
+    assert.equal(tile.inputs.upscale_model, undefined)
+    assert.equal(plainTiles.graph.upscaleModel, undefined)
+    assert.equal(tile.inputs.upscale_by, 2)
+    assert.equal(tile.inputs.seed, 9)
+    if (!definition.img2img.denoise) assert.deepEqual(tile.inputs.custom_sigmas, ['upscaleSigmas', 1])
+    assert.equal(plainTiles.hires.prescale, false)
+    assert.ok(resolves(plainTiles.graph))
   }
 })
 

@@ -182,7 +182,10 @@ export function useWorkflow(
     upscale.upscaler === 'lanczos' || (upscale.upscaler && upscalers.includes(upscale.upscaler))
       ? upscale.upscaler
       : (preferredUpscaler ?? 'lanczos')
-  const hiresUpscaler = hires.upscaler && upscalers.includes(hires.upscaler) ? hires.upscaler : preferredUpscaler
+  const hiresUpscaler =
+    hires.upscaler === 'lanczos' || (hires.upscaler && upscalers.includes(hires.upscaler))
+      ? hires.upscaler
+      : (preferredUpscaler ?? 'lanczos')
   const hiresReady = status?.tiledUpscale !== false
   const colorMatchAvailable = Boolean(status?.colorMatch)
   const upscaling = tool === 'upscale'
@@ -191,14 +194,7 @@ export function useWorkflow(
   const hiresActive = hiresAvailable && hires.on
   const problems = [
     ...(profile ? modelProblems(profile, choices) : []),
-    ...missingLoras.map((entry) => i18n.t('LoRA fehlt im Loader · {{file}}', { file: entry.name })),
-    ...(hiresActive && !hiresUpscaler
-      ? [
-          i18n.t(
-            'Kein Upscale-Modell gefunden. Es gehört unter „upscale_models“ oder „ESRGAN“ in einen Modell-Stammordner.'
-          )
-        ]
-      : [])
+    ...missingLoras.map((entry) => i18n.t('LoRA fehlt im Loader · {{file}}', { file: entry.name }))
   ]
 
   function storeLoras(next: LoraEntry[]) {
@@ -274,7 +270,7 @@ export function useWorkflow(
   function hiresFor(source: [number, number]): Hires | undefined {
     const size = scaledSize(source, hires.scale)
     const tiled = hires.tiled
-    if (!hiresUpscaler || (tiled && !hiresReady)) return undefined
+    if (tiled && !hiresReady) return undefined
     const colorMatch = colorMatchAvailable ? Number(hires.colorMatch) || 0 : 0
     return { upscaler: hiresUpscaler, strength: hires.strength, steps: hires.steps, size, tiled, colorMatch }
   }
@@ -298,7 +294,7 @@ export function useWorkflow(
     hiresSize,
     hiresTiled: hiresTiledNow,
     hiresLarge: Boolean(profile && hiresSize && !hires.tiled && exceedsProfile(profile.sizes, hiresSize)),
-    hiresRunnable: !hiresActive || Boolean(hiresUpscaler && (!hiresTiledNow || hiresReady)),
+    hiresRunnable: !hiresActive || !hiresTiledNow || hiresReady,
     hiresReady,
     colorMatchAvailable,
     varianceAvailable: tool === 'create' && Boolean(profile?.variance && status?.seedVariance),
