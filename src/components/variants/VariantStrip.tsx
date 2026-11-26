@@ -139,6 +139,7 @@ export function VariantsToggle({
   count,
   position,
   disabled,
+  canClear,
   onToggle,
   onClear
 }: {
@@ -147,6 +148,7 @@ export function VariantsToggle({
   /** 1-based position of the shown variant, if one is shown. */
   position?: number
   disabled: boolean
+  canClear: boolean
   onToggle: () => void
   onClear: () => void
 }) {
@@ -180,7 +182,7 @@ export function VariantsToggle({
         title={`${t('Alle Vorschauen löschen')} (${clearVariantsKey.replace('Shift', t('Umschalt'))})`}
         aria-label={t('Alle Vorschauen löschen')}
         aria-keyshortcuts={clearVariantsKey}
-        disabled={disabled}
+        disabled={disabled || !canClear}
         onClick={onClear}
       />
     </>
@@ -297,7 +299,7 @@ export function VariantStrip({
   }, [rendering])
 
   return (
-    <section id="variants" className="variants" aria-label={t('Varianten')} hidden={!items.length && !pending}>
+    <section id="variants" className="variants" aria-label={t('Varianten')} hidden={!items.length && !pending && !source}>
       <div id="variant-strip" ref={strip} className="variant-strip" aria-label={t('Vorschläge auswählen')}>
         {source && (
           <SourceCard frame={source.frame} shown={source.shown} unused={source.unused} onShow={source.onShow} />

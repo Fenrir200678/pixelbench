@@ -340,7 +340,6 @@ export function EditorApp() {
   const toggleCompare = () => {
     if (!candidate || candidate.prepared.source) variants.dispatch({ type: 'compare' })
   }
-  const removeVariant = () => variants.dispatch({ type: 'remove' })
   const toggleVariants = () => setVariantsCollapsed((value) => !value)
   // The adjustments always work on the open image, so a shown variant is deselected first.
   const toggleAdjust = () => {
@@ -354,17 +353,17 @@ export function EditorApp() {
     if (adjustments.open) adjustments.cancel()
     else selectVariant(-1)
   }
-  // A document created from a variant goes with the variants, so no old source stays behind as the Img2Img template.
-  // An image opened from a file stays open.
+  // A created source image stays reachable in the strip after its variants are gone.
+  const showStrip = variants.items.length > 0 || rendering || Boolean(document.created && work)
+  // Clearing the variants keeps the source image. A created source is removed on its own with Delete while it is shown.
   const clearVariants = () => {
-    const created = document.created
-    if (
-      !confirmDiscard(t(created ? 'Alle Vorschauen und das erstellte Quellbild löschen?' : 'Alle Vorschauen löschen?'))
-    )
-      return
+    if (!confirmDiscard(t('Alle Vorschauen löschen?'))) return
     selectVariant(-1)
     variants.dispatch({ type: 'clear' })
-    if (!created) return
+  }
+  const removeVariant = () => {
+    if (candidate || !document.created || blank || !work) return variants.dispatch({ type: 'remove' })
+    if (!confirmDiscard(t('Das erstellte Quellbild löschen?'))) return
     document.close(true)
     workflow.toggleTemplate(false)
     chooseTool('create')
@@ -476,7 +475,7 @@ export function EditorApp() {
               dirty={document.dirty}
               meta={meta}
               loaded={Boolean(displayed)}
-              hasVariants={variants.items.length > 0 || rendering}
+              hasVariants={showStrip}
               variantsCollapsed={variantsCollapsed}
               consoleOpen={consoleOpen}
               onToggleConsole={() => setConsoleOpen((value) => !value)}
@@ -496,12 +495,14 @@ export function EditorApp() {
                   status={status}
                   onSelect={selectVariant}
                   source={
-                    work && {
-                      frame: work.image,
-                      unused: create && !template,
-                      shown: !candidate && !blank,
-                      onShow: showSource
-                    }
+                    work && showStrip
+                      ? {
+                          frame: work.image,
+                          unused: create && !template,
+                          shown: !candidate && !blank,
+                          onShow: showSource
+                        }
+                      : undefined
                   }
                   pending={
                     rendering
@@ -584,10 +585,11 @@ export function EditorApp() {
                 onBaseline={setDisplayedBaseline}
                 leading={
                   <VariantsToggle
-                    open={variants.items.length > 0 || rendering ? !variantsCollapsed : false}
+                    open={showStrip ? !variantsCollapsed : false}
                     count={variants.items.length}
                     position={candidate ? variants.index + 1 : undefined}
-                    disabled={variants.items.length === 0 && !rendering}
+                    disabled={!showStrip}
+                    canClear={variants.items.length > 0}
                     onToggle={toggleVariants}
                     onClear={clearVariants}
                   />
