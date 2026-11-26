@@ -39,7 +39,7 @@ The hires fix lives in Create. It enlarges an image and re-renders it with low s
 
 ## Edit
 
-Edit an image with an instruction and optional image references (Qwen-Image 2.1). If the Qwen base model is missing, the editor picks the available Turbo profile. See [Image references](profiles-and-models.md#image-references).
+Edit an image with an instruction and optional image references (up to 15 with Qwen-Image 2.1, up to 3 with the FLUX.2 [klein] Edit profiles). If the Qwen base model is missing, the editor picks the available Turbo profile. See [Image references](profiles-and-models.md#image-references).
 
 ## Inpaint
 
@@ -56,7 +56,7 @@ Outside the mask the original pixels are kept. PNG channel values outside the ef
 
 ## Outpaint
 
-Extend the image by dragging the eight frame handles, or type target width, target height and the original's offset (**Original from left**, **Original from top**). The target frame can be up to 8192 px per side and 24 MP.
+Extend the image by dragging the eight frame handles, or type target width, target height and the original's offset (**Original from left**, **Original from top**). The target frame can be up to 8192 px per side and 24 MP. Drag inside the frame to move it as a whole around the image. While dragging, the frame edges snap to the size grid of the model.
 
 The **Transition** setting can blend inside the original along the extended edges. At 0 px the original pixels match everywhere in the placed rectangle.
 

@@ -51,7 +51,7 @@ Paths in Settings are normal absolute paths. On Windows they need a drive letter
 
 ## About
 
-Version, author, license and the technology Pixelbench is built with.
+Version, author, license and the technology Pixelbench is built with. **What's new** links to the release notes of the installed version and to all releases.
 
 **Updates**: checks for a new release and installs it with **Update now**, see [Installation](installation.md#in-app-update). **Check for updates on start** (default: on) asks GitHub at most once a day. **Offer beta versions** also offers pre-releases; it is on by default when the running version is itself a pre-release. Both are saved in the browser.
 

@@ -41,9 +41,9 @@ Under **LoRAs** in the inspector you can add up to eight LoRAs to any profile, e
 
 ## Image references
 
-Under the prompt, **Image references** shows the current starting image as `<image1>` and extra references as numbered thumbnails. With Qwen-Image 2.1 and Turbo you can add up to 15 references by multi-select or drag-and-drop, with the FLUX.2 [klein] Edit profiles up to 3. For FLUX.2, Pixelbench writes the tags as plain words (`image 2`), and each reference is chained as a `ReferenceLatent` as in the Comfy-Org multi-reference templates.
+Under the prompt, **Image references** shows the current starting image as `<image1>` and extra references as numbered thumbnails. With Qwen-Image 2.1 and Turbo you can add up to 15 references by multi-select or drag-and-drop, with the FLUX.2 [klein] Edit profiles up to 3. Drag a thumbnail onto another to reorder the references, or drop an image file onto a thumbnail to replace its image. For FLUX.2, Pixelbench writes the tags as plain words (`image 2`), and each reference is chained as a `ReferenceLatent` as in the Comfy-Org multi-reference templates.
 
-Type `<` in the prompt to open an image picker. Arrow keys choose, Enter inserts the tag at the cursor and Escape closes the list. Removing a reference removes its tags from the prompt and renumbers the following images.
+Type `<` in the prompt to open an image picker. Arrow keys choose, Enter inserts the tag at the cursor and Escape closes the list. Removing a reference leaves the prompt as it is, so the following images move up one number and a replacement you add keeps the tags. Check the tags after removing or reordering references.
 
 ## Qwen auto render resolution
 
@@ -96,7 +96,7 @@ The distilled profile needs the FP8 diffusion weight (about 3.79 GB) in `diffusi
 
 ## FLUX.2 [klein] 9B
 
-Two profiles use the distilled 9B weights with 4 steps, Euler and a fixed CFG of 1. The 9B model needs the larger Qwen3 8B text encoder; the 4B encoder does not fit it. The 9B weights are under the [FLUX Non-Commercial License](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B), unlike the Apache-2.0 4B model.
+Four profiles use the distilled 9B weights with 4 steps, Euler and a fixed CFG of 1. The 9B model needs the larger Qwen3 8B text encoder; the 4B encoder does not fit it. The 9B weights are under the [FLUX Non-Commercial License](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B), unlike the Apache-2.0 4B model.
 
 - **FLUX.2 [klein] 9B** in **Create** follows the distilled branch of the Comfy-Org template `image_flux2_klein_text_to_image`. It supports image to image, the hires fix (also tiled, through `UltimateSDUpscaleGuider`) and the detailer. The KV weights work here too, since the KV cache only acts on reference images.
 - **FLUX.2 [klein] 9B KV Edit** in **Edit** follows `image_flux2_klein_9b_kv_image_edit` and needs the KV weights, because `FluxKVCache` switches the model to the reference method those weights were trained for. It takes up to 3 reference images.
@@ -105,7 +105,7 @@ Two profiles use the distilled 9B weights with 4 steps, Euler and a fixed CFG of
 
 | Folder             | File                                                                                                                                                                                                 |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `diffusion_models` | [`flux-2-klein-9b-kv-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-kv-fp8) (9.1 GB) for both profiles, or [`flux-2-klein-9b-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) for Create only |
+| `diffusion_models` | [`flux-2-klein-9b-kv-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-kv-fp8) (9.1 GB) for all profiles, or [`flux-2-klein-9b-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) for Create and Inpaint only |
 | `text_encoders`    | [`qwen_3_8b_fp8mixed.safetensors`](https://huggingface.co/Comfy-Org/flux2-klein-9B/blob/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors) (8.1 GB)                                       |
 | `vae`              | [`flux2-vae.safetensors`](https://huggingface.co/Comfy-Org/flux2-dev/blob/main/split_files/vae/flux2-vae.safetensors)                                                                               |
 

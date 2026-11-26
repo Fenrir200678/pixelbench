@@ -18,8 +18,10 @@ Pixelbench is a local image editor for Windows and for Macs with Apple Silicon. 
 ## Features
 
 - Create images from a prompt, with optional hires fix and a reference or template image (img2img).
-- Edit an image with an instruction and up to 15 image references (Qwen-Image Edit 2.1).
+- Edit an image with an instruction and image references: up to 15 with Qwen-Image Edit 2.1, up to 3 with FLUX.2 [klein].
 - Inpaint with a mask brush, outpaint by dragging the frame handles, and paint color sketches on a drawing layer.
+- Detailer that finds objects by prompt and redraws them in more detail, with its own sampling settings if wanted.
+- Remove the background of an image with BiRefNet.
 - Upscale with an upscale model or Lanczos, and view the metadata stored in PNG files (Automatic1111's PNG info).
 - Variants strip, before/after compare, undo and redo, image adjustments with live histogram, LoRAs and per-component model selection.
 - Profiles are plain JSON files in `profiles/` that point to ComfyUI API workflows in `workflows/`.
@@ -32,7 +34,8 @@ Pixelbench is a local image editor for Windows and for Macs with Apple Silicon. 
 | Qwen-Image 2.1    | Text to image, image to image and edit, base and Turbo; Turbo Fun ControlNet for edit, inpainting and outpainting |
 | Z-Image           | Text to image and image to image, base and Turbo |
 | MOSS-Image        | Text to image and image to image, base and Turbo; Turbo inpainting and LanPaint inpainting |
-| FLUX.2 [klein] 4B | Edit                                                       |
+| FLUX.2 [klein] 4B | Edit with up to 3 reference images                         |
+| FLUX.2 [klein] 9B | Text to image, image to image, KV edit with up to 3 reference images, inpainting and KV outpainting |
 | FLUX.1 Fill       | Inpainting and outpainting                                 |
 | SDXL              | Text to image, image to image, inpainting and outpainting |
 | Upscale models    | ESRGAN-style upscalers through ComfyUI, or plain Lanczos   |
