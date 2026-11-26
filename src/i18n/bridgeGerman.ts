@@ -102,6 +102,7 @@ export const bridgeGerman: Record<string, string> = {
   'Invalid detection count.': 'Ungültige Trefferzahl.',
   'The SAM3 model for detection is missing.': 'Das SAM3-Modell für die Erkennung fehlt.',
   'Invalid detection threshold.': 'Ungültige Erkennungsschwelle.',
+  'Invalid model name.': 'Ungültiger Modellname.',
   'Detection needs one to four terms.': 'Die Erkennung braucht ein bis vier Begriffe.',
   'Invalid PNG.': 'Ungültiges PNG.',
   'Request too large.': 'Anfrage zu groß.',

@@ -31,6 +31,17 @@ Notes:
 - The nodes run inside the private ComfyUI process that Pixelbench starts, not inside Pixelbench itself.
 - Some nodes need extra Python packages (`gguf`, `sentencepiece`, `pillow`, `color-matcher`, `matplotlib`, `mss`, and an OpenCV package). The installer adds only the missing ones into `.runtime/python` with `pip --target`. Your ComfyUI environment is not changed.
 
+## Detection models and ONNX Runtime Web
+
+The installer downloads these YOLO detection models for the detailer into `.runtime/models/yolo`, each pinned to a commit and checked against its SHA-256 (see `scripts/setup/manifest.json`). They are not part of the Pixelbench repository and are not redistributed with it.
+
+| File | Source | Origin | License |
+| --- | --- | --- | --- |
+| `yolov11s-face.onnx` | [deepghs/yolo-face](https://huggingface.co/deepghs/yolo-face) at `e366257` | ONNX export of [akanametov/yolo-face](https://github.com/akanametov/yolo-face) | GPL-3.0 (upstream); deepghs adds a model redistribution disclaimer |
+| `hand_yolov8n.onnx` | [AbrahamPJ/nightmare-adetailer](https://huggingface.co/AbrahamPJ/nightmare-adetailer) at `eb37ca2` | ONNX export of [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer)'s `hand_yolov8n.pt` | Apache-2.0 |
+
+The editor runs them with [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (MIT), which is bundled into the built editor.
+
 ## Models and workflow templates
 
 Pixelbench does not ship model weights. Models are downloaded by you from their publishers and are subject to their own licenses, for example the V2 Krea 2 edit LoRAs are free for private and non-commercial use only. The Qwen workflow templates come from [Comfy-Org/workflow_templates](https://github.com/Comfy-Org/workflow_templates).

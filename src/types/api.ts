@@ -65,6 +65,9 @@ export type Profile = {
   // Conditioning input that the optional seed variance node wraps.
   variance?: [string, string]
 }
+/** A YOLO detection model and its class names, empty when unknown. */
+export type YoloModel = { name: string; labels: string[] }
+
 export type Status = {
   state: 'starting' | 'ready' | 'error'
   mode: 'managed' | 'external'
@@ -79,6 +82,8 @@ export type Status = {
   colorMatch?: boolean
   /** SAM3 checkpoints for the detailer. Empty when the model or the core SAM3 nodes are missing. */
   detectors?: string[]
+  /** YOLO models for the detailer in .runtime/models/yolo, run in the browser. */
+  yolo?: YoloModel[]
   memory?: Config['memory']
   device?: string
   version?: string

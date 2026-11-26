@@ -12,6 +12,7 @@ import { badInput, json, notFound, readJson, reject } from './app/http.mjs'
 import { createSession, expireSessions, handleSession, touchSession } from './app/sessions.mjs'
 import { checkPath, pickPath } from './app/paths.mjs'
 import { createUpdates } from './app/update.mjs'
+import { sendYoloModel, yoloModels } from './app/yolo.mjs'
 import { clearStaging } from './update/download.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -75,6 +76,7 @@ async function status(fresh = false) {
       seedVariance: backend.inspected.seedVariance,
       colorMatch: backend.inspected.colorMatch,
       detectors: backend.inspected.detectors,
+      yolo: await yoloModels(runtime),
       memory: config.memory,
       address: backend.address,
       message: backend.owned ? 'ComfyUI connected' : externalNotice,
@@ -169,7 +171,7 @@ const server = createServer(async (req, res) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
   )
 
   try {
@@ -203,6 +205,8 @@ const server = createServer(async (req, res) => {
       return json(res, 200, await status(url.searchParams.has('refresh')))
     }
     if (req.method === 'GET' && path === '/api/vram') return json(res, 200, await vram())
+    if (req.method === 'GET' && path.startsWith('/api/yolo/'))
+      return await sendYoloModel(res, runtime, path.slice('/api/yolo/'.length))
     if (req.method === 'GET' && path === '/api/logs') {
       const after = Number(url.searchParams.get('after'))
       return json(

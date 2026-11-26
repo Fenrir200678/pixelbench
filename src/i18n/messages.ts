@@ -515,6 +515,7 @@ export const english: Record<string, string> = {
     'A short text description of the object(s) to segment, e.g. person, car, cat. Separate several with commas, face:2 limits the detections.',
   'Treffer im Bild anzeigen': 'Show detections on the image',
   'Segmentierungsmasken behalten': 'Keep segmentation masks',
+  'Erkennungsmasken behalten': 'Keep detection masks',
   'Beim Übernehmen der Detailer-Variante werden die erkannten Masken zur Maske für „Ersetzen“. Dort lassen sie sich nachmalen oder radieren.':
     'Applying the detailer variant turns the detected masks into the Inpaint mask. You can extend or erase them there.',
   'Bild übernommen. Die Segmentierungsmaske ist unter „Ersetzen“ gesetzt.':
@@ -530,6 +531,19 @@ export const english: Record<string, string> = {
     'The boxes are always visible while the detailer runs. Afterwards, this option shows them on the detailer variant.',
   'Max. Treffer': 'Max. detections',
   'Höchstens so viele Objekte je Begriff': 'At most this many objects per term',
+  'Höchstens so viele Objekte je Klasse': 'At most this many objects per class',
+  Erkennungsmethode: 'Detection method',
+  'Schnell und auf der CPU. Findet feste Klassen wie Gesichter.':
+    'Fast and on the CPU. Finds fixed classes such as faces.',
+  'Findet beliebige Objekte per Text. Läuft in ComfyUI und braucht zusätzlich VRAM.':
+    'Finds any object by text. Runs in ComfyUI and needs extra VRAM.',
+  Erkennungsmodell: 'Detection model',
+  'YOLO-Modell, das die Objekte findet. Weitere ONNX-Modelle kommen nach „.runtime/models/yolo“.':
+    'YOLO model that finds the objects. Add more ONNX models to “.runtime/models/yolo”.',
+  'Kein YOLO-Modell gefunden. Die Installation lädt Modelle für Gesichter und Hände nach „.runtime/models/yolo“.':
+    'No YOLO model found. The installer downloads models for faces and hands to “.runtime/models/yolo”.',
+  'Das YOLO-Modell konnte nicht geladen werden.': 'The YOLO model could not be loaded.',
+  'Unbekanntes Ausgabeformat des YOLO-Modells.': 'Unknown output format of the YOLO model.',
   Erkennungsschwelle: 'Detection threshold',
   'Niedriger findet mehr, auch Fehltreffer.': 'Lower finds more, including false detections.',
   'Stärke, mit der jedes Objekt neu gerendert wird.': 'Strength with which each object is re-rendered.',

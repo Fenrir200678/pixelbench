@@ -1,5 +1,5 @@
 // Sets up Pixelbench next to an existing ComfyUI: finds ComfyUI, checks its Python, installs the custom nodes and
-// Python packages Pixelbench needs into its own folder, prepares the editor and writes the settings.
+// Python packages Pixelbench needs into its own folder, downloads its own small models, prepares the editor and writes the settings.
 // Run again at any time to repair or update. Uses only Node's built-in modules, since npm packages come later.
 import { readFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { prepareApp } from './setup/app.mjs'
 import { comfyVersion, compareVersions, probePython } from './setup/comfy.mjs'
+import { installModels, modelPresent } from './setup/models.mjs'
 import { installNodes, installPackages, nodeState } from './setup/nodes.mjs'
 import { pickInstall, readSettings, settingsFor, usable, writeSettings } from './setup/settings.mjs'
 import { setAssumeYes, ui } from './setup/ui.mjs'
@@ -113,6 +114,8 @@ async function main() {
   if (options.check) {
     const complete = await checkNodes()
     if (report.missing.length) ui.warn('Missing Python packages: ' + report.missing.join(', '))
+    for (const model of manifest.models ?? [])
+      if (!(await modelPresent(runtime, model))) ui.warn(model.file + ' missing · ' + model.purpose)
     if (!complete || report.missing.length || changed) throw new Error('Setup is incomplete. Run ' + installer + '.')
     ui.step('Everything is in place.')
     return
@@ -129,6 +132,9 @@ async function main() {
     await installPackages(config.python, join(runtime, 'python'), report.missing)
   }
   ui.ok('All packages present')
+
+  ui.step('Models')
+  await installModels(runtime, manifest.models ?? [])
 
   ui.step('Editor')
   await prepareApp(root, runtime, { rebuild: options.rebuild })

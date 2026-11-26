@@ -23,12 +23,17 @@ const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.woff2': 'font/woff2',
-  '.woff': 'font/woff'
+  '.woff': 'font/woff',
+  // ONNX Runtime Web for the detailer's YOLO detection.
+  '.wasm': 'application/wasm'
 }
 
 export function serveStatic(req, res, path, web) {
   const staticFile = path === '/' ? '/index.html' : path
-  if (req.method === 'GET' && /^\/(?:index\.html|assets\/[\w-]+\.(?:js|css|woff2?))$/.test(staticFile)) {
+  if (
+    req.method === 'GET' &&
+    /^\/(?:index\.html|assets\/[\w-]+(?:\.[\w-]+)*\.(?:js|css|woff2?|wasm))$/.test(staticFile)
+  ) {
     return sendAsset(res, web, staticFile)
   }
 }

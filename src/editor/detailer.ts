@@ -3,18 +3,29 @@ import type { Runner, Stage } from '../hooks/useGeneration.js'
 import { cropSource, flattened, maskSurface, resized, surface } from '../image/canvas.js'
 import { asBase64, frameFromRawResponse } from '../image/files.js'
 import { bounds, cropForMask, cutMask, featherInward, fitSize, growMask } from '../image/pixels.js'
+import { bestPerClass, boxMask } from '../image/yolo.js'
 import type { LoraChoice, Parameters, Profile } from '../types/api.js'
 import type { Frame, Rect } from '../types/image.js'
 import { collect, type Prepared, type Variant } from './generation.js'
+import { detectYolo } from './yolo.js'
 
-// Detailer like ADetailer: SAM3 finds objects such as faces, then each one is re-rendered in a crop at the
-// profile's target size with masked image to image and blended back.
+// Detailer like ADetailer: a YOLO model or SAM3 finds objects such as faces, then each one is re-rendered in a crop
+// at the profile's target size with masked image to image and blended back.
+export type DetectionMethod = 'yolo' | 'sam3'
+// yolo: an ONNX model in the browser, with its class names. sam3: a SAM3 checkpoint in ComfyUI.
+export type Detector = { kind: 'yolo'; model: string; labels: string[] } | { kind: 'sam3'; checkpoint: string }
 export type DetailerSettings = {
   on: boolean
+  method: DetectionMethod
+  // The chosen YOLO model. Empty or missing: the first one.
+  model: string
   // Comma-separated SAM3 terms. "face:2" overrides the limit for one term.
   terms: string
+  // Per SAM3 term or YOLO class.
   limit: number
+  // SAM3's threshold. YOLO scores run lower, so it has its own, 0.3 as in ADetailer.
   threshold: number
+  yoloThreshold: number
   // Empty: the main prompt.
   prompt: string
   strength: number
@@ -37,9 +48,12 @@ export type DetailerSettings = {
 export const detailerParameterKeys = ['sampler', 'scheduler', 'steps', 'cfg']
 export const initialDetailer: DetailerSettings = {
   on: false,
+  method: 'yolo',
+  model: '',
   terms: 'face',
   limit: 4,
   threshold: 0.5,
+  yoloThreshold: 0.3,
   prompt: '',
   strength: 0.4,
   padding: 32,
@@ -132,15 +146,31 @@ async function prepareDetail(
   }
 }
 
+// What the detailer looks for, for titles and messages: the YOLO classes or the SAM3 terms.
+export function detectorTarget(settings: DetailerSettings, detector?: Detector) {
+  if (detector?.kind === 'yolo') return detector.labels.join(', ') || detector.model
+  return settings.terms.trim()
+}
+
+// YOLO box models give rectangles, as ADetailer's box models do. Grow and feather soften their edges.
+async function detectBoxes(frame: Frame, settings: DetailerSettings, model: string, labels: string[]) {
+  const boxes = bestPerClass(await detectYolo(frame, model, settings.yoloThreshold), settings.limit)
+  return {
+    masks: boxes.map((box) => boxMask(box, frame.w, frame.h)),
+    detections: boxes.map(({ label, ...box }) => ({ ...box, term: labels[label] ?? model }))
+  }
+}
+
 // One binary mask per detected object, at the size of the detection image.
-async function detect(runner: Runner, frame: Frame, settings: DetailerSettings, detector: string) {
+async function detect(runner: Runner, frame: Frame, settings: DetailerSettings, detector: Detector) {
+  if (detector.kind === 'yolo') return detectBoxes(frame, settings, detector.model, detector.labels)
   const done = await runner.job({
     tool: 'detect',
     image: await asBase64(flattened(surface(frame), frame.w, frame.h)),
     terms: settings.terms,
     limit: settings.limit,
     threshold: settings.threshold,
-    detector
+    detector: detector.checkpoint
   })
   if (!done) return undefined
   try {
@@ -165,7 +195,7 @@ function unionMask(masks: Uint8ClampedArray[], length: number) {
 }
 
 // source: a fixed image, otherwise the previous variant of the run. The result keeps the original for comparison.
-export function detailStage(settings: DetailerSettings, base: DetailBase, detector: string, source?: Frame): Stage {
+export function detailStage(settings: DetailerSettings, base: DetailBase, detector: Detector, source?: Frame): Stage {
   return async (runner, previous) => {
     const frame = source ?? previous?.frame
     if (!frame) return undefined
@@ -174,7 +204,7 @@ export function detailStage(settings: DetailerSettings, base: DetailBase, detect
     runner.showDetections(found.detections)
     const regions = found.masks.flatMap((alpha) => detailRegion(alpha, frame, settings, base.profile) ?? [])
     if (!regions.length) {
-      runner.notice('Detailer: keine Treffer für „{{terms}}“.', true, { terms: settings.terms })
+      runner.notice('Detailer: keine Treffer für „{{terms}}“.', true, { terms: detectorTarget(settings, detector) })
       return undefined
     }
     let current = frame

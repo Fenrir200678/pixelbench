@@ -1,5 +1,11 @@
 import { useState } from 'react'
-import { detailerOverrides, initialDetailer, type DetailerSettings } from '../editor/detailer.js'
+import {
+  detailerOverrides,
+  detectorTarget,
+  initialDetailer,
+  type DetailerSettings,
+  type Detector
+} from '../editor/detailer.js'
 import { readStorage, writeStorage } from '../helpers/storage.js'
 import type { Parameters, Profile, Status } from '../types/api.js'
 import type { Notice, Tool } from '../types/editor.js'
@@ -12,7 +18,18 @@ export function useDetailer(tool: Tool, status: Status | undefined, profile: Pro
     ...initialDetailer,
     ...readStorage<Partial<DetailerSettings>>(detailerKey, {})
   }))
-  const detector = status?.detectors?.[0]
+  const yoloModels = status?.yolo ?? []
+  const checkpoint = status?.detectors?.[0]
+  const model = yoloModels.find(({ name }) => name === settings.model) ?? yoloModels[0]
+  // The chosen method only. Without its model the detailer stays off instead of switching methods silently.
+  const detector: Detector | undefined =
+    settings.method === 'sam3'
+      ? checkpoint
+        ? { kind: 'sam3', checkpoint }
+        : undefined
+      : model
+        ? { kind: 'yolo', model: model.name, labels: model.labels }
+        : undefined
   const upscalers = status?.upscalers ?? []
   // Without a chosen model the browser scales the crop: softer than a sharpening upscale model.
   const choice = upscalers.includes(settings.upscaler) ? settings.upscaler : 'lanczos'
@@ -21,6 +38,9 @@ export function useDetailer(tool: Tool, status: Status | undefined, profile: Pro
   return {
     settings,
     detector,
+    yoloModels,
+    // What the detailer looks for, such as "face".
+    target: detectorTarget(settings, detector),
     upscalers,
     // The combobox value, 'lanczos' without a model. upscaler: the model sent with the jobs.
     upscalerChoice: choice,

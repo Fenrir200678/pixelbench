@@ -6,6 +6,7 @@ All notable changes to Pixelbench. Versions follow [Semantic Versioning](https:/
 
 ### Added
 
+- Detailer: **YOLO** detection next to SAM3, picked with a switch at the top of the section. YOLO runs in the browser on the CPU with ONNX Runtime Web, so no ComfyUI job, no extra VRAM and no model swapping. The installer downloads models for faces (`yolov11s-face`) and hands (`hand_yolov8n`) to `.runtime/models/yolo`; further ONNX detection models can go there too.
 - Remove background in Extras: BiRefNet cuts out the subject of the shown image and makes the background transparent, with ComfyUI's core nodes and the model in `background_removal`.
 - Detailer: optional own sampler, scheduler, steps and CFG for the detected objects, separate from the render.
 - Hires fix: optional own sampler and scheduler for the hires pass, next to its own steps.

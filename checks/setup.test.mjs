@@ -122,6 +122,15 @@ test('the pin changes with a submodule commit', () => {
   assert.ok(pin(node).startsWith(node.commit + '+'))
 })
 
+test('every downloaded model is pinned to a commit and a checksum', () => {
+  for (const model of manifest.models) {
+    assert.match(model.url, /^https:\/\/huggingface\.co\/[\w-]+\/[\w-]+\/resolve\/[0-9a-f]{40}\//)
+    assert.match(model.sha256, /^[0-9a-f]{64}$/)
+    assert.match(model.file, /^yolo\/[\w.-]+\.onnx$/)
+    assert.ok(Number.isInteger(model.size) && model.size > 0)
+  }
+})
+
 test('the manifest pins every custom node folder the bridge looks for', async () => {
   const worker = await readFile(new URL('../server/comfy/worker.mjs', import.meta.url), 'utf8')
   for (const node of manifest.nodes) {

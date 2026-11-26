@@ -57,5 +57,23 @@
       "purpose": "Krea 2 edit",
       "requirements": []
     }
+  ],
+  "models": [
+    {
+      "file": "yolo/yolov11s-face.onnx",
+      "url": "https://huggingface.co/deepghs/yolo-face/resolve/e3662574830c534dfcc9c3b7ea4d89272f8aae4e/yolov11s-face/model.onnx",
+      "sha256": "de2d0582451a323af9a0fb05da70f32b4f26fcf411657c2dd491037ecd18efe6",
+      "size": 37805188,
+      "labels": ["face"],
+      "purpose": "YOLO face detection for the detailer"
+    },
+    {
+      "file": "yolo/hand_yolov8n.onnx",
+      "url": "https://huggingface.co/AbrahamPJ/nightmare-adetailer/resolve/eb37ca29867da6931ffd2caaa7f20d6c1c5ace21/hand_yolov8n.onnx",
+      "sha256": "344775796bba34fbf741dec44b5251b88994cc49610ea8e5a0cbfa2e8d3940d3",
+      "size": 12265726,
+      "labels": ["hand"],
+      "purpose": "YOLO hand detection for the detailer"
+    }
   ]
 }

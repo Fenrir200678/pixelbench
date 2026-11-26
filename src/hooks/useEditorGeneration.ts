@@ -249,7 +249,7 @@ export function useEditorGeneration({
         : profile && currentRenderInputs(profile)
     void generation.run(detailStages(base, candidate.frame))
   }
-  const terms = detailer.settings.terms.trim()
+  const terms = detailer.target
   const quickDetailLabel = terms ? t('Detailer · {{terms}}', { terms }) : t('Detailer')
 
   // Background removal in Extras, on the same shown image as the detailer. The whole image keeps its size.

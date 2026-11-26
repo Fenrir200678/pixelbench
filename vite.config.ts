@@ -40,6 +40,8 @@ export default defineConfig({
       }
     }
   ],
+  // ONNX Runtime Web finds its .wasm next to its own module. Pre-bundling would move the module away from it.
+  optimizeDeps: { exclude: ['onnxruntime-web'] },
   server: {
     host: '127.0.0.1',
     port: 5173,

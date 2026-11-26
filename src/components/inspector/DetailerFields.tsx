@@ -70,7 +70,8 @@ function DetailerSampling({
   )
 }
 
-// Detailer in Erstellen: finds objects such as faces with SAM3 and re-renders each one in a crop, like ADetailer.
+// Detailer in Erstellen: finds objects such as faces with a YOLO model or SAM3 and re-renders each one in a crop,
+// like ADetailer.
 export function DetailerFields({
   detailer,
   profile,
@@ -86,11 +87,32 @@ export function DetailerFields({
 }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState<DetailerTab>('basic')
-  const { settings, update, detector, upscalers, upscalerChoice } = detailer
+  const { settings, update, detector, upscalers, upscalerChoice, yoloModels, target } = detailer
   const on = settings.on
-  const title = t('Detailer') + (on && settings.terms.trim() ? ' · ' + settings.terms.trim() : '')
+  const yolo = settings.method === 'yolo'
+  const title = t('Detailer') + (on && target ? ' · ' + target : '')
   return (
     <CollapsibleSection id="detailer-settings" title={title} summary={on ? undefined : t('Aus')} defaultOpen={false}>
+      <div className="ratio-chips scale-modes detailer-methods" role="group" aria-label={t('Erkennungsmethode')}>
+        <Button
+          id="detailer-yolo"
+          className="quiet compact"
+          aria-pressed={yolo}
+          title={t('Schnell und auf der CPU. Findet feste Klassen wie Gesichter.')}
+          onClick={() => update({ method: 'yolo' })}
+        >
+          YOLO
+        </Button>
+        <Button
+          id="detailer-sam3"
+          className="quiet compact"
+          aria-pressed={!yolo}
+          title={t('Findet beliebige Objekte per Text. Läuft in ComfyUI und braucht zusätzlich VRAM.')}
+          onClick={() => update({ method: 'sam3' })}
+        >
+          SAM3
+        </Button>
+      </div>
       <label className="check detailer-toggle">
         <input
           id="use-detailer"
@@ -103,9 +125,13 @@ export function DetailerFields({
       </label>
       {!detector && (
         <p className="field-note">
-          {t(
-            'Der Detailer braucht ComfyUI mit SAM3 und das Modell „sam3.1_multiplex_fp16.safetensors“ unter „checkpoints“.'
-          )}
+          {yolo
+            ? t(
+                'Kein YOLO-Modell gefunden. Die Installation lädt Modelle für Gesichter und Hände nach „.runtime/models/yolo“.'
+              )
+            : t(
+                'Der Detailer braucht ComfyUI mit SAM3 und das Modell „sam3.1_multiplex_fp16.safetensors“ unter „checkpoints“.'
+              )}
         </p>
       )}
       <Tabs
@@ -125,26 +151,47 @@ export function DetailerFields({
       >
         {tab === 'basic' ? (
           <>
-            <div className="stack">
-              <span className="label-row">
-                <label htmlFor="detailer-terms">{t('Objekt-Prompt')}</label>
-                <a className="doc-link" href={termsGuide} target="_blank" rel="noopener noreferrer">
-                  <Icon name="docs" />
-                  {t('SAM-Dokumentation')}
-                </a>
-              </span>
-              <input
-                id="detailer-terms"
-                type="text"
-                maxLength={200}
-                placeholder="face, hand"
+            {yolo ? (
+              <label
+                className="stack"
                 title={t(
-                  'Kurze englische Beschreibung der Objekte, z. B. person, car, cat. Mit Komma mehrere, „face:2“ begrenzt die Treffer.'
+                  'YOLO-Modell, das die Objekte findet. Weitere ONNX-Modelle kommen nach „.runtime/models/yolo“.'
                 )}
-                value={settings.terms}
-                onChange={(event) => update({ terms: event.currentTarget.value })}
-              />
-            </div>
+              >
+                <span>{t('Erkennungsmodell')}</span>
+                <Combobox
+                  id="detailer-model"
+                  value={detector?.kind === 'yolo' ? detector.model : ''}
+                  disabled={!yoloModels.length}
+                  options={yoloModels.map(({ name, labels }) => ({
+                    value: name,
+                    label: labels.length ? name + ' · ' + labels.join(', ') : name
+                  }))}
+                  onChange={(model) => update({ model })}
+                />
+              </label>
+            ) : (
+              <div className="stack">
+                <span className="label-row">
+                  <label htmlFor="detailer-terms">{t('Objekt-Prompt')}</label>
+                  <a className="doc-link" href={termsGuide} target="_blank" rel="noopener noreferrer">
+                    <Icon name="docs" />
+                    {t('SAM-Dokumentation')}
+                  </a>
+                </span>
+                <input
+                  id="detailer-terms"
+                  type="text"
+                  maxLength={200}
+                  placeholder="face, hand"
+                  title={t(
+                    'Kurze englische Beschreibung der Objekte, z. B. person, car, cat. Mit Komma mehrere, „face:2“ begrenzt die Treffer.'
+                  )}
+                  value={settings.terms}
+                  onChange={(event) => update({ terms: event.currentTarget.value })}
+                />
+              </div>
+            )}
             <label
               className="stack"
               title={t(
@@ -205,7 +252,7 @@ export function DetailerFields({
                   checked={settings.keepMasks}
                   onChange={(event) => update({ keepMasks: event.currentTarget.checked })}
                 />{' '}
-                {t('Segmentierungsmasken behalten')}
+                {yolo ? t('Erkennungsmasken behalten') : t('Segmentierungsmasken behalten')}
               </label>
             </div>
             <Button
@@ -227,7 +274,7 @@ export function DetailerFields({
               <NumberField
                 id="detailer-limit"
                 label={t('Max. Treffer')}
-                title={t('Höchstens so viele Objekte je Begriff')}
+                title={yolo ? t('Höchstens so viele Objekte je Klasse') : t('Höchstens so viele Objekte je Begriff')}
                 value={settings.limit}
                 min={1}
                 max={8}
@@ -239,13 +286,13 @@ export function DetailerFields({
                 id="detailer-threshold"
                 label={t('Erkennungsschwelle')}
                 title={t('Niedriger findet mehr, auch Fehltreffer.')}
-                value={settings.threshold}
+                value={yolo ? settings.yoloThreshold : settings.threshold}
                 min={0.05}
                 max={0.95}
                 step={0.05}
                 row
                 slider
-                onChange={(threshold) => update({ threshold })}
+                onChange={(threshold) => update(yolo ? { yoloThreshold: threshold } : { threshold })}
               />
             </div>
             <div className="detailer-group">
