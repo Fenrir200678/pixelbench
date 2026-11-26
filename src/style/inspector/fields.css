@@ -51,11 +51,66 @@
 .check input {
   margin: 0;
 }
-.detailer-checks {
+/* Checkboxes side by side, wrapping in a narrow inspector. */
+.check-row {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   margin: var(--space-3) 0 var(--space-4);
+}
+.check-row.hires-checks {
+  margin-top: 0;
+}
+.check-value {
+  color: var(--text-muted);
+  font: var(--text-xs) var(--font-mono);
+}
+/* The scale switch, factor chips and result get room of their own between the checkboxes and the strength. */
+.hires-scale {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--tab-border, var(--border-subtle));
+}
+.hires-scale > .ratio-chips {
+  margin-bottom: 0;
+}
+.hires-strength-note {
+  margin: 0 0 var(--space-3);
+}
+/* Factor presets as a ruler under the slider. --at is the preset's position on the slider, 0 to 1. The thumb is
+   12px wide, so its center runs from 6px to the width minus 6px. */
+.factor-ticks {
+  position: relative;
+  height: 24px;
+  margin-top: calc(var(--space-1) * -1);
+}
+.factor-ticks button {
+  position: absolute;
+  top: 0;
+  left: calc(6px + (100% - 12px) * var(--at));
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 0;
+  padding: 0 var(--space-1);
+  translate: -50% 0;
+  color: var(--text-muted);
+  font: var(--text-xs) var(--font-mono);
+}
+.factor-ticks button::before {
+  content: '';
+  width: 1px;
+  height: 5px;
+  background: currentColor;
+}
+.factor-ticks button:hover:not(:disabled) {
+  background: none;
+  color: var(--text-primary);
+}
+.factor-ticks button[aria-pressed='true'] {
+  color: var(--accent-text);
 }
 .check.detailer-toggle {
   display: flex;
@@ -142,6 +197,7 @@
   background: var(--accent-text);
 }
 .detailer-apply,
+.hires-apply,
 .background-apply {
   width: 100%;
   justify-content: center;

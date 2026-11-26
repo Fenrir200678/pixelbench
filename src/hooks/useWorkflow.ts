@@ -52,7 +52,12 @@ export type HiresSettings = {
   steps: number
   tiled: boolean
   colorMatch: number
+  // Sampler and scheduler for the hires pass. Empty: the render's.
+  sampler: string
+  scheduler: string
 }
+// Render parameters the hires fix can set on its own, besides its steps.
+export const hiresSamplingKeys = ['sampler', 'scheduler'] as const
 const initialUpscale: UpscaleSettings = { scale: initialScale }
 const initialHires: HiresSettings = {
   on: false,
@@ -60,7 +65,9 @@ const initialHires: HiresSettings = {
   strength: 0.35,
   steps: 0,
   tiled: false,
-  colorMatch: 0
+  colorMatch: 0,
+  sampler: '',
+  scheduler: ''
 }
 const modelsKey = 'pixelbench-models-v1'
 const preferencesKey = 'pixelbench-preferences-v1'
@@ -272,6 +279,16 @@ export function useWorkflow(
     return { upscaler: hiresUpscaler, strength: hires.strength, steps: hires.steps, size, tiled, colorMatch }
   }
 
+  // The render parameters with the hires sampler and scheduler on top, where the profile lists them.
+  function hiresParameters(item: Profile, base: Parameters): Parameters {
+    const next = { ...base }
+    for (const key of hiresSamplingKeys) {
+      const value = hires[key]
+      if (value && item.parameters[key] && item.choices[key]?.includes(value)) next[key] = value
+    }
+    return next
+  }
+
   return {
     upscale: { ...upscale, upscaler },
     upscalers,
@@ -286,6 +303,7 @@ export function useWorkflow(
     colorMatchAvailable,
     varianceAvailable: tool === 'create' && Boolean(profile?.variance && status?.seedVariance),
     hiresFor,
+    hiresParameters,
     updateUpscale: storeUpscale,
     updateHires: storeHires,
     profile,

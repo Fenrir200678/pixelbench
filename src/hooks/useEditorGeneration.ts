@@ -149,6 +149,7 @@ export function useEditorGeneration({
     const hires = workflow.hiresFor([source.w, source.h])
     if (!hires) return undefined
     const size = upscaleMeasurement(source, hires.size)
+    const parameters = workflow.hiresParameters(sourceProfile, request.parameters)
     return prepare({
       source,
       crop: size.crop,
@@ -160,7 +161,7 @@ export function useEditorGeneration({
       prompt: request.prompt,
       negative: request.negative,
       seed: request.seed,
-      parameters: request.parameters,
+      parameters,
       models: request.models ?? {},
       loras: request.loras,
       hires

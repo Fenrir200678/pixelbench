@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { sizeLabel } from '../../editor/geometry.js'
 import { cropped, scaledSize, upscaleFactors, type Scale } from '../../editor/upscale.js'
@@ -10,10 +11,11 @@ import { CollapsibleSection } from '../../ui/CollapsibleSection.js'
 import { NumberField } from '../../ui/NumberField.js'
 import { RatioLock } from './RatioLock.js'
 
+const factorRange = [1, 4] as const
 const factorLabel = (factor: number) => String(factor).replace('.', ',') + '×'
 
 // "Skalieren um" a factor or "Skalieren auf" a size, as in Forge. Shared by Hochskalieren and the hires fix.
-function ScaleFields({
+export function ScaleFields({
   id,
   source,
   scale,
@@ -50,29 +52,31 @@ function ScaleFields({
       </div>
       {scale.mode === 'by' ? (
         <>
-          <div className="ratio-chips" role="group" aria-label={t('Faktor')}>
-            {upscaleFactors.map((factor) => (
-              <Button
-                key={factor}
-                className="quiet compact"
-                aria-pressed={scale.factor === factor}
-                onClick={() => update({ factor })}
-              >
-                {factorLabel(factor)}
-              </Button>
-            ))}
-          </div>
           <NumberField
             id={id + '-factor'}
             label={t('Faktor')}
             value={scale.factor}
-            min={1}
-            max={4}
+            min={factorRange[0]}
+            max={factorRange[1]}
             step={0.25}
             row
             slider
             onChange={(factor) => update({ factor })}
           />
+          {/* The presets as marks on the slider's scale, at the position of their value. */}
+          <div className="factor-ticks" role="group" aria-label={t('Faktor')}>
+            {upscaleFactors.map((factor) => (
+              <button
+                key={factor}
+                type="button"
+                aria-pressed={scale.factor === factor}
+                style={{ '--at': (factor - factorRange[0]) / (factorRange[1] - factorRange[0]) } as CSSProperties}
+                onClick={() => update({ factor })}
+              >
+                {factorLabel(factor)}
+              </button>
+            ))}
+          </div>
         </>
       ) : (
         <div className="dimensions locked-dimensions">
@@ -158,152 +162,6 @@ export function UpscaleFields({ workflow, work }: { workflow: Workflow; work?: W
               'Kein Upscale-Modell gefunden. Es gehört unter „upscale_models“ oder „ESRGAN“ in einen Modell-Stammordner.'
             )}
       </p>
-    </CollapsibleSection>
-  )
-}
-
-// Hires fix in Erstellen: enlarge the rendered image and re-render details in tiles, in the same job.
-export function HiresFields({
-  workflow,
-  work,
-  canApply,
-  onApply
-}: {
-  workflow: Workflow
-  work?: Work
-  canApply: boolean
-  onApply: () => void
-}) {
-  const { t } = useTranslation()
-  const { hires, upscalers, profile, measurement, hiresSize } = workflow
-  const on = hires.on
-  const seedLocked = workflow.prefs.seedMode === 'fixed'
-  const fixedSigmas = Boolean(profile?.img2img?.sigmas)
-  const title = 'Hires-Fix' + (on && hiresSize ? ' · ' + sizeLabel(...hiresSize) + ' px' : '')
-  return (
-    <CollapsibleSection id="hires-settings" title={title} summary={on ? undefined : t('Aus')} defaultOpen={false}>
-      <label className="check">
-        <input
-          id="use-hires"
-          type="checkbox"
-          checked={on}
-          onChange={(event) => {
-            const checked = event.currentTarget.checked
-            workflow.updateHires({ on: checked })
-            // Usually the current variant is upscaled, so turning the hires fix on also locks its seed (opt-out).
-            if (checked && !seedLocked && workflow.seedValue !== undefined) workflow.toggleSeed()
-          }}
-        />{' '}
-        {t('Beim Generieren anwenden')}
-      </label>
-      {/* The same lock as under Render: keeps the seed of the last or selected variant for the hires run. */}
-      <div className="field-row hires-seed">
-        <label className="check">
-          <input
-            id="hires-seed-lock"
-            type="checkbox"
-            checked={seedLocked}
-            disabled={!seedLocked && workflow.seedValue === undefined}
-            onChange={workflow.toggleSeed}
-          />{' '}
-          {t('Seed fixieren')}
-        </label>
-        <output title={seedLocked ? undefined : t('Seed der zuletzt erstellten oder gewählten Variante')}>
-          {workflow.seedValue ?? '—'}
-        </output>
-      </div>
-      <label className="stack">
-        <span>{t('Upscale-Modell')}</span>
-        <Combobox
-          id="hires-upscaler"
-          value={hires.upscaler ?? ''}
-          disabled={!upscalers.length}
-          placeholder={upscalers.length ? undefined : t('Kein Upscale-Modell gefunden')}
-          options={upscalers.map((file) => ({ value: file }))}
-          onChange={(upscaler) => workflow.updateHires({ upscaler })}
-        />
-      </label>
-      <ScaleFields
-        id="hires"
-        source={measurement?.effective}
-        scale={hires.scale}
-        onChange={(scale) => workflow.updateHires({ scale })}
-      />
-      <NumberField
-        id="hires-strength"
-        label={t('Details')}
-        title={t('Stärke, mit der das vergrößerte Bild in Kacheln neu gerendert wird.')}
-        value={hires.strength}
-        min={0.05}
-        max={1}
-        step={0.05}
-        row
-        slider
-        onChange={(strength) => workflow.updateHires({ strength })}
-      />
-      {workflow.colorMatchAvailable && (
-        <NumberField
-          id="hires-color-match"
-          label={t('Farbkorrektur')}
-          title={t('Gleicht die Farben des Ergebnisses an das Bild vor dem Hochskalieren an. 0 aus, 1 voll.')}
-          value={Number(hires.colorMatch) || 0}
-          min={0}
-          max={1}
-          step={0.05}
-          row
-          slider
-          onChange={(colorMatch) => workflow.updateHires({ colorMatch })}
-        />
-      )}
-      {!fixedSigmas && (
-        <NumberField
-          id="hires-steps"
-          label={t('Hires-Schritte')}
-          title={t('0 verwendet die Schritte unter „Render“.')}
-          value={hires.steps}
-          min={0}
-          max={100}
-          row
-          slider
-          onChange={(steps) => workflow.updateHires({ steps })}
-        />
-      )}
-      <label
-        className="check"
-        title={t('Ultimate SD Upscale rendert das Bild in Kacheln in der Zielgröße des Profils.')}
-      >
-        <input
-          id="hires-tiled"
-          type="checkbox"
-          checked={hires.tiled}
-          onChange={(event) => workflow.updateHires({ tiled: event.currentTarget.checked })}
-        />{' '}
-        {t('In Kacheln rendern')}
-      </label>
-      <p className="field-note">
-        {workflow.hiresTiled && !workflow.hiresReady
-          ? t('Der Hires-Fix braucht die Custom-Nodes „Ultimate SD Upscale“ in ComfyUI.')
-          : workflow.hiresLarge && profile
-            ? t('Über {{max}} px oder {{mp}} MP braucht {{profile}} ohne Kacheln viel VRAM und Zeit.', {
-                max: profile.sizes.max,
-                mp: String(Math.round(profile.sizes.area / 1e5) / 10).replace('.', ','),
-                profile: profile.short
-              })
-            : t('Um 0,3 bleibt das Bild nah am ersten Render.')}
-      </p>
-      {work && (
-        <Button
-          id="hires-image"
-          className="secondary compact"
-          icon="upscale"
-          disabled={!canApply}
-          title={t('Ohne neuen Render: das geöffnete Bild hochskalieren und Details nachrendern')}
-          onClick={onApply}
-        >
-          {' '}
-          {t('Hires-Fix auf geöffnetes Bild anwenden')}
-        </Button>
-      )}
     </CollapsibleSection>
   )
 }

@@ -374,9 +374,6 @@ export const english: Record<string, string> = {
     'The hires fix needs the "Ultimate SD Upscale" custom nodes in ComfyUI.',
   Faktor: 'Factor',
   Ergebnis: 'Result',
-  Details: 'Details',
-  'Stärke, mit der das vergrößerte Bild in Kacheln neu gerendert wird.':
-    'Strength used to re-render the enlarged image in tiles.',
   'Um 0,3 bleibt das Bild nah am ersten Render.': 'Around 0.3 stays close to the first render.',
   'In Kacheln rendern': 'Render in tiles',
   'Ultimate SD Upscale rendert das Bild in Kacheln in der Zielgröße des Profils.':
@@ -406,7 +403,6 @@ export const english: Record<string, string> = {
   '0 verwendet die Schritte unter „Render“.': '0 uses the steps under Render.',
   'Ohne neuen Render: das geöffnete Bild hochskalieren und Details nachrendern':
     'Without a new render: upscale the open image and re-render details',
-  'Hires-Fix auf geöffnetes Bild anwenden': 'Apply hires fix to open image',
   'Hires-Fix → {{size}} px': 'Hires fix → {{size}} px',
   'Hires-Fix-Einstellungen fehlen.': 'Hires fix settings are missing.',
   'Mit Seed, Prompt und Profil dieser Variante hochskalieren und Details nachrendern':
@@ -558,6 +554,11 @@ export const english: Record<string, string> = {
     'Off: the render’s sampler, scheduler, steps and CFG. On: separate values for the objects only.',
   'Dieses Profil hat feste Sampling-Einstellungen.': 'This profile has fixed sampling settings.',
   'Eigene Sampling-Einstellungen sind aktiv.': 'Own sampling settings are active.',
+  'Hires-Fix-Einstellungen': 'Hires fix settings',
+  'Eigene Einstellungen für den Hires-Pass sind aktiv.': 'Own settings for the hires pass are active.',
+  'Stärke, mit der das vergrößerte Bild neu gerendert wird.': 'Strength with which the enlarged image is re-rendered.',
+  'Wie beim Render': 'Same as render',
+  Kacheln: 'Tiles',
   'Detailer · {{terms}}': 'Detailer · {{terms}}',
   'Detailer mit den aktuellen Detailer-Einstellungen auf diese Variante anwenden':
     'Apply the detailer with the current detailer settings to this variant',

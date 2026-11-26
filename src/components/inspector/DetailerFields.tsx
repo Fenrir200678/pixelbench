@@ -178,7 +178,7 @@ export function DetailerFields({
                 'Rendert jedes Objekt einzeln mit Modell, LoRAs und Seed des Renders. Um 0,4 bleibt das Gesicht ähnlich.'
               )}
             </p>
-            <div className="detailer-checks">
+            <div className="check-row">
               <label
                 className="check"
                 title={t(
