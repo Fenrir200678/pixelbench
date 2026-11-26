@@ -1,34 +1,25 @@
 import { useState } from 'react'
 import i18n from '../i18n/index.js'
-import { createSize, generationCrop, measure, measureCreate } from '../editor/geometry.js'
-import { exceedsProfile, initialScale, scaledSize, type Scale } from '../editor/upscale.js'
-import type { Hires } from '../editor/generation.js'
+import { createSize, matchingDimension, measureWorkflow, type GeometryPreferences } from '../editor/geometry.js'
+import { exceedsProfile, scaledSize } from '../editor/upscale.js'
 import { modelProblems, profileReady, selectModels, type SavedModels } from '../editor/models.js'
 import { tools } from '../editor/tools.js'
 import { readStorage, writeStorage } from '../helpers/storage.js'
-import { clamp, fitSize, maxEdge } from '../image/pixels.js'
+import { fitSize } from '../image/pixels.js'
 import type { LoraChoice, Parameters, Profile, Status, Value } from '../types/api.js'
 import type { Notice, NoticeValues, Tool, Work } from '../types/editor.js'
 import type { Rect } from '../types/image.js'
+import { useUpscaleSettings } from './useUpscaleSettings.js'
 
-type Prefs = {
+type Prefs = GeometryPreferences & {
   parameters: Parameters
   parametersByTool: Partial<Record<Tool, Parameters>>
   seedMode: string
   seed: number
-  auto: boolean
   lock: boolean
-  w: number
-  h: number
-  context: number
   feather: number
   editFeather: number
   transition: number
-  createW: number
-  createH: number
-  templateAuto: boolean
-  templateW: number
-  templateH: number
   strength: number
   // Img2img color correction toward the template, as in Forge. 0 is off.
   colorMatch: number
@@ -38,37 +29,6 @@ type Prefs = {
 type SavedPrefs = { defaults: Record<string, Prefs>; presets: Record<string, Record<string, Prefs>> }
 export type LoraEntry = LoraChoice & { id: string; enabled: boolean }
 const lorasKey = 'pixelbench-loras-v1'
-const upscaleKey = 'pixelbench-upscale-v2'
-const hiresKey = 'pixelbench-hires-v1'
-// Hochskalieren: an upscale model or "lanczos".
-export type UpscaleSettings = { upscaler?: string; scale: Scale }
-// Hires fix in Erstellen, also used by the quick hires fix on variants and on the open image.
-// tiled: opt-in for Ultimate SD Upscale. Without it, one image to image pass at the target size, as in Forge.
-export type HiresSettings = {
-  on: boolean
-  upscaler?: string
-  scale: Scale
-  strength: number
-  steps: number
-  tiled: boolean
-  colorMatch: number
-  // Sampler and scheduler for the hires pass. Empty: the render's.
-  sampler: string
-  scheduler: string
-}
-// Render parameters the hires fix can set on its own, besides its steps.
-export const hiresSamplingKeys = ['sampler', 'scheduler'] as const
-const initialUpscale: UpscaleSettings = { scale: initialScale }
-const initialHires: HiresSettings = {
-  on: false,
-  scale: initialScale,
-  strength: 0.35,
-  steps: 0,
-  tiled: false,
-  colorMatch: 0,
-  sampler: '',
-  scheduler: ''
-}
 const modelsKey = 'pixelbench-models-v1'
 const preferencesKey = 'pixelbench-preferences-v1'
 const profileChoicesKey = 'pixelbench-profile-choices-v1'
@@ -110,12 +70,6 @@ function resolveParameters(profile: Profile | undefined, prefs: Prefs, tool: Too
   )
 }
 
-// The whole image is enlarged. Target and crop cover the result at the image's position.
-export function upscaleMeasurement(image: Rect, effective: [number, number]) {
-  const crop = { x: 0, y: 0, w: effective[0], h: effective[1] }
-  return { crop, target: { ...crop, x: image.x, y: image.y }, auto: effective, effective, corrected: false }
-}
-
 function seedFor(prefs: Prefs) {
   if (prefs.seedMode === 'fixed') return prefs.seed
   const [a, b] = crypto.getRandomValues(new Uint32Array(2))
@@ -153,11 +107,6 @@ export function useWorkflow(
   const [lastRandomSeed, setLastRandomSeed] = useState<number>()
   // Off until the user opens a template in Create or ticks the box. Applying a variant never turns it on.
   const [templateOn, setTemplateOn] = useState(false)
-  const [upscale, setUpscale] = useState(() => ({
-    ...initialUpscale,
-    ...readStorage<Partial<UpscaleSettings>>(upscaleKey, {})
-  }))
-  const [hires, setHires] = useState(() => ({ ...initialHires, ...readStorage<Partial<HiresSettings>>(hiresKey, {}) }))
 
   const options = tools[tool].profiles.flatMap((id) => (status?.profiles ?? []).filter((p) => p.id === id))
   const ready = (p: Profile, choices = selectModels(p, models)) => profileReady(p, choices)
@@ -176,22 +125,8 @@ export function useWorkflow(
   const loras = (profile?.lora && savedLoras[profile.id]) || []
   const activeLoras = loras.filter((entry) => entry.enabled)
   const missingLoras = activeLoras.filter((entry) => !loraFiles.some(({ file }) => file === entry.name))
-  const upscalers = status?.upscalers ?? []
-  const preferredUpscaler = upscalers.find((file) => /ultrasharp/i.test(file)) ?? upscalers[0]
-  const upscaler =
-    upscale.upscaler === 'lanczos' || (upscale.upscaler && upscalers.includes(upscale.upscaler))
-      ? upscale.upscaler
-      : (preferredUpscaler ?? 'lanczos')
-  const hiresUpscaler =
-    hires.upscaler === 'lanczos' || (hires.upscaler && upscalers.includes(hires.upscaler))
-      ? hires.upscaler
-      : (preferredUpscaler ?? 'lanczos')
-  const hiresReady = status?.tiledUpscale !== false
-  const colorMatchAvailable = Boolean(status?.colorMatch)
-  const upscaling = tool === 'upscale'
-  // Hires fix needs a profile that renders from a latent and the tiled upscale nodes.
-  const hiresAvailable = tool === 'create' && Boolean(profile?.img2img && profile.tools.includes('upscale'))
-  const hiresActive = hiresAvailable && hires.on
+  const upscaleSettings = useUpscaleSettings(tool, profile, status, notice)
+  const { upscale, hires, hiresActive, hiresRunnable } = upscaleSettings
   const problems = [
     ...(profile ? modelProblems(profile, choices) : []),
     ...missingLoras.map((entry) => i18n.t('LoRA fehlt im Loader · {{file}}', { file: entry.name }))
@@ -204,34 +139,18 @@ export function useWorkflow(
     if (!writeStorage(lorasKey, all)) notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
   }
   const create = tool === 'create'
-  const crop =
-    !create && !upscaling && work
-      ? generationCrop(work, tool, prefs.auto ? maskBox : undefined, prefs.context)
-      : undefined
   const grid = profile?.sizes.grid ?? 8
-  // Image to image: the open image is the template. By default it is scaled to the profile's target area.
-  const template = create && profile?.img2img && templateOn ? work?.image : undefined
-  const templateDefault =
-    template && profile
-      ? fitSize(...createSize(template.w / template.h, profile.sizes.target), profile.sizes)
-      : undefined
-  const templateSize: [number, number] | undefined =
-    templateDefault && (prefs.templateAuto ? templateDefault : [prefs.templateW, prefs.templateH])
-  const createMeasurement = profile && measureCreate(profile, ...(templateSize ?? [prefs.createW, prefs.createH]))
-  const measurement = create
-    ? createMeasurement &&
-      (template
-        ? { ...createMeasurement, target: { ...createMeasurement.target, x: template.x, y: template.y } }
-        : createMeasurement)
-    : upscaling
-      ? work && upscaleMeasurement(work.image, scaledSize([work.image.w, work.image.h], upscale.scale))
-      : work && profile && crop
-        ? measure(work, tool, profile, crop, prefs.auto ? undefined : [prefs.w, prefs.h])
-        : undefined
+  const { crop, measurement, template, templateSize } = measureWorkflow({
+    tool,
+    profile,
+    work,
+    maskBox,
+    prefs,
+    templateOn,
+    upscaleScale: upscale.scale
+  })
   const hiresSize = hiresActive && measurement ? scaledSize(measurement.effective, hires.scale) : undefined
-  const hiresTiledNow = hiresActive && hires.tiled
-  if (hiresTiledNow && !hiresReady)
-    problems.push(i18n.t('Der Hires-Fix braucht die Custom-Nodes „Ultimate SD Upscale“ in ComfyUI.'))
+  if (!hiresRunnable) problems.push(i18n.t('Der Hires-Fix braucht die Custom-Nodes „Ultimate SD Upscale“ in ComfyUI.'))
   const [w, h] = prefs.auto && measurement ? measurement.auto : [prefs.w, prefs.h]
   const currentPrefs = { ...prefs, parameters, w, h }
   const presets = profile ? (saved.presets[profile.id] ?? {}) : {}
@@ -254,54 +173,11 @@ export function useWorkflow(
     setRatio(next.w / next.h)
   }
 
-  function storeUpscale(patch: Partial<UpscaleSettings>) {
-    const next = { ...upscale, ...patch }
-    setUpscale(next)
-    if (!writeStorage(upscaleKey, next)) notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
-  }
-
-  function storeHires(patch: Partial<HiresSettings>) {
-    const next = { ...hires, ...patch }
-    setHires(next)
-    if (!writeStorage(hiresKey, next)) notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
-  }
-
-  // The hires fix request for an image of the given size, or undefined when it cannot run.
-  function hiresFor(source: [number, number]): Hires | undefined {
-    const size = scaledSize(source, hires.scale)
-    const tiled = hires.tiled
-    if (tiled && !hiresReady) return undefined
-    const colorMatch = colorMatchAvailable ? Number(hires.colorMatch) || 0 : 0
-    return { upscaler: hiresUpscaler, strength: hires.strength, steps: hires.steps, size, tiled, colorMatch }
-  }
-
-  // The render parameters with the hires sampler and scheduler on top, where the profile lists them.
-  function hiresParameters(item: Profile, base: Parameters): Parameters {
-    const next = { ...base }
-    for (const key of hiresSamplingKeys) {
-      const value = hires[key]
-      if (value && item.parameters[key] && item.choices[key]?.includes(value)) next[key] = value
-    }
-    return next
-  }
-
   return {
-    upscale: { ...upscale, upscaler },
-    upscalers,
-    hires: { ...hires, upscaler: hiresUpscaler },
-    hiresAvailable,
-    hiresActive,
+    ...upscaleSettings,
     hiresSize,
-    hiresTiled: hiresTiledNow,
     hiresLarge: Boolean(profile && hiresSize && !hires.tiled && exceedsProfile(profile.sizes, hiresSize)),
-    hiresRunnable: !hiresActive || !hiresTiledNow || hiresReady,
-    hiresReady,
-    colorMatchAvailable,
     varianceAvailable: tool === 'create' && Boolean(profile?.variance && status?.seedVariance),
-    hiresFor,
-    hiresParameters,
-    updateUpscale: storeUpscale,
-    updateHires: storeHires,
     profile,
     options,
     choices,
@@ -408,15 +284,10 @@ export function useWorkflow(
     },
     setTemplateDimension(axis: 'w' | 'h', value: number) {
       if (!template || !templateSize) return
-      const ratio = prefs.lock ? template.w / template.h : templateSize[0] / templateSize[1]
-      const other = clamp(Math.round(axis === 'w' ? value / ratio : value * ratio), 1, maxEdge)
-      const [templateW, templateH] = prefs.lock
-        ? axis === 'w'
-          ? [value, other]
-          : [other, value]
-        : axis === 'w'
-          ? [value, templateSize[1]]
-          : [templateSize[0], value]
+      const other = prefs.lock
+        ? matchingDimension(axis, value, template.w / template.h)
+        : templateSize[axis === 'w' ? 1 : 0]
+      const [templateW, templateH] = axis === 'w' ? [value, other] : [other, value]
       updatePrefs({ templateAuto: false, templateW, templateH })
     },
     swapCreateSize() {
@@ -429,7 +300,7 @@ export function useWorkflow(
         prefs.lock
           ? {
               [axis === 'w' ? 'createW' : 'createH']: value,
-              [other]: clamp(Math.round(axis === 'w' ? value / current : value * current), 1, maxEdge)
+              [other]: matchingDimension(axis, value, current)
             }
           : { [axis === 'w' ? 'createW' : 'createH']: value }
       )
@@ -444,11 +315,7 @@ export function useWorkflow(
     },
     setDimension(axis: 'w' | 'h', value: number) {
       const other = axis === 'w' ? 'h' : 'w'
-      updatePrefs(
-        prefs.lock
-          ? { [axis]: value, [other]: clamp(Math.round(axis === 'w' ? value / ratio : value * ratio), 1, maxEdge) }
-          : { [axis]: value }
-      )
+      updatePrefs(prefs.lock ? { [axis]: value, [other]: matchingDimension(axis, value, ratio) } : { [axis]: value })
     },
     savePreset(name: string) {
       if (!profile) return

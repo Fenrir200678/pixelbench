@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useReducer, useRef, useState } from 'react'
+import { useReducer, useRef, useState, type RefObject } from 'react'
 import { emptyMargins, sizeLabel, suggestExpansion } from '../editor/geometry.js'
 import { messageOf } from '../helpers/async.js'
 import { exportImage, importImage } from '../image/files.js'
@@ -112,7 +112,7 @@ function drawingFor(work: Work, existing?: Drawing) {
     return existing
   return new Drawing(area, work.drawing)
 }
-export function useDocument(notice: Notice, onOpen: (previous: boolean) => void) {
+export function useDocument(notice: Notice, activeTool: RefObject<Tool>) {
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(reducer, initial)
   const [importing, setImporting] = useState(false)
@@ -121,30 +121,32 @@ export function useDocument(notice: Notice, onOpen: (previous: boolean) => void)
   const { exportFormat, exportMetadata } = preferences
   const importVersion = useRef(0)
   const exportPending = useRef(false)
-  const toolAtImport = useRef<Tool>('create')
   const { work, original, saved, fileName, info, mask, drawing } = state
   const dirty = Boolean(work && work.image !== saved && (work.image !== original || !saved))
 
-  async function open(file: File) {
+  async function open(file: File, onOpen: (previous: boolean, importTool: Tool) => void): Promise<boolean> {
     if (dirty && !confirmDiscard(t('Übernommene Änderungen wurden noch nicht exportiert. Bearbeitung verwerfen?')))
-      return
+      return false
     const version = ++importVersion.current
     setImporting(true)
     try {
       // Metadata is optional. A file it cannot read still opens.
       const [frame, metadata] = await Promise.all([importImage(file), readMetadata(file).catch(() => undefined)])
-      if (version !== importVersion.current) return
+      if (version !== importVersion.current) return false
+      const importTool = activeTool.current
       const next = {
         image: frame,
         start: frame,
         strokes: [],
-        margins: toolAtImport.current === 'outpaint' ? suggestExpansion(frame) : emptyMargins()
+        margins: importTool === 'outpaint' ? suggestExpansion(frame) : emptyMargins()
       }
       dispatch({ type: 'open', work: next, fileName: file.name, mask: maskFor(next), info: metadata })
-      onOpen(Boolean(work))
+      onOpen(Boolean(work), importTool)
       notice()
+      return true
     } catch (error) {
       if (version === importVersion.current) notice(messageOf(error))
+      return false
     } finally {
       if (version === importVersion.current) setImporting(false)
     }
@@ -233,7 +235,6 @@ export function useDocument(notice: Notice, onOpen: (previous: boolean) => void)
     exporting,
     exportFormat,
     importVersion,
-    toolAtImport,
     open,
     close,
     adopt,

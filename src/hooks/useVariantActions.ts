@@ -10,11 +10,10 @@ import type { useVariants } from './useVariants.js'
 
 type Inputs = {
   document: Pick<ReturnType<typeof useDocument>, 'work' | 'mask' | 'commit'>
-  variants: Pick<ReturnType<typeof useVariants>, 'items' | 'selected'>
+  variants: Pick<ReturnType<typeof useVariants>, 'items' | 'index' | 'selected' | 'dispatch' | 'deselect'>
   adoptCreated: (frame: Frame, strokes?: Stroke[]) => void
   resetAfterReplace: () => void
-  selectVariant: (index: number) => void
-  showApplied: () => void
+  showVariantSeed: (seed: number) => void
   notice: Notice
 }
 
@@ -23,13 +22,31 @@ export function useVariantActions({
   variants,
   adoptCreated,
   resetAfterReplace,
-  selectVariant,
-  showApplied,
+  showVariantSeed,
   notice
 }: Inputs) {
   const { t } = useTranslation()
   const { work, mask, commit } = document
-  const candidate = variants.selected
+  const { items, index, selected: candidate, dispatch, deselect } = variants
+
+  function select(index: number) {
+    const variant = items[index]
+    if (variant) showVariantSeed(variant.prepared.request.seed)
+    dispatch({ type: 'select', index })
+  }
+
+  function movePreview(by: number) {
+    if (!items.length) return
+    select(index < 0 ? (by > 0 ? 0 : items.length - 1) : (index + by + items.length) % items.length)
+  }
+
+  function toggleCompare() {
+    if (candidate?.prepared.source) dispatch({ type: 'compare' })
+  }
+
+  function clear() {
+    if (confirmDiscard(t('Alle Vorschauen löschen?'))) dispatch({ type: 'clear' })
+  }
 
   // Results built on a variant that was never adopted, such as text to image or a quick hires fix, replace the document.
   function standalone(variant: Variant) {
@@ -69,7 +86,7 @@ export function useVariantActions({
       sameBounds && !segmented ? mask : undefined
     )
     resetAfterReplace()
-    showApplied()
+    deselect()
     if (segmented) notice('Die Segmentierungsmaske liegt unter „Ersetzen“ bereit.', true)
     else notice()
   }
@@ -86,9 +103,9 @@ export function useVariantActions({
     }
     commit({ image, start: image, strokes: [], margins: emptyMargins() })
     resetAfterReplace()
-    selectVariant(-1)
+    deselect()
     notice('Bild als Startbild gesetzt.', true)
   }
 
-  return { apply, setBaseline }
+  return { select, movePreview, toggleCompare, clear, apply, setBaseline }
 }

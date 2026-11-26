@@ -5,6 +5,12 @@
   min-width: 0;
   gap: var(--space-1);
 }
+.workflow-label {
+  flex: none;
+  margin-right: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
 .workflow-switch .combobox {
   width: 200px;
   min-width: 120px;

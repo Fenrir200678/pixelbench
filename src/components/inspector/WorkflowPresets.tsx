@@ -13,6 +13,9 @@ export function WorkflowSwitch({ workflow }: { workflow: Workflow }) {
   const sortedOptions = [...options].sort((a, b) => a.name.localeCompare(b.name))
   return (
     <div className="workflow-switch" role="group" aria-label={t('Workflow-Profil')}>
+      <label className="workflow-label" htmlFor="profile">
+        {t('Workflows')}
+      </label>
       <Combobox
         id="profile"
         aria-label={t('Workflow-Profil')}

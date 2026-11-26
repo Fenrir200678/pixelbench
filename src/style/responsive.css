@@ -66,6 +66,9 @@
   }
 }
 @media (max-width: 800px) {
+  .workflow-label {
+    display: none;
+  }
   #presets > span {
     display: none;
   }

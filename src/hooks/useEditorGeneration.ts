@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next'
 import { detailStage, type DetailBase } from '../editor/detailer.js'
 import { rememberGeneration } from '../editor/frameInfo.js'
 import { prepare, type Request, type Variant } from '../editor/generation.js'
-import { sizeLabel } from '../editor/geometry.js'
+import { sizeLabel, upscaleMeasurement } from '../editor/geometry.js'
 import { scaledSize } from '../editor/upscale.js'
 import type { Mask } from '../image/mask.js'
 import { maskIntersects, transparentMask } from '../image/pixels.js'
@@ -15,7 +15,7 @@ import type { useDocument } from './useDocument.js'
 import type { Detailer } from './useDetailer.js'
 import { jobStage, useGeneration } from './useGeneration.js'
 import type { useVariants } from './useVariants.js'
-import { upscaleMeasurement, type Workflow } from './useWorkflow.js'
+import type { Workflow } from './useWorkflow.js'
 import { useBackgroundRemoval } from './useBackgroundRemoval.js'
 
 // Whether a created variant came from the same render inputs. Models and parameters are compared by the keys the
@@ -144,8 +144,24 @@ export function useEditorGeneration({
           : t('Den Zielrahmen erweitern')
         : ''
 
+  function currentRenderInputs(profile: Profile) {
+    return {
+      profile,
+      prompt: workflow.prompt.trim(),
+      negative: profile.negative ? workflow.negative.trim() : '',
+      seed: workflow.seed(),
+      parameters: workflow.parameters,
+      models: workflow.choices,
+      loras: workflow.activeLoras
+    }
+  }
+
   // A hires fix on an existing image: the variant's or the document's pixels, enlarged and re-rendered.
-  function hiresJob(source: Frame, request: Omit<Request, 'tool' | 'size'>, sourceProfile: Profile) {
+  function hiresJob(
+    source: Frame,
+    request: Pick<Request, 'prompt' | 'negative' | 'seed' | 'parameters' | 'models' | 'loras'>,
+    sourceProfile: Profile
+  ) {
     const hires = workflow.hiresFor([source.w, source.h])
     if (!hires) return undefined
     const size = upscaleMeasurement(source, hires.size)
@@ -181,16 +197,6 @@ export function useEditorGeneration({
     const parameters = detailer.parametersFor(base.profile, base.parameters)
     return [detailStage(settings, { ...base, parameters, upscaler: detailer.upscaler }, detector, source)]
   }
-  const currentBase = () =>
-    profile && {
-      profile,
-      prompt: workflow.prompt.trim(),
-      negative: profile.negative ? workflow.negative.trim() : '',
-      seed: workflow.seed(),
-      parameters: workflow.parameters,
-      models: workflow.choices,
-      loras: workflow.activeLoras
-    }
   // The detailer on the shown image: the selected variant or the open image.
   const detailSource = candidate?.frame ?? work?.image
   const canDetailImage =
@@ -206,8 +212,8 @@ export function useEditorGeneration({
     )
 
   function detailImage() {
-    if (!canDetailImage || !detailSource) return
-    void generation.run(detailStages(currentBase(), detailSource))
+    if (!canDetailImage || !detailSource || !profile) return
+    void generation.run(detailStages(currentRenderInputs(profile), detailSource))
   }
 
   // Quick detailer on the selected variant. A created variant keeps its own profile, prompt, seed and LoRAs, as with
@@ -240,7 +246,7 @@ export function useEditorGeneration({
             models: quickRequest.models ?? {},
             loras: quickRequest.loras
           }
-        : currentBase()
+        : profile && currentRenderInputs(profile)
     void generation.run(detailStages(base, candidate.frame))
   }
   const terms = detailer.settings.terms.trim()
@@ -289,19 +295,7 @@ export function useEditorGeneration({
 
   function hiresImage() {
     if (!work || !profile || !canHiresImage) return
-    runHires(
-      work.image,
-      {
-        profile: profile.id,
-        prompt: workflow.prompt.trim(),
-        negative: profile.negative ? workflow.negative.trim() : '',
-        seed: workflow.seed(),
-        parameters: workflow.parameters,
-        models: workflow.choices,
-        loras: workflow.activeLoras
-      },
-      profile
-    )
+    runHires(work.image, currentRenderInputs(profile), profile)
   }
 
   function run(replay?: Variant) {
@@ -314,6 +308,7 @@ export function useEditorGeneration({
       // With the hires fix, the rendered variant is enlarged in a second job with the same request.
       const hires = workflow.hiresActive
       const inputs = {
+        ...currentRenderInputs(profile),
         source: template,
         strength: workflow.prefs.strength,
         colorMatch: template && workflow.colorMatchAvailable ? Number(workflow.prefs.colorMatch) || 0 : 0,
@@ -322,13 +317,6 @@ export function useEditorGeneration({
         size: measurement.effective,
         edge: 0,
         tool,
-        profile,
-        prompt: workflow.prompt.trim(),
-        negative: profile.negative ? workflow.negative.trim() : '',
-        seed: workflow.seed(),
-        parameters: workflow.parameters,
-        models: workflow.choices,
-        loras: workflow.activeLoras,
         // Older saved settings stored a checkbox: true becomes the recommended strength 1.
         variance: workflow.varianceAvailable ? Number(workflow.prefs.variance) || 0 : 0
       }
@@ -375,6 +363,7 @@ export function useEditorGeneration({
     void generation.run([
       jobStage(() =>
         prepare({
+          ...currentRenderInputs(profile),
           source: work.image,
           crop: measurement.crop,
           target: measurement.target,
@@ -383,13 +372,6 @@ export function useEditorGeneration({
           drawing: work.drawing?.length ? drawing : undefined,
           edge,
           tool,
-          profile,
-          prompt: workflow.prompt.trim(),
-          negative: profile.negative ? workflow.negative.trim() : '',
-          seed: workflow.seed(),
-          parameters: workflow.parameters,
-          models: workflow.choices,
-          loras: workflow.activeLoras,
           references: references.slice(0, profile.referenceLimit ?? 1).map((item) => item.frame)
         })
       )

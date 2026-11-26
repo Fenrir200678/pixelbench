@@ -32,5 +32,10 @@ function reducer(state: typeof initial, action: Action): typeof initial {
 
 export function useVariants() {
   const [state, dispatch] = useReducer(reducer, initial)
-  return { ...state, selected: state.items[state.index], dispatch }
+  return {
+    ...state,
+    selected: state.items[state.index],
+    dispatch,
+    deselect: () => dispatch({ type: 'select', index: -1 })
+  }
 }

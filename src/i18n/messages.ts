@@ -210,6 +210,7 @@ export const english: Record<string, string> = {
   ' Auswahl offen': ' selection required',
   ' Auswahlen offen': ' selections required',
   'Workflow-Profil': 'Workflow profile',
+  Workflows: 'Workflows',
   'Profile werden geladen …': 'Loading profiles …',
   ' · nicht bereit': ' · not ready',
   Modelle: 'Models',

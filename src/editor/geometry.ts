@@ -11,7 +11,8 @@ import {
 import type { Handle, Viewport } from '../image/viewport.js'
 import type { Profile } from '../types/api.js'
 import type { Tool, Work } from '../types/editor.js'
-import type { Margins, Rect } from '../types/image.js'
+import type { Frame, Margins, Rect } from '../types/image.js'
+import { scaledSize, type Scale } from './upscale.js'
 
 export const sizeLabel = (w: number, h: number) => w + ' × ' + h
 export const emptyMargins = (): Margins => ({ left: 0, top: 0, right: 0, bottom: 0 })
@@ -30,6 +31,10 @@ export function suggestExpansion(image: Rect): Margins {
 }
 
 type Axis = 'w' | 'h'
+
+export function matchingDimension(axis: Axis, value: number, ratio: number) {
+  return clamp(Math.round(axis === 'w' ? value / ratio : value * ratio), 1, maxEdge)
+}
 
 function lockedSize(axis: Axis, value: number, ratio: number, maxW: number, maxH: number, minW = 1, minH = 1) {
   const h = clamp(axis === 'w' ? value / ratio : value, Math.max(minH, minW / ratio), Math.min(maxH, maxW / ratio))
@@ -191,11 +196,80 @@ export function createSize(ratio: number, target: number): [number, number] {
   return [Math.round(target * Math.sqrt(ratio)), Math.round(target / Math.sqrt(ratio))]
 }
 
-// Upscaling keeps the aspect ratio. The factor shrinks to stay within 4×, 8192 px per side and 24 MP.
 export function measure(work: Work, tool: Tool, profile: Profile, crop: Rect, manualSize?: [number, number]) {
   const target = tool === 'outpaint' ? expandedRect(work.image, work.margins) : work.image
   const auto = automaticSize(crop, profile.sizes.target)
   const requested = manualSize ?? auto
   const effective = fitSize(...requested, profile.sizes)
   return { crop, target, auto, effective, corrected: effective.some((n, i) => n !== requested[i]) }
+}
+
+// The whole image is enlarged. The target keeps the image's position.
+export function upscaleMeasurement(image: Rect, effective: [number, number]) {
+  const crop = { x: 0, y: 0, w: effective[0], h: effective[1] }
+  return { crop, target: { ...crop, x: image.x, y: image.y }, auto: effective, effective, corrected: false }
+}
+
+export type GeometryPreferences = {
+  auto: boolean
+  w: number
+  h: number
+  context: number
+  createW: number
+  createH: number
+  templateAuto: boolean
+  templateW: number
+  templateH: number
+}
+
+type WorkflowGeometryOptions = {
+  tool: Tool
+  profile?: Profile
+  work?: Work
+  maskBox?: Rect
+  prefs: GeometryPreferences
+  templateOn: boolean
+  upscaleScale: Scale
+}
+
+type WorkflowGeometry = {
+  crop?: Rect
+  measurement?: ReturnType<typeof measure>
+  template?: Frame
+  templateSize?: [number, number]
+}
+
+export function measureWorkflow({
+  tool,
+  profile,
+  work,
+  maskBox,
+  prefs,
+  templateOn,
+  upscaleScale
+}: WorkflowGeometryOptions): WorkflowGeometry {
+  if (tool === 'create') {
+    if (!profile) return {}
+    const template = profile.img2img && templateOn ? work?.image : undefined
+    if (!template) return { measurement: measureCreate(profile, prefs.createW, prefs.createH) }
+    const templateSize: [number, number] = prefs.templateAuto
+      ? fitSize(...createSize(template.w / template.h, profile.sizes.target), profile.sizes)
+      : [prefs.templateW, prefs.templateH]
+    const measurement = measureCreate(profile, ...templateSize)
+    return {
+      template,
+      templateSize,
+      measurement: { ...measurement, target: { ...measurement.target, x: template.x, y: template.y } }
+    }
+  }
+
+  if (!work) return {}
+  if (tool === 'upscale') {
+    const { image } = work
+    return { measurement: upscaleMeasurement(image, scaledSize([image.w, image.h], upscaleScale)) }
+  }
+
+  const crop = generationCrop(work, tool, prefs.auto ? maskBox : undefined, prefs.context)
+  const measurement = profile && measure(work, tool, profile, crop, prefs.auto ? undefined : [prefs.w, prefs.h])
+  return { crop, measurement }
 }
