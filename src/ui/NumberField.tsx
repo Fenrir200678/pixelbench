@@ -77,7 +77,8 @@ export function NumberField({
   )
   const valueField = suffix ? (
     <span className="suffix">
-      {input} {suffix}
+      {input}
+      <span className="suffix-unit">{suffix}</span>
     </span>
   ) : (
     input

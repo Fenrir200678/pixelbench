@@ -43,7 +43,7 @@ export function SessionControls({ session }: { session: EditorSession }) {
           : undefined
 
   return (
-    <div className="session-controls" role="group" aria-label={t('Editor-Session')}>
+    <div className="topbar-group session-controls" role="group" aria-label={t('Editor-Session')}>
       <Button
         className="quiet icon session-save"
         icon="save-session"
@@ -56,16 +56,14 @@ export function SessionControls({ session }: { session: EditorSession }) {
         onClick={session.save}
       />
       <Button
-        className="quiet session-restore"
+        className="quiet icon session-restore"
         icon="restore-session"
         title={saved ? `${restore} — ${saved}` : restore}
         aria-label={restore}
         aria-busy={session.activity === 'restoring'}
         disabled={!session.canRestore}
         onClick={session.restore}
-      >
-        <span>{restore}</span>
-      </Button>
+      />
       <span id={descriptionId} className="sr-only">
         {status}
       </span>

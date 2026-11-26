@@ -1,5 +1,7 @@
 export const english: Record<string, string> = {
   'Editor-Session': 'Editor session',
+  Datei: 'File',
+  Verlauf: 'History',
   'Jetzt speichern': 'Save session now',
   'Session wiederherstellen': 'Restore session',
   'Noch keine Session gespeichert.': 'No session saved yet.',

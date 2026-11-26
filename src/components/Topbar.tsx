@@ -63,45 +63,41 @@ export function Topbar({
           <strong>Pixelbench</strong>
         </a>
         <div className="top-divider" />
-        <Button
-          id="new-image"
-          className="quiet"
-          icon="new"
-          aria-label={t('Neu')}
-          aria-keyshortcuts={newImageKey}
-          title={`${t('Neues Bild: Dokument schließen und in „Erstellen“ beginnen')} (${newImageKey.replace('Shift+', t('Umschalt') + '+')})`}
-          disabled={newDisabled}
-          onClick={onNew}
-        >
-          <span>{t('Neu')}</span>
-        </Button>
-        <Button
-          id="open"
-          className="quiet"
-          icon="open"
-          aria-label={t('Öffnen')}
-          title={t('Bild öffnen ({{mod}}+O)', { mod: modKey(t) })}
-          disabled={openDisabled}
-          onClick={onOpen}
-        >
-          <span>{t('Öffnen')}</span>
-        </Button>
-        <Button
-          id="export"
-          className="quiet"
-          icon="export"
-          aria-label={exportLabel}
-          aria-keyshortcuts={exportKey}
-          title={`${exportLabel} (${exportKey.replace('Shift+', t('Umschalt') + '+')})`}
-          disabled={!canExport}
-          onClick={onExport}
-        >
-          <span>{exportLabel}</span>
-        </Button>
-        <div className="history">
+        <div className="topbar-group" role="group" aria-label={t('Datei')}>
+          <Button
+            id="new-image"
+            className="quiet icon"
+            icon="new"
+            aria-label={t('Neu')}
+            aria-keyshortcuts={newImageKey}
+            title={`${t('Neues Bild: Dokument schließen und in „Erstellen“ beginnen')} (${newImageKey.replace('Shift+', t('Umschalt') + '+')})`}
+            disabled={newDisabled}
+            onClick={onNew}
+          />
+          <Button
+            id="open"
+            className="quiet icon"
+            icon="open"
+            aria-label={t('Öffnen')}
+            title={t('Bild öffnen ({{mod}}+O)', { mod: modKey(t) })}
+            disabled={openDisabled}
+            onClick={onOpen}
+          />
+          <Button
+            id="export"
+            className="quiet icon"
+            icon="export"
+            aria-label={exportLabel}
+            aria-keyshortcuts={exportKey}
+            title={`${exportLabel} (${exportKey.replace('Shift+', t('Umschalt') + '+')})`}
+            disabled={!canExport}
+            onClick={onExport}
+          />
+        </div>
+        <div className="topbar-group history" role="group" aria-label={t('Verlauf')}>
           <Button
             id="undo"
-            className="icon"
+            className="quiet icon"
             icon="undo"
             aria-label={t('Rückgängig')}
             title={t('Rückgängig ({{mod}}+Z)', { mod: modKey(t) })}
@@ -110,7 +106,7 @@ export function Topbar({
           />
           <Button
             id="redo"
-            className="icon"
+            className="quiet icon"
             icon="redo"
             aria-label={t('Wiederholen')}
             title={t('Wiederholen ({{mod}}+Umschalt+Z)', { mod: modKey(t) })}

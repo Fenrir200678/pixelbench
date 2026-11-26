@@ -66,19 +66,35 @@
   flex: none;
   width: 1px;
   height: 20px;
-  margin: 0 var(--space-1-5);
+  margin: 0 var(--space-2);
   background: var(--border-default);
 }
-.history {
-  display: flex;
-  gap: var(--space-0-5);
-}
-.session-controls {
+/* Header actions are icon-only, in groups that a hairline separates. */
+.topbar-group {
   flex: none;
   display: flex;
+  align-items: center;
   gap: var(--space-0-5);
-  padding-inline-start: var(--space-1);
+}
+.topbar-group + .topbar-group {
+  margin-inline-start: var(--space-1);
+  padding-inline-start: var(--space-2);
   border-inline-start: 1px solid var(--border-default);
+}
+.topbar-group .icon,
+.settings-icon {
+  width: var(--control-height-lg);
+  min-height: var(--control-height-lg);
+  color: var(--text-tertiary);
+}
+.topbar-group .icon:hover:not(:disabled),
+.settings-icon:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+.topbar-group svg,
+.settings-icon svg {
+  width: 18px;
+  height: 18px;
 }
 .session-save {
   position: relative;
@@ -98,9 +114,6 @@
 }
 .session-save[data-attention='error']::after {
   background: var(--status-error);
-}
-.session-restore {
-  padding-inline: var(--space-2);
 }
 
 /* Moduswahl: segmentierte Steuerung */
@@ -170,11 +183,6 @@
   height: 7px;
   border-radius: var(--radius-round);
   background: var(--accent);
-}
-#open,
-#new-image,
-#export {
-  padding-inline: var(--space-2);
 }
 
 /* ---------- Arbeitsfläche & Panels ---------- */
