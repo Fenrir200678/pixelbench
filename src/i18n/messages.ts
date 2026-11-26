@@ -2,6 +2,9 @@ export const english: Record<string, string> = {
   'Pixelbench – Lokaler Bildeditor': 'Pixelbench – Local Image Editor',
   'FLUX.1 Fill Diffusionsmodell': 'FLUX.1 Fill diffusion model',
   'FLUX.2 [klein] 4B Diffusionsmodell': 'FLUX.2 [klein] 4B diffusion model',
+  'FLUX.2 [klein] 9B Diffusionsmodell': 'FLUX.2 [klein] 9B diffusion model',
+  'FLUX.2 [klein] 9B KV Diffusionsmodell': 'FLUX.2 [klein] 9B KV diffusion model',
+  'Qwen3 8B Textencoder': 'Qwen3 8B text encoder',
   'Krea 2 Turbo Diffusionsmodell': 'Krea 2 Turbo diffusion model',
   'Edit-LoRA': 'Edit LoRA',
   'Der Workflow lädt das Edit-LoRA selbst. Nicht zusätzlich unter LoRAs hinzufügen. Die Dateivariante (r64, r128, voll) steht unter Erweiterte Einstellungen.':

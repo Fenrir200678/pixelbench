@@ -38,6 +38,7 @@ export const tools = {
     prompt: 'Beschreibe das Bild, das entstehen soll …',
     profiles: [
       'krea2-t2i',
+      'flux2-klein-9b-t2i',
       'zimage-turbo-t2i',
       'zimage-t2i',
       'moss-image-turbo-t2i',
@@ -53,7 +54,7 @@ export const tools = {
     key: '2',
     glyph: 'edit',
     prompt: 'Beschreibe die gewünschte Änderung …',
-    profiles: ['qwen21', 'qwen21-turbo', 'flux2-klein', 'krea2-edit', 'qwen21-turbo-fun']
+    profiles: ['qwen21', 'qwen21-turbo', 'flux2-klein', 'flux2-klein-9b-kv', 'krea2-edit', 'qwen21-turbo-fun']
   },
   inpaint: {
     title: 'Bereich ersetzen',
@@ -66,6 +67,7 @@ export const tools = {
       'flux-fill',
       'krea2-inpaint',
       'krea2-lanpaint',
+      'flux2-klein-9b-inpaint',
       'moss-image-turbo-inpaint',
       'moss-image-turbo-lanpaint',
       'qwen21-turbo-fun'
@@ -78,7 +80,7 @@ export const tools = {
     glyph: 'expand',
     prompt:
       'Wie soll sich das Bild im neuen Bereich fortsetzen? Oder leer lassen und „Prompt verbessern“ nutzen, um eine Beschreibung erzeugen zu lassen.',
-    profiles: ['sdxl-inpaint', 'flux-fill', 'qwen21-turbo-fun']
+    profiles: ['sdxl-inpaint', 'flux-fill', 'flux2-klein-9b-outpaint', 'qwen21-turbo-fun']
   },
   upscale: {
     // Extras: the generation data of the opened file (PNG Info) and the plain upscaler.

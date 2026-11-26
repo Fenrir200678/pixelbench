@@ -6,10 +6,10 @@ A profile is a JSON file in `profiles/`. Its API workflow graph is in `workflows
 
 | Mode      | Profiles                                                                                                                                                  |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Create    | Krea 2 Turbo, Z-Image Turbo, Z-Image, MOSS-Image Turbo, MOSS-Image, Qwen-Image 2.1 Turbo, Qwen-Image 2.1, SDXL                                                     |
-| Edit      | Qwen-Image 2.1, Qwen-Image 2.1 Turbo, FLUX.2 [klein] 4B Edit, Krea 2 Turbo Edit, Qwen-Image 2.1 Turbo · Fun ControlNet                                    |
-| Inpaint   | SDXL Inpainting, FLUX.1 Fill, Krea 2 Turbo Inpainting, Krea 2 Turbo · LanPaint, MOSS-Image Turbo Inpainting, MOSS-Image Turbo · LanPaint, Qwen-Image 2.1 Turbo · Fun ControlNet |
-| Outpaint  | SDXL Inpainting, FLUX.1 Fill, Qwen-Image 2.1 Turbo · Fun ControlNet                                                                                       |
+| Create    | Krea 2 Turbo, FLUX.2 [klein] 9B, Z-Image Turbo, Z-Image, MOSS-Image Turbo, MOSS-Image, Qwen-Image 2.1 Turbo, Qwen-Image 2.1, SDXL                                                     |
+| Edit      | Qwen-Image 2.1, Qwen-Image 2.1 Turbo, FLUX.2 [klein] 4B Edit, FLUX.2 [klein] 9B KV Edit, Krea 2 Turbo Edit, Qwen-Image 2.1 Turbo · Fun ControlNet                                    |
+| Inpaint   | SDXL Inpainting, FLUX.1 Fill, Krea 2 Turbo Inpainting, Krea 2 Turbo · LanPaint, FLUX.2 [klein] 9B Inpainting, MOSS-Image Turbo Inpainting, MOSS-Image Turbo · LanPaint, Qwen-Image 2.1 Turbo · Fun ControlNet |
+| Outpaint  | SDXL Inpainting, FLUX.1 Fill, FLUX.2 [klein] 9B KV Outpainting, Qwen-Image 2.1 Turbo · Fun ControlNet                                                                                       |
 | Extras    | Upscaler only, Remove background · BiRefNet                                                                                                               |
 
 FLUX.2 [klein] 4B Edit is an edit workflow, so outpainting is not available in it. Pick a profile under **Workflow profile** in the inspector. The inspector shows the searched folders for a profile and lists missing files.
@@ -41,7 +41,7 @@ Under **LoRAs** in the inspector you can add up to eight LoRAs to any profile, e
 
 ## Image references
 
-Under the prompt, **Image references** shows the current starting image as `<image1>` and extra references as numbered thumbnails. With Qwen-Image 2.1 and Turbo you can add up to 15 references by multi-select or drag-and-drop.
+Under the prompt, **Image references** shows the current starting image as `<image1>` and extra references as numbered thumbnails. With Qwen-Image 2.1 and Turbo you can add up to 15 references by multi-select or drag-and-drop, with the FLUX.2 [klein] Edit profiles up to 3. For FLUX.2, Pixelbench writes the tags as plain words (`image 2`), and each reference is chained as a `ReferenceLatent` as in the Comfy-Org multi-reference templates.
 
 Type `<` in the prompt to open an image picker. Arrow keys choose, Enter inserts the tag at the cursor and Escape closes the list. Removing a reference removes its tags from the prompt and renumbers the following images.
 
@@ -93,6 +93,21 @@ The **Krea 2 Turbo Edit** profile in **Edit** changes an image from an instructi
 ## FLUX.2 [klein] 4B Edit
 
 The distilled profile needs the FP8 diffusion weight (about 3.79 GB) in `diffusion_models`: [flux-2-klein-4b-fp8.safetensors from Black Forest Labs](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8/blob/main/flux-2-klein-4b-fp8.safetensors). It also uses `qwen_3_4b.safetensors` as text encoder and the FLUX.2 VAE (`flux2-vae.safetensors`).
+
+## FLUX.2 [klein] 9B
+
+Two profiles use the distilled 9B weights with 4 steps, Euler and a fixed CFG of 1. The 9B model needs the larger Qwen3 8B text encoder; the 4B encoder does not fit it. The 9B weights are under the [FLUX Non-Commercial License](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B), unlike the Apache-2.0 4B model.
+
+- **FLUX.2 [klein] 9B** in **Create** follows the distilled branch of the Comfy-Org template `image_flux2_klein_text_to_image`. It supports image to image, the hires fix (also tiled, through `UltimateSDUpscaleGuider`) and the detailer. The KV weights work here too, since the KV cache only acts on reference images.
+- **FLUX.2 [klein] 9B KV Edit** in **Edit** follows `image_flux2_klein_9b_kv_image_edit` and needs the KV weights, because `FluxKVCache` switches the model to the reference method those weights were trained for. It takes up to 3 reference images.
+- **FLUX.2 [klein] 9B Inpainting** in **Inpaint** samples only the masked part of the encoded image, with Differential Diffusion for soft mask edges. **Denoising Strength** (default 0.8) shortens the Flux2 sigma schedule. Raise it to 1 for a full replacement. Both weight types work.
+- **FLUX.2 [klein] 9B KV Outpainting** in **Outpaint** follows the Comfy-Org template `templates_doc_workbox_klein_9b_image_extend`: the new area is painted green, the image goes in as a reference, and the prompt asks the model to replace the green part. Your description is appended to that instruction. Like the edit profile, it needs the KV weights.
+
+| Folder             | File                                                                                                                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `diffusion_models` | [`flux-2-klein-9b-kv-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-kv-fp8) (9.1 GB) for both profiles, or [`flux-2-klein-9b-fp8.safetensors`](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) for Create only |
+| `text_encoders`    | [`qwen_3_8b_fp8mixed.safetensors`](https://huggingface.co/Comfy-Org/flux2-klein-9B/blob/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors) (8.1 GB)                                       |
+| `vae`              | [`flux2-vae.safetensors`](https://huggingface.co/Comfy-Org/flux2-dev/blob/main/split_files/vae/flux2-vae.safetensors)                                                                               |
 
 ## Prompt weights
 

@@ -84,6 +84,24 @@ function useKrea2Weights(graph, [encoder], modelPoint, text) {
   }
 }
 
+// FLUX.2 references: each image is encoded and chained as one more ReferenceLatent on both guider inputs, as in the
+// Comfy-Org multi-reference templates.
+function useReferenceLatent(graph, guider, image) {
+  const vae = Object.values(graph).find((node) => node.class_type === 'VAEDecode')?.inputs.vae
+  graph[image + 'Latent'] = { class_type: 'VAEEncode', inputs: { pixels: [image, 0], vae } }
+  for (const side of ['positive', 'negative']) {
+    const id = image + side[0].toUpperCase() + side.slice(1)
+    graph[id] = {
+      class_type: 'ReferenceLatent',
+      inputs: { conditioning: graph[guider].inputs[side], latent: [image + 'Latent', 0] }
+    }
+    graph[guider].inputs[side] = [id, 0]
+  }
+}
+
+// FLUX.2 reads plain words: the <imageN> tags of the reference picker become "image N".
+const referenceWords = (text) => text.replace(/<image(\d+)>/g, 'image $1')
+
 export function buildGraph(profile, data, jobId) {
   const graph = structuredClone(profiles.find((p) => p.definition.id === profile.id).graph)
   const set = ([node, input], value) => {
@@ -106,7 +124,7 @@ export function buildGraph(profile, data, jobId) {
   // Encoders that ignore weights get the plain text. Krea 2 weights go through their own node further below.
   const weights = profile.weightsActive ? profile.weights : undefined
   const plain = (text) => (weights ? text : stripWeights(text).replace(/ {2,}/g, ' '))
-  const prompt = data.prompt.trim()
+  const prompt = profile.referenceMode === 'latent' ? referenceWords(data.prompt.trim()) : data.prompt.trim()
   const krea2Weights = weights === 'krea2' && hasWeights(prompt)
   // A hires fix without a prompt still needs a neutral description for the tiles.
   if (profile.bindings.prompt) set(profile.bindings.prompt, plain(prompt) || 'high quality, sharp focus, fine details')
@@ -200,8 +218,11 @@ export function buildGraph(profile, data, jobId) {
       const node = 'reference' + (index + 2)
       const name = node + '.png'
       graph[node] = { class_type: 'LoadImage', inputs: { image: jobId + '/' + name } }
-      const [encoder, input] = profile.reference
-      set([encoder, index === 0 ? input : 'images.image_' + (index + 2)], [node, 0])
+      if (profile.referenceMode === 'latent') useReferenceLatent(graph, profile.reference[0], node)
+      else {
+        const [encoder, input] = profile.reference
+        set([encoder, index === 0 ? input : 'images.image_' + (index + 2)], [node, 0])
+      }
       files.push({ name, payload })
     })
   }

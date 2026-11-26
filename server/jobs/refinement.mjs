@@ -5,11 +5,14 @@ const kreaInpaint =
   'Describe the final visible content in the mask in one cohesive paragraph. Group subjects with their colors, materials, actions and positions. Retain the requested medium and lightly polish detailed input.'
 const qwenOutpaint =
   'Write a direct instruction to extend the image. Describe what should appear beyond the current edges.'
+const flux2Edit =
+  'Describe the edit first. Clarify specified forms, textures, materials, lighting and spatial relationships. Keep structured inputs structured.'
 const kreaCreate =
   'Describe the complete image in one cohesive paragraph. Start with the main subject, then setting, colors, materials, lighting, camera and composition. Retain the requested medium and style.'
 const inpaintPresets = {
   'krea2-inpaint': kreaInpaint,
   'krea2-lanpaint': kreaInpaint,
+  'flux2-klein-9b-inpaint': kreaInpaint,
   'moss-image-turbo-inpaint': kreaInpaint,
   'moss-image-turbo-lanpaint': kreaInpaint,
   'qwen21-turbo-fun': kreaInpaint,
@@ -23,11 +26,13 @@ const editPresets = {
   'qwen21-turbo-fun': qwenEdit,
   'krea2-edit':
     'Write one plain instruction that names the change. For outfits, say concretely what is worn and what is gone. Describe light by where it lands.',
-  'flux2-klein':
-    'Describe the edit first. Clarify specified forms, textures, materials, lighting and spatial relationships. Keep structured inputs structured.'
+  'flux2-klein': flux2Edit,
+  'flux2-klein-9b-kv': flux2Edit
 }
 const outpaintPresets = {
   'qwen21-turbo-fun': qwenOutpaint,
+  'flux2-klein-9b-outpaint':
+    'Describe what continues beyond the current edges in one plain sentence: scene, materials and lighting that match the image.',
   'flux-fill': 'Describe what fills the new area and how its materials, lighting and geometry continue the scene.',
   'sdxl-inpaint': 'Use a compact visual description of the new area, matching the specified surroundings.'
 }
@@ -35,6 +40,8 @@ const createPresets = {
   'sdxl-t2i':
     'Use a compact visual description: subject, setting, style, lighting and composition as short comma-separated phrases.',
   'krea2-t2i': kreaCreate,
+  'flux2-klein-9b-t2i':
+    'Write flowing prose, not tag lists. Start with the main subject, then setting, materials, lighting, camera and composition. Keep stated styles and any quoted text exactly.',
   'moss-image-t2i': kreaCreate,
   'moss-image-turbo-t2i': kreaCreate
 }

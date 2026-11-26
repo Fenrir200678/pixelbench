@@ -1,0 +1,135 @@
+{
+  "id": "flux2-klein-9b-inpaint",
+  "name": "FLUX.2 [klein] 9B Inpainting",
+  "short": "FLUX.2 [klein] 9B",
+  "tools": [
+    "inpaint"
+  ],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_flux2_klein_text_to_image.json",
+  "notes": "Klein 9B mit maskiertem Sampling aus dem kodierten Bild, gekürzter Flux2-Sigma-Kurve und Differential Diffusion. Die App setzt das Ergebnis innerhalb der Pinselmaske ins Original ein.",
+  "workflow": "flux2-klein-9b-inpaint.json",
+  "nodes": [
+    "LoadImage",
+    "LoadImageMask",
+    "GetImageSize",
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "DifferentialDiffusion",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "VAEEncode",
+    "SetLatentNoiseMask",
+    "CFGGuider",
+    "KSamplerSelect",
+    "Flux2Scheduler",
+    "SplitSigmasDenoise",
+    "RandomNoise",
+    "SamplerCustomAdvanced",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "FLUX.2 [klein] 9B Diffusionsmodell",
+      "files": [
+        "flux-2-klein-9b-fp8.safetensors",
+        "flux-2-klein-9b.safetensors",
+        "flux-2-klein-9b-kv-fp8.safetensors",
+        "flux-2-klein-9b-kv_int8_convrot.safetensors",
+        "flux-2-klein-9b-kv.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3 8B Textencoder",
+      "files": [
+        "qwen_3_8b_fp8mixed.safetensors",
+        "qwen_3_8b.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX.2 VAE",
+      "files": [
+        "flux2-vae.safetensors",
+        "full_encoder_small_decoder.safetensors"
+      ]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 4,
+      "min": 1,
+      "max": 20,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    },
+    "denoise": {
+      "label": "Denoising Strength",
+      "default": 0.8,
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    }
+  },
+  "bindings": {
+    "image": [
+      "image",
+      "image"
+    ],
+    "mask": [
+      "mask",
+      "image"
+    ],
+    "prompt": [
+      "prompt",
+      "text"
+    ],
+    "steps": [
+      "sigmas",
+      "steps"
+    ],
+    "sampler": [
+      "sampler",
+      "sampler_name"
+    ],
+    "denoise": [
+      "split",
+      "denoise"
+    ],
+    "seed": [
+      "noise",
+      "noise_seed"
+    ]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage",
+    "Scheduler": "Flux2Scheduler · abhängig von Auflösung und Steps"
+  },
+  "lora": {
+    "model": [
+      "unet",
+      0
+    ],
+    "family": "flux2"
+  }
+}

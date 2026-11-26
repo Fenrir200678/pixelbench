@@ -1,0 +1,126 @@
+{
+  "id": "flux2-klein-9b-t2i",
+  "name": "FLUX.2 [klein] 9B",
+  "short": "FLUX.2 [klein] 9B",
+  "tools": [
+    "create",
+    "upscale"
+  ],
+  "source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_flux2_klein_text_to_image.json",
+  "notes": "Text-zu-Bild nach dem distillierten Zweig der Klein-Vorlage, mit 9B-Gewichten und Qwen3 8B. Breite und Höhe speisen Latent und Flux2Scheduler.",
+  "workflow": "flux2-klein-9b-t2i.json",
+  "nodes": [
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "PrimitiveInt",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "CFGGuider",
+    "KSamplerSelect",
+    "Flux2Scheduler",
+    "RandomNoise",
+    "EmptyFlux2LatentImage",
+    "SamplerCustomAdvanced",
+    "VAEDecode",
+    "PreviewImage"
+  ],
+  "sizes": {
+    "grid": 16,
+    "min": 256,
+    "max": 2048,
+    "area": 4194304,
+    "target": 1024
+  },
+  "models": [
+    {
+      "node": "unet",
+      "input": "unet_name",
+      "category": "diffusion_models",
+      "label": "FLUX.2 [klein] 9B Diffusionsmodell",
+      "files": [
+        "flux-2-klein-9b-fp8.safetensors",
+        "flux-2-klein-9b.safetensors",
+        "flux-2-klein-9b-kv-fp8.safetensors",
+        "flux-2-klein-9b-kv_int8_convrot.safetensors",
+        "flux-2-klein-9b-kv.safetensors"
+      ]
+    },
+    {
+      "node": "clip",
+      "input": "clip_name",
+      "category": "text_encoders",
+      "label": "Qwen3 8B Textencoder",
+      "files": [
+        "qwen_3_8b_fp8mixed.safetensors",
+        "qwen_3_8b.safetensors"
+      ]
+    },
+    {
+      "node": "vae",
+      "input": "vae_name",
+      "category": "vae",
+      "label": "FLUX.2 VAE",
+      "files": [
+        "flux2-vae.safetensors",
+        "full_encoder_small_decoder.safetensors"
+      ]
+    }
+  ],
+  "parameters": {
+    "steps": {
+      "label": "Steps",
+      "default": 4,
+      "min": 1,
+      "max": 20,
+      "step": 1
+    },
+    "sampler": {
+      "label": "Sampler",
+      "default": "euler"
+    }
+  },
+  "bindings": {
+    "width": [
+      "width",
+      "value"
+    ],
+    "height": [
+      "height",
+      "value"
+    ],
+    "prompt": [
+      "prompt",
+      "text"
+    ],
+    "steps": [
+      "sigmas",
+      "steps"
+    ],
+    "sampler": [
+      "sampler",
+      "sampler_name"
+    ],
+    "seed": [
+      "noise",
+      "noise_seed"
+    ]
+  },
+  "fixed": {
+    "CFG": "1,0 · Vorgabe der distillierten Vorlage",
+    "Scheduler": "Flux2Scheduler · abhängig von Auflösung und Steps"
+  },
+  "lora": {
+    "model": [
+      "unet",
+      0
+    ],
+    "family": "flux2"
+  },
+  "img2img": {
+    "sigmas": [
+      "sample",
+      "sigmas"
+    ]
+  }
+}

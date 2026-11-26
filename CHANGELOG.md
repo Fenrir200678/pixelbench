@@ -13,6 +13,8 @@ All notable changes to Pixelbench. Versions follow [Semantic Versioning](https:/
 - Reference images can be reordered by dragging, and dropping an image file onto a reference replaces it.
 - The outpaint frame can be moved as a whole, and its edges snap to the model's size grid.
 - About Pixelbench links to the release notes of the installed version and to all releases.
+- FLUX.2 [klein] 9B profiles: **FLUX.2 [klein] 9B** in Create, with image to image, hires fix and detailer, **FLUX.2 [klein] 9B KV Edit** in Edit, **FLUX.2 [klein] 9B Inpainting** in Inpaint and **FLUX.2 [klein] 9B KV Outpainting** in Outpaint. All need the Qwen3 8B text encoder.
+- The FLUX.2 [klein] Edit profiles (4B and 9B) take up to 3 reference images.
 
 ### Changed
 
@@ -21,6 +23,7 @@ All notable changes to Pixelbench. Versions follow [Semantic Versioning](https:/
 - Scale by: the factor presets sit as marks under the factor slider instead of in a separate row.
 - Removing a reference image no longer renumbers the image tags in the prompt, so a replacement image keeps its tags.
 - Clearing variants is disabled while there is nothing to clear, and the variant strip stays visible while it only holds the source image.
+- Various smaller fixes and improvements
 
 ## [0.4.0-beta.1]
 

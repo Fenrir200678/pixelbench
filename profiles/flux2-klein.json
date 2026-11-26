@@ -103,5 +103,17 @@
     "Scheduler": "Flux2Scheduler · abhängig von Auflösung und Steps",
     "Denoising Strength": "1,0 · vollständiger Sigma-Verlauf"
   },
-  "lora": { "model": ["unet", 0], "family": "flux2" }
+  "lora": {
+    "model": [
+      "unet",
+      0
+    ],
+    "family": "flux2"
+  },
+  "referenceLimit": 3,
+  "reference": [
+    "guide",
+    "positive"
+  ],
+  "referenceMode": "latent"
 }
