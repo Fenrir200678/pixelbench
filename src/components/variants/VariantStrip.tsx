@@ -189,11 +189,14 @@ export function VariantsToggle({
   )
 }
 
+type QuickAction = { label: string; disabled: boolean; run: () => void }
+
 /** Variant actions live in the canvas toolbar, so they stay reachable while the strip is collapsed. */
 export function VariantActions({
   selected,
   canReplay,
   quickUpscale,
+  quickDetail,
   onReplay,
   onDismiss,
   onRemove,
@@ -201,7 +204,8 @@ export function VariantActions({
 }: {
   selected: boolean
   canReplay: boolean
-  quickUpscale?: { label: string; disabled: boolean; run: () => void }
+  quickUpscale?: QuickAction
+  quickDetail?: QuickAction
   onReplay: () => void
   onDismiss: () => void
   onRemove: () => void
@@ -248,6 +252,19 @@ export function VariantActions({
         >
           {' '}
           {quickUpscale.label}
+        </Button>
+      )}
+      {quickDetail && (
+        <Button
+          id="quick-detail"
+          className="secondary compact"
+          icon="detail"
+          title={t('Detailer mit den aktuellen Detailer-Einstellungen auf diese Variante anwenden')}
+          disabled={!selected || quickDetail.disabled}
+          onClick={quickDetail.run}
+        >
+          {' '}
+          {quickDetail.label}
         </Button>
       )}
       <Button
@@ -299,7 +316,12 @@ export function VariantStrip({
   }, [rendering])
 
   return (
-    <section id="variants" className="variants" aria-label={t('Varianten')} hidden={!items.length && !pending && !source}>
+    <section
+      id="variants"
+      className="variants"
+      aria-label={t('Varianten')}
+      hidden={!items.length && !pending && !source}
+    >
       <div id="variant-strip" ref={strip} className="variant-strip" aria-label={t('Vorschläge auswählen')}>
         {source && (
           <SourceCard frame={source.frame} shown={source.shown} unused={source.unused} onShow={source.onShow} />

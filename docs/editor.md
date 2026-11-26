@@ -96,6 +96,10 @@ The drawing layer is for color and shape sketches in all workflows.
 
 The detailer re-renders detected objects (for example faces) one at a time with the model, LoRAs and seed of the render. It needs ComfyUI with SAM3 and the model `sam3.1_multiplex_fp16.safetensors` under `checkpoints`. Enter a short English description of the objects as the object prompt (for example `person, car, cat`, separated by commas; `face:2` limits the hits). Options include a detailer prompt (empty uses the main prompt), strength, padding, mask growth, detection threshold and maximum hits. Around 0.4 strength the face stays similar. Each crop is rendered at least at the profile's target size; small crops can first be enlarged with an upscale model for sharper results. By default the browser scales them, which gives a softer result. **Apply to current image** refines the selected variant or open image without a new render.
 
+The section has two tabs. **General** holds the object prompt, detailer prompt, strength, the display and mask options and **Apply to current image**. **Advanced** holds detection (maximum hits, threshold), the mask settings (padding, growth, transition), the upscale model and optional **own sampling settings**: sampler, scheduler, steps and CFG for the objects only, where the profile exposes them. With the option off, the detailer uses the render's values.
+
+When a variant is selected, the **Detailer** button in the canvas toolbar, next to the hires fix button, runs the detailer on it with the current detailer settings. A created variant keeps its own profile, prompt, seed and LoRAs, like the quick hires fix.
+
 ## Image adjustments
 
 **A** shows or hides the adjustments panel: brightness, contrast, saturation, hue, temperature, blur, sharpness and levels with a live histogram. **V** shows or hides the adjustment preview. Double-click a slider to reset it. With a mask, adjustments apply only to the masked area.

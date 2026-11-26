@@ -114,6 +114,7 @@ export function EditorApp() {
     replayProfile,
     canReplay,
     variantUpscale,
+    variantDetail,
     canHiresImage,
     canDetailImage,
     detailImage,
@@ -598,6 +599,7 @@ export function EditorApp() {
                       selected={Boolean(candidate)}
                       canReplay={canReplay}
                       quickUpscale={variantUpscale}
+                      quickDetail={variantDetail}
                       onReplay={() => {
                         if (candidate) run(candidate)
                       }}

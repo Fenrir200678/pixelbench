@@ -549,6 +549,18 @@ export const english: Record<string, string> = {
   'Ohne neuen Render: die gewählte Variante oder das geöffnete Bild nachbessern':
     'Without a new render: refine the selected variant or the open image',
   'Auf aktuelles Bild anwenden': 'Apply to current image',
+  'Detailer-Einstellungen': 'Detailer settings',
+  Allgemein: 'General',
+  Erweitert: 'Advanced',
+  Erkennung: 'Detection',
+  'Eigene Sampling-Einstellungen': 'Own sampling settings',
+  'Aus: Sampler, Scheduler, Steps und CFG des Renders. An: eigene Werte nur für die Objekte.':
+    'Off: the render’s sampler, scheduler, steps and CFG. On: separate values for the objects only.',
+  'Dieses Profil hat feste Sampling-Einstellungen.': 'This profile has fixed sampling settings.',
+  'Eigene Sampling-Einstellungen sind aktiv.': 'Own sampling settings are active.',
+  'Detailer · {{terms}}': 'Detailer · {{terms}}',
+  'Detailer mit den aktuellen Detailer-Einstellungen auf diese Variante anwenden':
+    'Apply the detailer with the current detailer settings to this variant',
   'Detailer: keine Treffer für „{{terms}}“.': 'Detailer: nothing found for “{{terms}}”.',
   'Die Erkennungsmaske passt nicht zum Bild.': 'The detection mask does not match the image.',
   Bildanpassungen: 'Adjustments',

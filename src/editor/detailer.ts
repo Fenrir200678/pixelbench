@@ -28,7 +28,13 @@ export type DetailerSettings = {
   keepMasks: boolean
   // Upscale model for small crops. Empty or 'lanczos': plain browser scaling.
   upscaler: string
+  // Own sampling for the objects. Off: the render's sampler, scheduler, steps and CFG.
+  sampling: boolean
+  // Overrides by parameter key, only applied to profiles that expose the key.
+  parameters: Parameters
 }
+// Render parameters the detailer can set on its own.
+export const detailerParameterKeys = ['sampler', 'scheduler', 'steps', 'cfg']
 export const initialDetailer: DetailerSettings = {
   on: false,
   terms: 'face',
@@ -41,7 +47,25 @@ export const initialDetailer: DetailerSettings = {
   feather: 8,
   keepBoxes: false,
   keepMasks: false,
-  upscaler: ''
+  upscaler: '',
+  sampling: false,
+  parameters: {}
+}
+
+// The detailer overrides that are valid for this profile: known keys, listed choices and numbers in range.
+export function detailerOverrides(settings: DetailerSettings, profile: Profile): Parameters {
+  if (!settings.sampling) return {}
+  const overrides: Parameters = {}
+  for (const key of detailerParameterKeys) {
+    const field = profile.parameters[key]
+    const value = settings.parameters[key]
+    if (!field || value === undefined || typeof value !== typeof field.default) continue
+    if (typeof value === 'number') {
+      if (Number.isFinite(value) && value >= (field.min ?? 0) && value <= (field.max ?? Number.MAX_SAFE_INTEGER))
+        overrides[key] = value
+    } else if (!profile.choices[key]?.length || profile.choices[key].includes(value)) overrides[key] = value
+  }
+  return overrides
 }
 // The render inputs every detail job shares. Each object gets the seed plus its index.
 export type DetailBase = {

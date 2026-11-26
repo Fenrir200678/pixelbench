@@ -190,7 +190,15 @@ export function Inspector({
         {inpaint && <MaskFields workflow={workflow} opacity={opacity} onOpacity={onOpacity} />}
         <RenderFields workflow={workflow} />
         <SamplingFields workflow={workflow} />
-        {detailer.available && <DetailerFields detailer={detailer} canApply={canDetailImage} onApply={onDetailImage} />}
+        {detailer.available && (
+          <DetailerFields
+            detailer={detailer}
+            profile={profile}
+            parameters={workflow.parameters}
+            canApply={canDetailImage}
+            onApply={onDetailImage}
+          />
+        )}
         {(canRefine || profile?.models.some((slot) => !isMainModel(slot))) && (
           <CollapsibleSection id="advanced" title={t('Erweiterte Einstellungen')} defaultOpen={false}>
             <ModelFields workflow={workflow} />

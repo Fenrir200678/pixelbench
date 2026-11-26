@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { initialDetailer, type DetailerSettings } from '../editor/detailer.js'
+import { detailerOverrides, initialDetailer, type DetailerSettings } from '../editor/detailer.js'
 import { readStorage, writeStorage } from '../helpers/storage.js'
-import type { Profile, Status } from '../types/api.js'
+import type { Parameters, Profile, Status } from '../types/api.js'
 import type { Notice, Tool } from '../types/editor.js'
 
 const detailerKey = 'pixelbench-detailer-v1'
@@ -27,6 +27,10 @@ export function useDetailer(tool: Tool, status: Status | undefined, profile: Pro
     upscaler,
     available,
     active: available && settings.on && Boolean(detector),
+    // The render parameters with the detailer's own sampling on top.
+    parametersFor(item: Profile, parameters: Parameters): Parameters {
+      return { ...parameters, ...detailerOverrides(settings, item) }
+    },
     update(patch: Partial<DetailerSettings>) {
       const next = { ...settings, ...patch }
       setSettings(next)

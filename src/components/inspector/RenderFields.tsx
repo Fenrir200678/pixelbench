@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { Workflow } from '../../hooks/useWorkflow.js'
+import type { Profile, Value } from '../../types/api.js'
 import { Button } from '../../ui/Button.js'
 import { Combobox } from '../../ui/Combobox.js'
 import { CollapsibleSection } from '../../ui/CollapsibleSection.js'
@@ -21,13 +22,38 @@ function FixedRow({ label, value }: { label: string; value: string }) {
 }
 
 export function ParameterRow({ workflow, name, label }: { workflow: Workflow; name: string; label: string }) {
-  const { t } = useTranslation()
   const { profile, parameters, updateParameter } = workflow
   const field = profile?.parameters[name]
   const fixed = profile?.fixed ?? {}
-  if (!field) return fixed[label] ? <FixedRow label={label} value={fixed[label]} /> : null
-  const id = 'parameter-' + name
-  const value = parameters[name] ?? field.default
+  if (!profile || !field) return fixed[label] ? <FixedRow label={label} value={fixed[label]} /> : null
+  return (
+    <ParameterInput
+      id={'parameter-' + name}
+      profile={profile}
+      name={name}
+      value={parameters[name] ?? field.default}
+      onChange={(next) => updateParameter(name, next)}
+    />
+  )
+}
+
+/** One profile parameter as a slider or a list, for values that do not live in the workflow such as detailer overrides. */
+export function ParameterInput({
+  id,
+  profile,
+  name,
+  value,
+  onChange
+}: {
+  id: string
+  profile: Profile
+  name: string
+  value: Value
+  onChange: (value: Value) => void
+}) {
+  const { t } = useTranslation()
+  const field = profile.parameters[name]
+  if (!field) return null
   if (typeof field.default === 'number') {
     return (
       <NumberField
@@ -40,11 +66,11 @@ export function ParameterRow({ workflow, name, label }: { workflow: Workflow; na
         step={field.step}
         row
         slider
-        onChange={(number) => updateParameter(name, number)}
+        onChange={onChange}
       />
     )
   }
-  const choices = profile?.choices[name]
+  const choices = profile.choices[name]
   const options = choices?.length ? choices : [field.default]
   return (
     <label className="field-row">
@@ -55,7 +81,7 @@ export function ParameterRow({ workflow, name, label }: { workflow: Workflow; na
         options={(name === 'sampler' ? [...options].sort((a, b) => a.localeCompare(b)) : options).map((option) => ({
           value: option
         }))}
-        onChange={(next) => updateParameter(name, next)}
+        onChange={onChange}
       />
     </label>
   )

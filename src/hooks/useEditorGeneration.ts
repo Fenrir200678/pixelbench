@@ -172,14 +172,17 @@ export function useEditorGeneration({
     if (job) void generation.run([jobStage(() => job)])
   }
 
-  // Detailer with the current profile, prompt and LoRAs. source: a fixed image, otherwise the run's last variant.
-  function detailStages(base: Omit<DetailBase, 'profile'> | undefined, source?: Frame) {
+  // Detailer with the given render inputs and its own sampling on top. source: a fixed image, otherwise the run's last
+  // variant.
+  function detailStages(base: Omit<DetailBase, 'upscaler'> | undefined, source?: Frame) {
     const { detector, settings } = detailer
-    if (!profile || !detector || !base) return []
-    return [detailStage(settings, { ...base, profile, upscaler: detailer.upscaler }, detector, source)]
+    if (!detector || !base) return []
+    const parameters = detailer.parametersFor(base.profile, base.parameters)
+    return [detailStage(settings, { ...base, parameters, upscaler: detailer.upscaler }, detector, source)]
   }
   const currentBase = () =>
     profile && {
+      profile,
       prompt: workflow.prompt.trim(),
       negative: profile.negative ? workflow.negative.trim() : '',
       seed: workflow.seed(),
@@ -205,6 +208,42 @@ export function useEditorGeneration({
     if (!canDetailImage || !detailSource) return
     void generation.run(detailStages(currentBase(), detailSource))
   }
+
+  // Quick detailer on the selected variant. A created variant keeps its own profile, prompt, seed and LoRAs, as with
+  // the quick hires fix. Other variants use the current inputs.
+  const quickDetailProfile =
+    quickProfile?.ready && quickProfile.img2img && (!replayModels || workflow.ready(quickProfile, replayModels))
+      ? quickProfile
+      : undefined
+  const canQuickDetail =
+    !jobBlocked &&
+    detailer.available &&
+    Boolean(
+      detailer.detector &&
+      candidate &&
+      (quickRequest && quickDetailProfile
+        ? detailer.settings.prompt.trim() || quickRequest.prompt.trim()
+        : canDetailImage)
+    )
+
+  function quickDetail() {
+    if (!canQuickDetail || !candidate) return
+    const base =
+      quickRequest && quickDetailProfile
+        ? {
+            profile: quickDetailProfile,
+            prompt: quickRequest.prompt,
+            negative: quickRequest.negative,
+            seed: quickRequest.seed,
+            parameters: quickRequest.parameters,
+            models: quickRequest.models ?? {},
+            loras: quickRequest.loras
+          }
+        : currentBase()
+    void generation.run(detailStages(base, candidate.frame))
+  }
+  const terms = detailer.settings.terms.trim()
+  const quickDetailLabel = terms ? t('Detailer · {{terms}}', { terms }) : t('Detailer')
 
   // Background removal in Extras, on the same shown image as the detailer. The whole image keeps its size.
   const background = useBackgroundRemoval(status, notice)
@@ -364,6 +403,10 @@ export function useEditorGeneration({
     replayProfile,
     canReplay,
     variantUpscale: quickRequest ? { label: hiresLabel, disabled: !canQuickUpscale, run: quickUpscale } : undefined,
+    variantDetail:
+      detailer.available && detailer.detector
+        ? { label: quickDetailLabel, disabled: !canQuickDetail, run: quickDetail }
+        : undefined,
     canHiresImage,
     hiresImage,
     canDetailImage,
