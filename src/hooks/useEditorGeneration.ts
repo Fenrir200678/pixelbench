@@ -1,8 +1,8 @@
-import type { TFunction } from 'i18next'
+import i18n, { type TFunction } from 'i18next'
 import { detailStage, type DetailBase } from '../editor/detailer.js'
 import { rememberGeneration } from '../editor/frameInfo.js'
 import { prepare, type Request, type Variant } from '../editor/generation.js'
-import { sizeLabel, upscaleMeasurement } from '../editor/geometry.js'
+import { upscaleMeasurement } from '../editor/geometry.js'
 import { scaledSize } from '../editor/upscale.js'
 import type { Mask } from '../image/mask.js'
 import { maskIntersects, transparentMask } from '../image/pixels.js'
@@ -124,12 +124,15 @@ export function useEditorGeneration({
   const quickRequest = candidate?.prepared.request.tool === 'create' ? candidate.prepared.request : undefined
   const quickProfile = quickRequest && status?.profiles.find((item) => item.id === quickRequest.profile)
   const canQuickUpscale = !jobBlocked && hiresCapable(quickProfile, candidate?.frame)
-  const hiresLabel =
-    workflow.hires.scale.mode === 'by'
-      ? t('Hires-Fix {{factor}}×', { factor: String(workflow.hires.scale.factor).replace('.', ',') })
-      : t('Hires-Fix → {{size}} px', {
-          size: candidate ? sizeLabel(...scaledSize([candidate.frame.w, candidate.frame.h], workflow.hires.scale)) : ''
-        })
+  // The toolbar button shows the scale factor; a target size is shown as the factor it works out to.
+  const { scale } = workflow.hires
+  const hiresFactor =
+    scale.mode === 'by' || !candidate
+      ? scale.factor
+      : scaledSize([candidate.frame.w, candidate.frame.h], scale)[0] / candidate.frame.w
+  const hiresLabel = t('Hires-Fix {{factor}}×', {
+    factor: hiresFactor.toLocaleString(i18n.language, { maximumFractionDigits: 2 })
+  })
   // The same detail pass on the open image, with the current profile, prompt and LoRAs.
   const canHiresImage = !jobBlocked && hiresCapable(profile, work?.image) && modelsReady && workflow.lorasReady
   const runTitle = !modelsReady

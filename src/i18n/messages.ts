@@ -447,11 +447,11 @@ export const english: Record<string, string> = {
   '0 verwendet die Schritte unter „Render“.': '0 uses the steps under Render.',
   'Ohne neuen Render: das geöffnete Bild hochskalieren und Details nachrendern':
     'Without a new render: upscale the open image and re-render details',
-  'Hires-Fix → {{size}} px': 'Hires fix → {{size}} px',
   'Hires-Fix-Einstellungen fehlen.': 'Hires fix settings are missing.',
   'Mit Seed, Prompt und Profil dieser Variante hochskalieren und Details nachrendern':
     "Upscale with this variant's seed, prompt and profile and re-render details",
   'Hires-Fix {{factor}}×': 'Hires fix {{factor}}×',
+  'Kein Prompt': 'No prompt',
   'Oder zieh ein Bild hierher, um es als Vorlage für Img2Img zu nutzen.':
     'Or drop an image here to use it as a template for img2img.',
   'ComfyUI: {{value}} GB': 'ComfyUI: {{value}} GB',

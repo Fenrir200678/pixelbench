@@ -123,6 +123,17 @@ export function Inspector({
   return (
     <aside className="inspector" aria-label={t('Bearbeitungseinstellungen')}>
       <div className="inspector-scroll">
+        {/* At the top, since collapsing everything is usually the first step before opening what is needed. */}
+        <div className="inspector-head">
+          <Button
+            id="toggle-sections"
+            className="quiet compact"
+            icon={anyOpen ? 'collapse-all' : 'expand-all'}
+            onClick={() => setAllSections(!anyOpen)}
+          >
+            {toggleLabel}
+          </Button>
+        </div>
         <ProfileNote workflow={workflow} status={status} />
         <PromptFields
           key={tool + ':' + profile?.id}
@@ -215,16 +226,6 @@ export function Inspector({
             )}
           </CollapsibleSection>
         )}
-        <div className="inspector-tail">
-          <Button
-            id="toggle-sections"
-            className="quiet compact"
-            icon={anyOpen ? 'collapse-all' : 'expand-all'}
-            onClick={() => setAllSections(!anyOpen)}
-          >
-            {toggleLabel}
-          </Button>
-        </div>
       </div>
       {children}
     </aside>

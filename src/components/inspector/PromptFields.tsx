@@ -146,7 +146,11 @@ export function PromptFields({
 
   return (
     <>
-      <CollapsibleSection id="prompt-settings" title={t('Anweisung')}>
+      <CollapsibleSection
+        id="prompt-settings"
+        title={t('Anweisung')}
+        summary={value.replace(/\s+/g, ' ').trim() || t('Kein Prompt')}
+      >
         <label className="sr-only" htmlFor="prompt">
           {t('Positiver Prompt')}
         </label>
