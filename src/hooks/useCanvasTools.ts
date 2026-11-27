@@ -34,7 +34,9 @@ export function useCanvasTools({ tool, work, create, drawing, commit, deselect }
   const [brushColor, setBrushColor] = useState('#b3263c')
   const [brushSize, setBrushSize] = useState(48)
   const [showMask, setShowMask] = useState(true)
-  const remembered = useRef<Partial<Record<Tool, Pick<SessionTools, 'pan' | 'frameMode' | 'paintBrush' | 'eraser'>>>>({})
+  const remembered = useRef<Partial<Record<Tool, Pick<SessionTools, 'pan' | 'frameMode' | 'paintBrush' | 'eraser'>>>>(
+    {}
+  )
   const sessionState = useMemo(
     () => ({ pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask }),
     [pan, frameMode, eraser, paintBrush, brushColor, brushSize, showMask]
