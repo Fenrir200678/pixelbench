@@ -1,7 +1,7 @@
 /* ---------- Kopfleiste ---------- */
 
 .topbar {
-  z-index: var(--z-raised);
+  z-index: var(--z-popover);
   display: grid;
   grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr);
   align-items: center;
