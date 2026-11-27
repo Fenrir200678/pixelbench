@@ -14,6 +14,8 @@ export type Preferences = {
   // Prompts of every mode stay when another image is opened, for a series with the same edit.
   keepPrompts: boolean
   confirmDiscard: boolean
+  autosaveSession: boolean
+  sessionSaveDelay: number
   notifyDone: boolean
   soundDone: boolean
   consoleOnError: boolean
@@ -24,6 +26,7 @@ export type Preferences = {
 
 export const defaultFileName = '{name}-edit'
 export const jpgQualityRange = { min: 60, max: 100 }
+export const sessionSaveDelayRange = { min: 1, max: 300 }
 
 const defaults: Preferences = {
   exportFormat: 'png',
@@ -33,6 +36,8 @@ const defaults: Preferences = {
   continueInEdit: true,
   keepPrompts: true,
   confirmDiscard: true,
+  autosaveSession: true,
+  sessionSaveDelay: 5,
   notifyDone: false,
   soundDone: false,
   consoleOnError: false,
@@ -50,6 +55,8 @@ const keys: Record<keyof Preferences, string> = {
   continueInEdit: 'pixelbench-continue-in-edit',
   keepPrompts: 'pixelbench-keep-prompts',
   confirmDiscard: 'pixelbench-confirm-discard',
+  autosaveSession: 'pixelbench-autosave-session',
+  sessionSaveDelay: 'pixelbench-session-save-delay',
   notifyDone: 'pixelbench-notify-done',
   soundDone: 'pixelbench-sound-done',
   consoleOnError: 'pixelbench-console-on-error',
@@ -60,11 +67,10 @@ const keys: Record<keyof Preferences, string> = {
 function sanitize<K extends keyof Preferences>(key: K, value: unknown): Preferences[K] {
   const fallback = defaults[key]
   if (key === 'exportFormat') return (value === 'jpg' ? 'jpg' : 'png') as Preferences[K]
-  if (key === 'jpgQuality') {
+  const range = key === 'jpgQuality' ? jpgQualityRange : key === 'sessionSaveDelay' ? sessionSaveDelayRange : undefined
+  if (range) {
     const number = Math.round(Number(value))
-    return (
-      Number.isFinite(number) ? Math.min(jpgQualityRange.max, Math.max(jpgQualityRange.min, number)) : fallback
-    ) as Preferences[K]
+    return (Number.isFinite(number) ? Math.min(range.max, Math.max(range.min, number)) : fallback) as Preferences[K]
   }
   if (key === 'fileName')
     return (typeof value === 'string' && value.trim() ? value.slice(0, 200) : fallback) as Preferences[K]

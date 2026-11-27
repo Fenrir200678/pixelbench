@@ -22,6 +22,32 @@ export const settingsEnglish: Record<string, string> = {
   'Prüft …': 'Checking …',
 
   // General
+  Session: 'Session',
+  'Session automatisch speichern': 'Save session automatically',
+  'Speichert den Arbeitsstand im Hintergrund. Du kannst jederzeit auch manuell speichern.':
+    'Saves the workspace in the background. You can also save manually at any time.',
+  'Wartezeit in Sekunden': 'Delay in seconds',
+  'Zeit seit der letzten Änderung. Beim Tabwechsel kann Pixelbench früher speichern.':
+    'Time since the last edit. Switching tabs can save sooner.',
+  'Schalte Autosave ein, um die Wartezeit zu ändern.': 'Turn on autosave to change the delay.',
+  'Maximale Sicherungsgröße': 'Backup size limit',
+  'Das Limit gilt für neue Sicherungen. Bestehende Sicherungen bleiben erhalten.':
+    'The limit applies to new backups. Existing backups are kept.',
+  'Belegter Speicher': 'Storage used',
+  'Die Speicherbelegung ist noch nicht verfügbar.': 'Storage usage is not available yet.',
+  'Die gespeicherten Dateien liegen über dem eingestellten Limit.': 'Saved files exceed the current limit.',
+  'Größe der komprimierten Session-Dateien auf der Platte.': 'Size of the compressed session files on disk.',
+  '{{used}} von {{limit}}': '{{used}} of {{limit}}',
+  'Gespeicherte Sessions': 'Saved sessions',
+  'Löscht die Sicherung auf der Platte. Der offene Arbeitsstand bleibt im Editor.':
+    'Deletes the backup on disk. Your open workspace stays in the editor.',
+  'Alle Sessions löschen': 'Delete all sessions',
+  'Alle gespeicherten Sessions löschen? Der offene Arbeitsstand bleibt im Editor.':
+    'Delete all saved sessions? Your open workspace stays in the editor.',
+  'Gespeicherte Sessions gelöscht.': 'Saved sessions deleted.',
+  'Die gespeicherten Sessions konnten nicht vollständig gelöscht werden.':
+    'Some saved session files could not be deleted.',
+  'Das Speicherlimit konnte nicht gespeichert werden.': 'Could not save the storage limit.',
   Arbeitsablauf: 'Workflow',
   'Nach dem Übernehmen zu Ändern wechseln': 'Switch to Edit after applying',
   'Ein übernommenes Bild aus Erstellen öffnet direkt im Modus Ändern.':

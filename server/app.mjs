@@ -10,6 +10,7 @@ import { log, readLogs } from './log.mjs'
 import { handlePng, serveStatic } from './app/files.mjs'
 import { badInput, json, notFound, readJson, reject } from './app/http.mjs'
 import { createSession, expireSessions, handleSession, touchSession } from './app/sessions.mjs'
+import { createEditorSession } from './app/editor-session.mjs'
 import { checkPath, pickPath } from './app/paths.mjs'
 import { createUpdates } from './app/update.mjs'
 import { sendYoloModel, yoloModels } from './app/yolo.mjs'
@@ -34,6 +35,7 @@ let closing = false
 let setupError = ''
 const instance = randomUUID()
 const handleUpdate = createUpdates({ root, runtime })
+const handleEditorSession = createEditorSession(runtime, origin)
 const exitCodes = { shutdown: 0, restart: 75, update: 76 }
 const externalNotice =
   'The external instance is reachable. Its API cannot securely delete uploaded inputs and temporary previews. Use the private process to generate images.'
@@ -281,6 +283,8 @@ const server = createServer(async (req, res) => {
           else response.once('close', () => void terminate('update'))
         }
       })
+    if (path === '/api/editor-session' || path.startsWith('/api/editor-session/'))
+      return await handleEditorSession(req, res, url)
     if (req.method === 'POST' && path === '/api/session') return createSession(res, worker)
     if (path.startsWith('/api/session/')) return await handleSession(req, res, url, getBackend)
 

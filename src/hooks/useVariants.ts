@@ -3,8 +3,12 @@ import type { Variant } from '../editor/generation.js'
 
 const variantBudget = 1024 * 1024 * 1024
 const initial = { items: [] as Variant[], index: -1, compare: false }
+export type SessionVariants = typeof initial
 type Action =
-  { type: 'add'; variant: Variant } | { type: 'select'; index: number } | { type: 'compare' | 'remove' | 'clear' }
+  | { type: 'add'; variant: Variant }
+  | { type: 'select'; index: number }
+  | { type: 'restore'; state: SessionVariants }
+  | { type: 'compare' | 'remove' | 'clear' }
 
 function reducer(state: typeof initial, action: Action): typeof initial {
   const { items, index, compare } = state
@@ -27,6 +31,8 @@ function reducer(state: typeof initial, action: Action): typeof initial {
     }
     case 'clear':
       return initial
+    case 'restore':
+      return action.state
   }
 }
 
@@ -34,6 +40,7 @@ export function useVariants() {
   const [state, dispatch] = useReducer(reducer, initial)
   return {
     ...state,
+    sessionState: state,
     selected: state.items[state.index],
     dispatch,
     deselect: () => dispatch({ type: 'select', index: -1 })

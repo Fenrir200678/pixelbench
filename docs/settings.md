@@ -4,6 +4,8 @@ Open **Settings** in the app. Backend settings are saved in `.settings.json` in 
 
 ## General
 
+- **Session**: turn autosave on or off and set the delay after the last edit (1–300 seconds; default: 5). Turning it off leaves manual saving and restoring available.
+- **Backup size limit** defaults to 50 MB (adjustable from 1 to 1000 MB) and applies to the compressed backup on disk. A new backup that exceeds the limit is rejected; the last backup is kept. **Storage used** shows the current file sizes. **Delete all sessions** frees that storage without closing the open workspace. Autosave can create a new backup after the next edit.
 - **Switch to Edit after applying**: an image applied in Create opens straight in Edit.
 - **Keep prompts when opening an image**: each mode keeps its prompt and negative prompt, for example for a series of images with the same edit.
 - **Ask before discarding**: asks before unsaved changes or variants are lost.

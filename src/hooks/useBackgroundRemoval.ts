@@ -7,14 +7,14 @@ import type { Notice } from '../types/editor.js'
 const storageKey = 'pixelbench-background-v1'
 export const backgroundProfileId = 'remove-background'
 // model: the chosen loader file. keepMask: the transparent area becomes the Inpaint mask when the variant is applied.
-type Settings = { model: string; keepMask: boolean }
+export type BackgroundSettings = { model: string; keepMask: boolean }
 
 /** Background removal in Extras: the BiRefNet profile, the chosen file from its loader and the mask option. */
 export function useBackgroundRemoval(status: Status | undefined, notice: Notice) {
-  const [settings, setSettings] = useState<Settings>(() => ({
+  const [settings, setSettings] = useState<BackgroundSettings>(() => ({
     model: '',
     keepMask: true,
-    ...readStorage<Partial<Settings>>(storageKey, {})
+    ...readStorage<Partial<BackgroundSettings>>(storageKey, {})
   }))
   const profile = status?.profiles.find((item) => item.id === backgroundProfileId)
   const slot = profile?.models[0]
@@ -23,13 +23,15 @@ export function useBackgroundRemoval(status: Status | undefined, notice: Notice)
   // Any file in the loader works. The recommended file comes first when nothing was chosen.
   const model = files.includes(settings.model) ? settings.model : (profile?.selected[key] ?? files[0])
 
-  function update(patch: Partial<Settings>) {
+  function update(patch: Partial<BackgroundSettings>) {
     const next = { ...settings, ...patch }
     setSettings(next)
     if (!writeStorage(storageKey, next)) notice('Einstellungen konnten in diesem Browser nicht gespeichert werden.')
   }
 
   return {
+    settings,
+    restore: setSettings,
     profile,
     files,
     model,

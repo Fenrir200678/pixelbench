@@ -11,6 +11,10 @@ export function useInspection() {
   useEffect(() => () => void (inspected && URL.revokeObjectURL(inspected.url)), [inspected])
   return {
     inspected,
+    restore(next?: Omit<Inspection, 'url'>) {
+      version.current++
+      setInspected(next && { ...next, url: URL.createObjectURL(next.file) })
+    },
     async inspect(file: File) {
       const current = ++version.current
       const info = await readMetadata(file).catch(() => undefined)

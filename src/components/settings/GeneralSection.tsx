@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
+import type { EditorSession } from '../../hooks/useEditorSession.js'
 import { notificationsSupported, playChime, requestNotifications } from '../../settings/notify.js'
 import { resetAllPreferences, resetLayout, setPreference, usePreferences } from '../../settings/preferences.js'
 import { Button } from '../../ui/Button.js'
 import { Segmented } from '../../ui/Segmented.js'
 import { SettingGroup, SettingRow } from '../../ui/SettingRow.js'
 import { Toggle } from '../../ui/Toggle.js'
+import { SessionSettings } from './SessionSettings.js'
 
-export function GeneralSection() {
+export function GeneralSection({ session }: { session: EditorSession }) {
   const { t, i18n } = useTranslation()
   const preferences = usePreferences()
   const [blocked, setBlocked] = useState(() => notificationsSupported() && Notification.permission === 'denied')
@@ -37,6 +39,7 @@ export function GeneralSection() {
           />
         </SettingRow>
       </SettingGroup>
+      <SessionSettings session={session} />
       <SettingGroup title={t('Arbeitsablauf')}>
         <SettingRow
           id="config-continue-in-edit"

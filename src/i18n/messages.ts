@@ -1,4 +1,37 @@
 export const english: Record<string, string> = {
+  'Editor-Session': 'Editor session',
+  Datei: 'File',
+  Verlauf: 'History',
+  'Jetzt speichern': 'Save session now',
+  'Session wiederherstellen': 'Restore session',
+  'Noch keine Session gespeichert.': 'No session saved yet.',
+  'Zuletzt gespeichert: {{time}}': 'Last saved: {{time}}',
+  'Session wird gespeichert …': 'Saving session…',
+  'Session wird wiederhergestellt …': 'Restoring session…',
+  'Die gespeicherte Session kann nicht gelesen werden.': 'The saved session cannot be read.',
+  'Stelle die letzte Session wieder her oder speichere den aktuellen Stand.':
+    'Restore the last session or save the current workspace.',
+  'Änderungen noch nicht gespeichert.': 'Changes haven’t been saved yet.',
+  'Autosave ist aus. Klicke auf „Jetzt speichern“, um Änderungen zu sichern.':
+    'Autosave is off. Select Save session now to keep your changes.',
+  'Die gespeicherte Session durch den aktuellen Stand ersetzen?':
+    'Replace the saved session with the current workspace?',
+  'Session gespeichert.': 'Session saved.',
+  'Die Session wurde in einem anderen Tab geändert.': 'The saved session changed in another tab.',
+  'Die Session passt nicht ins Speicherlimit. Entferne Varianten oder erhöhe das Limit unter Einstellungen → Session.':
+    'The session exceeds its storage limit. Remove variants or raise the limit under Settings → Session.',
+  'Klicke auf „Jetzt speichern“, um eine neue Sicherung anzulegen.': 'Select Save session now to create a new backup.',
+  'Session konnte nicht gespeichert werden. Klicke auf „Jetzt speichern“, um es erneut zu versuchen.':
+    'Couldn’t save the session. Select Save session now to try again.',
+  'Den aktuellen Arbeitsstand durch die gespeicherte Session ersetzen?':
+    'Replace the current workspace with the saved session?',
+  'Keine Session zum Wiederherstellen vorhanden.': 'There’s no saved session to restore.',
+  'Der Arbeitsstand hat sich beim Laden geändert. Stelle die Session erneut wieder her.':
+    'The workspace changed while loading. Try restoring the session again.',
+  'Session wiederhergestellt.': 'Session restored.',
+  'Die zuletzt gespeicherte Session ist bereits geöffnet.': 'The last saved session is already open.',
+  'Session konnte nicht wiederhergestellt werden. Der aktuelle Arbeitsstand bleibt erhalten.':
+    'Couldn’t restore the session. Your current workspace is still open.',
   'Pixelbench – Lokaler Bildeditor': 'Pixelbench – Local Image Editor',
   'FLUX.1 Fill Diffusionsmodell': 'FLUX.1 Fill diffusion model',
   'FLUX.2 [klein] 4B Diffusionsmodell': 'FLUX.2 [klein] 4B diffusion model',

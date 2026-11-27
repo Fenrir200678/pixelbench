@@ -13,10 +13,60 @@
   width: 76px;
   text-align: right;
 }
+/* A value with its unit: one box, the unit sits inside it after the number. */
 .suffix {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  min-width: 0;
+  min-height: var(--control-height-md);
+  padding-inline-end: var(--space-2);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-md);
+  background: var(--control-bg);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.suffix:hover:not(:has(input:disabled)) {
+  border-color: var(--control-border-hover);
+}
+/* The box shows the focus ring once; the input inside stays plain. */
+.suffix:has(input:focus-visible) {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 1px var(--focus-ring);
+}
+.suffix > input:focus-visible {
+  outline: 0;
+}
+.suffix:has(input:disabled) {
+  opacity: 0.5;
+}
+.suffix > input {
+  flex: 1;
+  width: 0;
+  min-height: 0;
+  padding-inline-end: var(--space-1);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  outline: 0;
+}
+.suffix > input[type='number'] {
+  width: 64px;
+  text-align: end;
+}
+/* The spinner reserves room even while hidden, which read as a gap. Keep it visible, quiet until hovered. */
+.suffix > input[type='number']::-webkit-inner-spin-button {
+  margin: 0 0 0 var(--space-1);
+  opacity: 0.4;
+}
+.suffix:hover > input[type='number']::-webkit-inner-spin-button,
+.suffix > input[type='number']:focus::-webkit-inner-spin-button {
+  opacity: 1;
+}
+.suffix-unit {
+  flex: none;
+  min-width: 1.5ch;
+  color: var(--text-muted);
+  font: var(--text-xs) var(--font-mono);
 }
 .field-row :is(select, .combobox) {
   width: auto;
@@ -27,8 +77,7 @@
   width: 72px;
   margin-left: auto;
 }
-.field-row output,
-.suffix {
+.field-row output {
   color: var(--text-muted);
   font: var(--text-xs) var(--font-mono);
   white-space: nowrap;
@@ -283,8 +332,11 @@
   flex: 1;
   min-width: 0;
 }
-.locked-field input[type='number'] {
+.locked-field :is(input[type='number'], .suffix) {
   width: 10.5em;
+}
+.locked-field .suffix > input[type='number'] {
+  width: auto;
 }
 .locked-field .icon {
   flex: none;

@@ -6,6 +6,8 @@ type Range = { min?: number; max?: number; step?: number }
 type Props = {
   id: string
   label: string
+  externalLabel?: boolean
+  describedBy?: string
   sliderLabel?: string
   value?: number
   min: number
@@ -24,6 +26,8 @@ type Props = {
 export function NumberField({
   id,
   label,
+  externalLabel,
+  describedBy,
   sliderLabel = label,
   value,
   min,
@@ -50,6 +54,7 @@ export function NumberField({
       max={max}
       step={step}
       disabled={disabled}
+      aria-describedby={describedBy}
       placeholder={placeholder}
       value={draft ?? value ?? ''}
       onChange={(event) => {
@@ -63,20 +68,27 @@ export function NumberField({
         setDraft(undefined)
       }}
       onKeyDown={(event) => {
-        if (commitOnBlur && event.key === 'Enter' && !event.ctrlKey && !event.metaKey) event.currentTarget.blur()
+        if (commitOnBlur && event.key === 'Enter' && !event.ctrlKey && !event.metaKey) {
+          event.preventDefault()
+          event.currentTarget.blur()
+        }
       }}
     />
   )
-  const field = (
+  const valueField = suffix ? (
+    <span className="suffix">
+      {input}
+      <span className="suffix-unit">{suffix}</span>
+    </span>
+  ) : (
+    input
+  )
+  const field = externalLabel ? (
+    valueField
+  ) : (
     <label className={row ? 'field-row' : undefined} title={title}>
       <span>{label}</span>
-      {suffix ? (
-        <span className="suffix">
-          {input} {suffix}
-        </span>
-      ) : (
-        input
-      )}
+      {valueField}
     </label>
   )
   if (!slider) return field

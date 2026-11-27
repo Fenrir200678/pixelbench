@@ -3,9 +3,10 @@
 .topbar {
   z-index: var(--z-raised);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
   min-height: var(--topbar-height);
   padding: 0 var(--space-2) 0 var(--space-3);
   border-bottom: 1px solid var(--border-gutter);
@@ -65,12 +66,54 @@
   flex: none;
   width: 1px;
   height: 20px;
-  margin: 0 var(--space-1-5);
+  margin: 0 var(--space-2);
   background: var(--border-default);
 }
-.history {
+/* Header actions are icon-only, in groups that a hairline separates. */
+.topbar-group {
+  flex: none;
   display: flex;
+  align-items: center;
   gap: var(--space-0-5);
+}
+.topbar-group + .topbar-group {
+  margin-inline-start: var(--space-1);
+  padding-inline-start: var(--space-2);
+  border-inline-start: 1px solid var(--border-default);
+}
+.topbar-group .icon,
+.settings-icon {
+  width: var(--control-height-lg);
+  min-height: var(--control-height-lg);
+  color: var(--text-tertiary);
+}
+.topbar-group .icon:hover:not(:disabled),
+.settings-icon:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+.topbar-group svg,
+.settings-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.session-save {
+  position: relative;
+}
+.session-save[data-attention]::after {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-end: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-round);
+  background: var(--status-warn);
+  content: '';
+}
+.session-save[data-attention='busy']::after {
+  background: var(--accent-text);
+}
+.session-save[data-attention='error']::after {
+  background: var(--status-error);
 }
 
 /* Moduswahl: segmentierte Steuerung */
@@ -141,15 +184,11 @@
   border-radius: var(--radius-round);
   background: var(--accent);
 }
-#open,
-#new-image,
-#export {
-  padding-inline: var(--space-2);
-}
 
 /* ---------- Arbeitsfläche & Panels ---------- */
 
 .editor {
+  min-width: 0;
   min-height: 0;
 }
 .workspace {
