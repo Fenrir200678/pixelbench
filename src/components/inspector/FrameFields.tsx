@@ -75,6 +75,20 @@ export function FrameFields({
         max={256}
         onChange={(transition) => workflow.updatePrefs({ transition })}
       />
+      {workflow.colorMatchAvailable && (
+        <NumberField
+          id="outpaint-color-match"
+          label={t('Farbkorrektur')}
+          title={t('Gleicht die Farben des Ergebnisses an das Ausgangsbild an. 0 aus, 1 voll.')}
+          value={Number(workflow.prefs.outpaintColorMatch) || 0}
+          min={0}
+          max={1}
+          step={0.05}
+          row
+          slider
+          onChange={(outpaintColorMatch) => workflow.updatePrefs({ outpaintColorMatch })}
+        />
+      )}
     </>
   )
 }

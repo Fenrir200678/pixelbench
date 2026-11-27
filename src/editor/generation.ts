@@ -44,8 +44,10 @@ export type Request = {
   hires?: Hires
   // Seed variance strength, 0 or missing is off.
   variance?: number
-  // Img2img color correction toward the template, 0 or missing is off.
+  // Color correction toward the template or source image, 0 or missing is off.
   colorMatch?: number
+  // Outpaint: the original image as color reference, since the request image has gray filler.
+  colorReference?: string
 }
 // Hires fix: enlarge to size with the upscale model, then re-render. Steps 0 keeps the render steps.
 // tiled: Ultimate SD Upscale instead of one image to image pass at the target size.
@@ -198,6 +200,8 @@ export async function prepare(inputs: Inputs): Promise<Prepared> {
     }
   }
   const image = asBase64(flattened(input, w, h))
+  const colorMatch = tool === 'inpaint' || tool === 'outpaint' ? inputs.colorMatch || undefined : undefined
+  const colorReference = colorMatch && tool === 'outpaint' ? referenceImage(source) : undefined
   const mask = rawMask ? asBase64(resized(maskSurface(rawMask, crop.w, crop.h), w, h)) : undefined
   const references = await Promise.all((profile.reference ? (inputs.references ?? []) : []).map(referenceImage))
   return {
@@ -209,7 +213,9 @@ export async function prepare(inputs: Inputs): Promise<Prepared> {
       ...requestFields(inputs),
       image: await image,
       mask: await mask,
-      references
+      references,
+      colorMatch,
+      colorReference: await colorReference
     }
   }
 }

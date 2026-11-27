@@ -23,6 +23,9 @@ type Prefs = GeometryPreferences & {
   strength: number
   // Img2img color correction toward the template, as in Forge. 0 is off.
   colorMatch: number
+  // Inpaint and outpaint color correction toward the source image. 0 is off.
+  inpaintColorMatch: number
+  outpaintColorMatch: number
   // Seed variance strength in Erstellen, where the profile and ComfyUI support it. 0 is off.
   variance: number
 }
@@ -52,6 +55,8 @@ const initialPrefs: Prefs = {
   templateH: 1024,
   strength: 0.6,
   colorMatch: 0,
+  inpaintColorMatch: 0,
+  outpaintColorMatch: 0,
   variance: 0
 }
 

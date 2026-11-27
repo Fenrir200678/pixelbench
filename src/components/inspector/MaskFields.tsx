@@ -54,6 +54,20 @@ export function MaskFields({
         max={256}
         onChange={(feather) => workflow.updatePrefs({ feather })}
       />
+      {workflow.colorMatchAvailable && (
+        <NumberField
+          id="inpaint-color-match"
+          label={t('Farbkorrektur')}
+          title={t('Gleicht die Farben des Ergebnisses an das Ausgangsbild an. 0 aus, 1 voll.')}
+          value={Number(workflow.prefs.inpaintColorMatch) || 0}
+          min={0}
+          max={1}
+          step={0.05}
+          row
+          slider
+          onChange={(inpaintColorMatch) => workflow.updatePrefs({ inpaintColorMatch })}
+        />
+      )}
       <label className="field-row">
         <span>{t('Deckkraft der Anzeige')}</span>
         <input

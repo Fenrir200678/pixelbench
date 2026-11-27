@@ -73,6 +73,26 @@ test('Qwen Fun uses edges for edits and a mask for inpainting and outpainting', 
   )
 })
 
+test('inpaint and outpaint color correction match the result to the source image', () => {
+  const { definition } = profiles.find(({ definition }) => definition.id === 'qwen21-turbo-fun')
+  const profile = { ...definition, models: [], choices: { sampler: ['euler'] } }
+  const args = { prompt: 'A bright blue circle', seed: 5, size: [320, 256], mask: 'mask' }
+  const plain = buildGraph(profile, { ...args, tool: 'inpaint' }, 'job')
+  assert.equal(plain.graph.colorMatch, undefined)
+  const inpaint = buildGraph(profile, { ...args, tool: 'inpaint', colorMatch: 0.5 }, 'job')
+  assert.deepEqual(inpaint.graph.colorMatch.inputs.image_target, plain.graph.preview.inputs.images)
+  assert.deepEqual(inpaint.graph.colorMatch.inputs.image_ref, ['image', 0])
+  assert.deepEqual(inpaint.graph.preview.inputs.images, ['colorMatch', 0])
+  assert.equal(inpaint.colorMatch, 0.5)
+  // The outpaint input has gray filler, so the original image comes as its own reference.
+  const outpaint = buildGraph(profile, { ...args, tool: 'outpaint', colorMatch: 1, colorReference: 'png' }, 'job')
+  assert.deepEqual(outpaint.graph.colorMatch.inputs.image_ref, ['colorReference', 0])
+  assert.equal(outpaint.graph.colorReference.inputs.image, 'job/color-reference.png')
+  assert.ok(outpaint.files.some(({ name, payload }) => name === 'color-reference.png' && payload === 'png'))
+  assert.throws(() => buildGraph(profile, { ...args, tool: 'outpaint', colorMatch: 1 }, 'job'), /original image/)
+  assert.throws(() => buildGraph(profile, { ...args, tool: 'inpaint', colorMatch: -1 }, 'job'), /color correction/)
+})
+
 test('outpaint refinement with an image lets the vision model describe the new area', () => {
   const model = { file: 'qwen3vl_8b_int8_convrot.safetensors', type: 'qwen_image' }
   const data = { prompt: '', tool: 'outpaint', image: 'png', sides: ['bottom', 'left'] }

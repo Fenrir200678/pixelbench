@@ -358,8 +358,9 @@ export function useEditorGeneration({
       ])
       return
     }
-    const { editFeather, feather, transition } = workflow.prefs
+    const { editFeather, feather, transition, inpaintColorMatch, outpaintColorMatch } = workflow.prefs
     const edge = { edit: editFeather, inpaint: feather, outpaint: transition }[tool]
+    const colorMatch = { edit: 0, inpaint: inpaintColorMatch, outpaint: outpaintColorMatch }[tool]
     void generation.run([
       jobStage(() =>
         prepare({
@@ -372,6 +373,7 @@ export function useEditorGeneration({
           drawing: work.drawing?.length ? drawing : undefined,
           edge,
           tool,
+          colorMatch: workflow.colorMatchAvailable ? Number(colorMatch) || 0 : 0,
           references: references.slice(0, profile.referenceLimit ?? 1).map((item) => item.frame)
         })
       )

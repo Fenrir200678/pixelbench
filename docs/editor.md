@@ -50,6 +50,7 @@ Replace an area with the mask brush.
 - **H** shows or hides the mask. **Shift+M** clears it. **Ctrl+Z** undoes a stroke or the clearing.
 - **Auto** under **Render resolution** picks the crop around the mask including context. With **Auto** off the whole image is used by default. A manually set frame takes priority.
 - A soft mask edge works inside the painted pixels. The display opacity only changes how the mask looks.
+- **Color correction** in the Mask section matches the colors of the result to the source image, as in Img2Img (0 is off). It needs the KJNodes node `ColorMatchV2`.
 - **C** switches the generation frame on or off in Edit and Inpaint.
 - Applying a detailer variant turns the detected masks into the Inpaint mask, where you can extend or erase them.
 
@@ -60,6 +61,8 @@ Outside the mask the original pixels are kept. PNG channel values outside the ef
 Extend the image by dragging the eight frame handles, or type target width, target height and the original's offset (**Original from left**, **Original from top**). The target frame can be up to 8192 px per side and 24 MP. Drag inside the frame to move it as a whole around the image. While dragging, the frame edges snap to the size grid of the model.
 
 The **Transition** setting can blend inside the original along the extended edges. At 0 px the original pixels match everywhere in the placed rectangle.
+
+**Color correction** under **Size** matches the colors of the result to the original image (0 is off). The gray filler of the new area is left out of the reference. It needs the KJNodes node `ColorMatchV2`.
 
 ## Extras
 

@@ -171,6 +171,19 @@ export function buildGraph(profile, data, jobId) {
       files.push({ name: 'mask.png', payload: data.mask, size })
     }
   } else if (data.tool === 'create' && data.mask !== undefined) throw new Error('A mask needs a template image.')
+  // Inpaint matches the colors to its input. Outpaint fills the new area with gray, so the client sends the
+  // original image as a separate color reference.
+  let colorReference
+  if ((data.tool === 'inpaint' || data.tool === 'outpaint') && profile.bindings.image) {
+    colorMatch = colorMatchStrength(data.colorMatch)
+    colorReference = [profile.bindings.image[0], 0]
+    if (colorMatch && data.tool === 'outpaint') {
+      if (typeof data.colorReference !== 'string') throw new Error('Color correction needs the original image.')
+      graph.colorReference = { class_type: 'LoadImage', inputs: { image: jobId + '/color-reference.png' } }
+      files.push({ name: 'color-reference.png', payload: data.colorReference })
+      colorReference = ['colorReference', 0]
+    }
+  }
   let hires, upscaler
   // Extras profiles with their own image binding, such as background removal, process the image at its size.
   if (upscale && !profile.bindings.image) {
@@ -279,7 +292,7 @@ export function buildGraph(profile, data, jobId) {
     else useHiresPass(graph, profile, hires)
     // The source before the upscale model is the color reference, since the model can shift colors as well.
     useColorMatch(graph, ['upscaleSource', 0], hires.colorMatch)
-  } else if (colorMatch) useColorMatch(graph, ['template', 0], colorMatch)
+  } else if (colorMatch) useColorMatch(graph, template ? ['template', 0] : colorReference, colorMatch)
   return {
     graph,
     files,
