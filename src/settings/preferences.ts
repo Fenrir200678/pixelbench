@@ -3,6 +3,8 @@ import { readStorage, writeStorage } from '../helpers/storage.js'
 import type { ExportFormat } from '../image/files.js'
 
 /** Browser-side preferences. The ComfyUI setup lives on the server instead (see /api/config). */
+export type TimeFormat = '24h' | '12h'
+
 export type Preferences = {
   exportFormat: ExportFormat
   // Prompt and settings in exported PNGs, as Forge and ComfyUI write them. Off keeps shared images clean.
@@ -22,11 +24,18 @@ export type Preferences = {
   // Asks GitHub for a newer release at most once a day.
   updateCheck: boolean
   updatePrerelease: boolean
+  timeFormat: TimeFormat
 }
 
 export const defaultFileName = '{name}-edit'
 export const jpgQualityRange = { min: 60, max: 100 }
 export const sessionSaveDelayRange = { min: 1, max: 300 }
+
+// The browser's own clock style until the user picks one.
+const localTimeFormat = (): TimeFormat =>
+  /^h1[12]$/.test(new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle ?? '')
+    ? '12h'
+    : '24h'
 
 const defaults: Preferences = {
   exportFormat: 'png',
@@ -43,7 +52,8 @@ const defaults: Preferences = {
   consoleOnError: false,
   updateCheck: true,
   // Whoever runs a pre-release keeps getting the next one.
-  updatePrerelease: __APP_VERSION__.includes('-')
+  updatePrerelease: __APP_VERSION__.includes('-'),
+  timeFormat: localTimeFormat()
 }
 
 // Earlier releases stored some of these under their own keys. They stay, so existing choices carry over.
@@ -61,12 +71,14 @@ const keys: Record<keyof Preferences, string> = {
   soundDone: 'pixelbench-sound-done',
   consoleOnError: 'pixelbench-console-on-error',
   updateCheck: 'pixelbench-update-check',
-  updatePrerelease: 'pixelbench-update-prerelease'
+  updatePrerelease: 'pixelbench-update-prerelease',
+  timeFormat: 'pixelbench-time-format'
 }
 
 function sanitize<K extends keyof Preferences>(key: K, value: unknown): Preferences[K] {
   const fallback = defaults[key]
   if (key === 'exportFormat') return (value === 'jpg' ? 'jpg' : 'png') as Preferences[K]
+  if (key === 'timeFormat') return (value === '12h' || value === '24h' ? value : fallback) as Preferences[K]
   const range = key === 'jpgQuality' ? jpgQualityRange : key === 'sessionSaveDelay' ? sessionSaveDelayRange : undefined
   if (range) {
     const number = Math.round(Number(value))

@@ -2,11 +2,33 @@
 
 All notable changes to Pixelbench. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.6.0-beta.1]
+
+### Added
+
+- **Editor sessions**: Pixelbench saves the workspace locally (prompts of every mode, workflow settings, working image, masks, drawing, references and variants) and restores it after a reload or restart. Autosave runs five seconds after the last edit by default. Save now and Restore session sit in the top bar; autosave, delay, backup size limit, storage used and deleting are under Settings → General → Session.
+- **Prompt history**: every generation you start saves its prompt and negative prompt. The history button under the prompt field puts one back with a click; single entries can be deleted with undo. Turn it on or off, set the maximum number of entries and clear it under Settings → General. The server keeps it in `.runtime/prompt-history.json`.
+- Detailer: **YOLO** detection next to SAM3, picked with a switch at the top of the section. YOLO runs in the browser on the CPU with ONNX Runtime Web, so no ComfyUI job, no extra VRAM and no model swapping. The installer downloads models for faces (`yolov11s-face`) and hands (`hand_yolov8n`) to `.runtime/models/yolo`; further ONNX detection models can go there too.
+- **Color correction** for Inpaint (in the Mask section) and Outpaint (under Size) matches the result to the colors of the source image. It needs the KJNodes node `ColorMatchV2`.
+- Hires fix: **Lanczos (no model)** enlarges without an upscale model, faster but softer, so the hires fix also works without any upscale model installed.
+- Tool options on the canvas for the active tool: frame size, ratio lock, full image and automatic crop for the frame; brush size, mask visibility and clearing for masks; brush color and deleting for the drawing layer.
+- A **Save** button next to Generate saves the open image.
+- **Clock** setting in Settings → General: 24-hour or 12-hour times throughout the app. The default follows the browser.
+
+### Changed
+
+- The collapsed Prompt section shows the start of the prompt. **Expand all sections** / **Collapse all sections** moved to the top of the inspector and stays visible while scrolling.
+- The top bar groups file and session actions.
+
+### Fixed
+
+- Create shows the open image on the canvas. The canvas is only empty before an image is opened and after New image.
+- Menus from the top bar are no longer covered by other parts of the editor.
+
 ## [0.5.0-beta.1]
 
 ### Added
 
-- Detailer: **YOLO** detection next to SAM3, picked with a switch at the top of the section. YOLO runs in the browser on the CPU with ONNX Runtime Web, so no ComfyUI job, no extra VRAM and no model swapping. The installer downloads models for faces (`yolov11s-face`) and hands (`hand_yolov8n`) to `.runtime/models/yolo`; further ONNX detection models can go there too.
 - Remove background in Extras: BiRefNet cuts out the subject of the shown image and makes the background transparent, with ComfyUI's core nodes and the model in `background_removal`.
 - Detailer: optional own sampler, scheduler, steps and CFG for the detected objects, separate from the render.
 - Hires fix: optional own sampler and scheduler for the hires pass, next to its own steps.

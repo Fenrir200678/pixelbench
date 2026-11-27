@@ -49,6 +49,20 @@ export const settingsEnglish: Record<string, string> = {
     'Some saved session files could not be deleted.',
   'Das Speicherlimit konnte nicht gespeichert werden.': 'Could not save the storage limit.',
   Arbeitsablauf: 'Workflow',
+  Uhrzeit: 'Clock',
+  '24 Stunden': '24-hour',
+  '12 Stunden': '12-hour',
+  'Abgeschickte Prompts speichern': 'Save submitted prompts',
+  'Jede gestartete Generierung legt ihren Prompt im Verlauf unter dem Prompt-Feld ab.':
+    'Every generation you start adds its prompt to the history below the prompt field.',
+  'Maximale Anzahl': 'Maximum entries',
+  'Ist der Verlauf voll, fällt der am längsten nicht benutzte Prompt heraus.':
+    'When the history is full, the prompt that was used longest ago is dropped.',
+  'Gespeicherte Prompts': 'Saved prompts',
+  'Prompts im Verlauf: {{count}}': 'Prompts in the history: {{count}}',
+  'Alle Prompts aus dem Verlauf löschen? Das lässt sich nicht rückgängig machen.':
+    'Delete all prompts from the history? This cannot be undone.',
+  'Verlauf löschen': 'Clear history',
   'Nach dem Übernehmen zu Ändern wechseln': 'Switch to Edit after applying',
   'Ein übernommenes Bild aus Erstellen öffnet direkt im Modus Ändern.':
     'An image applied in Create opens straight in Edit.',

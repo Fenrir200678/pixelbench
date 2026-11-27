@@ -7,6 +7,7 @@ import { Button } from '../../ui/Button.js'
 import { Segmented } from '../../ui/Segmented.js'
 import { SettingGroup, SettingRow } from '../../ui/SettingRow.js'
 import { Toggle } from '../../ui/Toggle.js'
+import { PromptHistorySettings } from './PromptHistorySettings.js'
 import { SessionSettings } from './SessionSettings.js'
 
 export function GeneralSection({ session }: { session: EditorSession }) {
@@ -36,6 +37,18 @@ export function GeneralSection({ session }: { session: EditorSession }) {
               { value: 'en', label: 'English' }
             ]}
             onChange={(language) => void i18n.changeLanguage(language)}
+          />
+        </SettingRow>
+        <SettingRow id="config-time-format" label={t('Uhrzeit')} labelFor={false}>
+          <Segmented
+            id="config-time-format"
+            labelledBy="config-time-format-label"
+            value={preferences.timeFormat}
+            options={[
+              { value: '24h', label: t('24 Stunden') },
+              { value: '12h', label: t('12 Stunden') }
+            ]}
+            onChange={(value) => setPreference('timeFormat', value)}
           />
         </SettingRow>
       </SettingGroup>
@@ -90,6 +103,7 @@ export function GeneralSection({ session }: { session: EditorSession }) {
           />
         </SettingRow>
       </SettingGroup>
+      <PromptHistorySettings />
       <SettingGroup title={t('Wenn eine Generierung endet')}>
         <SettingRow
           id="config-notify-done"

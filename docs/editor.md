@@ -140,6 +140,10 @@ Under **Size** you can set frame size and render resolution separately. The lock
 
 **Refine prompt** asks a local text model to rewrite your prompt. You choose the model under **Advanced settings → Prompt refinement model** in the inspector. The suggestion appears for you to accept or discard.
 
+## Prompt history
+
+Every generation you start in Create, Edit, Inpaint or Outpaint saves its prompt and, if the model uses one, its negative prompt. Typing alone saves nothing. The history button next to **Refine prompt** lists the saved prompts, newest first, with their mode and time. A click puts the prompt back into the field, and a saved negative prompt replaces the current one. **×** deletes an entry right away; **Undo** brings it back until the list closes. Running the same prompt again moves it to the top instead of adding it twice. With 15 or more entries, a search field appears.
+
 ## Console
 
 The **Console** in the footer (**Shift+C**) shows timestamps, running nodes, phase durations, cache hits and messages from ComfyUI and the bridge. The log is kept in memory only. You can open it automatically on errors in Settings.

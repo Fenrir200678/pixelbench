@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useFormatTime } from '../../helpers/time.js'
 import type { Updates } from '../../hooks/useUpdates.js'
 import { appMessage } from '../../i18n/appMessages.js'
 import { setPreference, usePreferences } from '../../settings/preferences.js'
@@ -9,6 +10,7 @@ import { Toggle } from '../../ui/Toggle.js'
 /** Update state, the check and install buttons and the update preferences, shown on the About page. */
 export function UpdateSection({ updates, busy }: { updates: Updates; busy: boolean }) {
   const { t } = useTranslation()
+  const formatTime = useFormatTime()
   const preferences = usePreferences()
   const { status, pending, error } = updates
   const release = status?.release
@@ -34,7 +36,7 @@ export function UpdateSection({ updates, busy }: { updates: Updates; busy: boole
         {t('Release-Notes ansehen')}
       </a>
     ) : status?.checkedAt ? (
-      t('Zuletzt geprüft: {{time}}', { time: new Date(status.checkedAt).toLocaleString() })
+      t('Zuletzt geprüft: {{time}}', { time: formatTime(status.checkedAt, { date: true }) })
     ) : undefined
 
   function install() {

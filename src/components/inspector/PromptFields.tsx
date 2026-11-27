@@ -2,12 +2,14 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { hasWeights } from '../../editor/promptWeights.js'
 import { messageOf } from '../../helpers/async.js'
+import { usePromptHistory, type PromptEntry } from '../../settings/promptHistory.js'
 import type { Notice } from '../../types/editor.js'
 import type { Frame, ReferenceImage } from '../../types/image.js'
 import { Button } from '../../ui/Button.js'
 import { CollapsibleSection } from '../../ui/CollapsibleSection.js'
 import { Icon } from '../../ui/Icon.js'
 import { Thumbnail } from '../../ui/Thumbnail.js'
+import { PromptHistory } from './PromptHistory.js'
 import { WeightedTextarea } from './WeightedTextarea.js'
 
 const referenceDrag = 'application/x-pixelbench-reference'
@@ -72,6 +74,7 @@ export function PromptFields({
   /** Reference count before the last removal; the notice shows until a reference is added again. */
   const [removedFrom, setRemovedFrom] = useState(0)
   const [proposal, setProposal] = useState<{ original: string; text: string; image?: Frame }>()
+  const historyEnabled = usePromptHistory()?.enabled === true
   const currentProposal = proposal?.original === value && proposal.image === image ? proposal.text : undefined
   const weightMode = weights === 'on' ? 'on' : 'off'
   const weightNote =
@@ -103,6 +106,12 @@ export function PromptFields({
       onChange(text)
     }
   }
+  // A stored negative prompt replaces the current one; an entry without one leaves the field alone.
+  function applyHistory(entry: PromptEntry) {
+    applyProposal(entry.prompt)
+    if (negative !== undefined && entry.negative) onNegative(entry.negative)
+  }
+
   const images =
     image && limit
       ? [
@@ -225,17 +234,22 @@ export function PromptFields({
             {weightNote}
           </small>
         )}
-        {(canRefine || refining) && (
+        {(canRefine || refining || historyEnabled) && (
           <div className="prompt-refinement">
-            <Button
-              className="quiet compact"
-              icon="edit"
-              aria-busy={refining}
-              disabled={refining || !onRefine || (!value.trim() && !refineEmpty)}
-              onClick={refine}
-            >
-              {t(refining ? 'Prompt wird verbessert …' : 'Prompt verbessern')}
-            </Button>
+            <div className="prompt-actions">
+              {historyEnabled && <PromptHistory onApply={applyHistory} notice={notice} />}
+              {(canRefine || refining) && (
+                <Button
+                  className="quiet compact"
+                  icon="edit"
+                  aria-busy={refining}
+                  disabled={refining || !onRefine || (!value.trim() && !refineEmpty)}
+                  onClick={refine}
+                >
+                  {t(refining ? 'Prompt wird verbessert …' : 'Prompt verbessern')}
+                </Button>
+              )}
+            </div>
             {currentProposal && (
               <div className="prompt-proposal">
                 <p>{currentProposal}</p>

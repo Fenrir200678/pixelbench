@@ -3,13 +3,13 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { Panel } from 'react-resizable-panels'
 import { api } from '../api/client.js'
 import { consoleKey } from '../editor/tools.js'
+import { useFormatTime } from '../helpers/time.js'
 import { bridgeLogMessage } from '../i18n/appMessages.js'
 import { Button } from '../ui/Button.js'
 import { ResizableLayout, ResizeHandle } from '../ui/ResizableLayout.js'
 
 type Entry = { id: number; at: number; source: 'ComfyUI' | 'Brücke'; line: string }
 type Log = { cursor: number; stream: string; entries: Entry[] }
-const formatTime = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
 export function Workspace({
   fileName,
@@ -102,6 +102,7 @@ export function Workspace({
 
 function ConsolePanel({ open }: { open: boolean }) {
   const { t } = useTranslation()
+  const formatTime = useFormatTime()
   const [entries, setEntries] = useState<Entry[]>([])
   const [offline, setOffline] = useState(false)
   const log = useRef({ cursor: 0, stream: '' })
@@ -166,7 +167,7 @@ function ConsolePanel({ open }: { open: boolean }) {
       >
         {entries.map((entry) => (
           <div key={entry.id}>
-            <time>{formatTime.format(entry.at)}</time>
+            <time>{formatTime(entry.at, { seconds: true })}</time>
             <span className="log-source" data-source={entry.source}>
               {t(entry.source)}
             </span>

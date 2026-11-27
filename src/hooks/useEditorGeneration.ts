@@ -7,6 +7,7 @@ import { scaledSize } from '../editor/upscale.js'
 import type { Mask } from '../image/mask.js'
 import { maskIntersects, transparentMask } from '../image/pixels.js'
 import type { RunOutcome } from '../settings/notify.js'
+import { recordPrompt } from '../settings/promptHistory.js'
 import type { Profile } from '../types/api.js'
 import type { Notice, Tool } from '../types/editor.js'
 import type { Frame, ReferenceImage } from '../types/image.js'
@@ -301,6 +302,11 @@ export function useEditorGeneration({
     runHires(work.image, currentRenderInputs(profile), profile)
   }
 
+  // Only prompts that reach a generation go to the history, not every edit while typing.
+  function rememberPrompt(profile: Profile) {
+    recordPrompt(workflow.prompt.trim(), profile.negative ? workflow.negative.trim() : '', tool)
+  }
+
   function run(replay?: Variant) {
     if (replay) {
       if (canReplay) void generation.run([jobStage(() => replay.prepared)])
@@ -308,6 +314,7 @@ export function useEditorGeneration({
     }
     if (!canRun || !profile || !measurement) return
     if (create) {
+      rememberPrompt(profile)
       // With the hires fix, the rendered variant is enlarged in a second job with the same request.
       const hires = workflow.hiresActive
       const inputs = {
@@ -361,6 +368,7 @@ export function useEditorGeneration({
       ])
       return
     }
+    rememberPrompt(profile)
     const { editFeather, feather, transition, inpaintColorMatch, outpaintColorMatch } = workflow.prefs
     const edge = { edit: editFeather, inpaint: feather, outpaint: transition }[tool]
     const colorMatch = { edit: 0, inpaint: inpaintColorMatch, outpaint: outpaintColorMatch }[tool]

@@ -1,19 +1,16 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFormatTime } from '../helpers/time.js'
 import type { EditorSession } from '../hooks/useEditorSession.js'
 import { Button } from '../ui/Button.js'
 
 export function SessionControls({ session }: { session: EditorSession }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const formatTime = useFormatTime()
   const descriptionId = useId()
   const save = t('Jetzt speichern')
   const restore = t('Session wiederherstellen')
-  const savedAt =
-    session.savedAt &&
-    new Intl.DateTimeFormat(i18n.language, {
-      dateStyle: 'short',
-      timeStyle: 'short'
-    }).format(new Date(session.savedAt))
+  const savedAt = session.savedAt && formatTime(session.savedAt, { date: true })
   const saved = savedAt ? t('Zuletzt gespeichert: {{time}}', { time: savedAt }) : ''
   const status =
     session.activity === 'saving'
