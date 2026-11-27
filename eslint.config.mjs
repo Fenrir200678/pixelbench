@@ -17,10 +17,6 @@ export default defineConfig(
     languageOptions: { globals: globals.node }
   },
   {
-    files: ['checks/browser.mjs'],
-    languageOptions: { globals: globals.browser }
-  },
-  {
     files: ['src/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite()],
     languageOptions: { globals: globals.browser }

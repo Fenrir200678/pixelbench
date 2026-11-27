@@ -64,7 +64,7 @@ Version, author, license and the technology Pixelbench is built with. **What's n
 | `PIXELBENCH_PORT`       | Port of the Pixelbench server. Default 3720. Set it in every terminal when you also use the dev server.        |
 | `PIXELBENCH_STATE`      | Folder that holds `.settings.json` and `.runtime` instead of the Pixelbench folder.                            |
 | `PIXELBENCH_NO_BROWSER` | Set to `1` to keep `Pixelbench.cmd` or `Pixelbench.command` from opening the browser.                          |
-| `PIXELBENCH_CHROME`     | Path to Chrome for `checks/browser.mjs` and `checks/references-ui.mjs`. Defaults: `C:/Program Files/Google/Chrome/Application/chrome.exe` on Windows, `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS. |
+| `PIXELBENCH_CHROME`     | Path to Chrome for `checks/references-ui.mjs`. Defaults: `C:/Program Files/Google/Chrome/Application/chrome.exe` on Windows, `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS. |
 | `PIXELBENCH_UPDATE_FEED` | Release list the update check reads instead of GitHub's, for testing the updater against a local server.     |
 
 Existing browser settings from earlier versions are still read.

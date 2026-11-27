@@ -4,11 +4,12 @@ import { Workspace } from './BackendConsole.js'
 import { AdjustPanel } from './canvas/AdjustPanel.js'
 import { CanvasStage } from './canvas/CanvasStage.js'
 import { CanvasToolbar, ZoomControls } from './canvas/CanvasToolbar.js'
+import type { FrameControls } from './canvas/ToolOptions.js'
 import { BackendStatus } from './Topbar.js'
 import { VramMeter } from './VramMeter.js'
 import { VariantActions, VariantStrip, VariantsToggle } from './variants/VariantStrip.js'
 import { seedless } from '../editor/generation.js'
-import { sizeLabel } from '../editor/geometry.js'
+import { frameChoices, sizeLabel } from '../editor/geometry.js'
 import type { useAdjustments } from '../hooks/useAdjustments.js'
 import type { Bridge } from '../hooks/useBridge.js'
 import type { useCanvasTools } from '../hooks/useCanvasTools.js'
@@ -18,9 +19,10 @@ import type { useVariantActions } from '../hooks/useVariantActions.js'
 import type { useVariants } from '../hooks/useVariants.js'
 import type { Workflow } from '../hooks/useWorkflow.js'
 import type { Drawing, Mask } from '../image/mask.js'
+import { expandedRect } from '../image/pixels.js'
 import type { Viewport } from '../image/viewport.js'
-import type { Tool } from '../types/editor.js'
-import type { Stroke } from '../types/image.js'
+import type { Tool, Work } from '../types/editor.js'
+import type { Rect, Stroke } from '../types/image.js'
 
 type Props = {
   tool: Tool
@@ -40,7 +42,10 @@ type Props = {
     | 'setCrop'
   >
   tools: ReturnType<typeof useCanvasTools>
-  workflow: Pick<Workflow, 'template' | 'measurement' | 'hiresSize' | 'crop' | 'grid' | 'frameRatio'>
+  workflow: Pick<
+    Workflow,
+    'template' | 'measurement' | 'hiresSize' | 'crop' | 'grid' | 'frameRatio' | 'prefs' | 'toggleFrameRatio'
+  >
   variants: Pick<ReturnType<typeof useVariants>, 'items' | 'index' | 'selected' | 'compare' | 'deselect'>
   variantActions: Pick<ReturnType<typeof useVariantActions>, 'select' | 'toggleCompare' | 'clear' | 'apply'>
   adjustments: ReturnType<typeof useAdjustments>
@@ -148,6 +153,11 @@ export function CanvasWorkspace({
     : candidate
       ? t('Vorschau ') + sizeLabel(candidate.frame.w, candidate.frame.h) + ' px'
       : t('Kein Bild geöffnet')
+
+  function setCrop(crop?: Rect) {
+    variants.deselect()
+    document.setCrop(crop)
+  }
 
   function addStroke(stroke: Stroke, layer: Mask | Drawing) {
     if (!work) return
@@ -269,6 +279,7 @@ export function CanvasWorkspace({
         onClearMask={tools.clearMask}
         onBrush={tools.setBrushSize}
         onBaseline={setDisplayedBaseline}
+        frame={work && frameControls(tool, work, workflow, setCrop)}
         leading={
           <VariantsToggle
             open={showStrip ? !variantsCollapsed : false}
@@ -299,4 +310,26 @@ export function CanvasWorkspace({
       />
     </Workspace>
   )
+}
+
+function frameControls(
+  tool: Tool,
+  work: Work,
+  workflow: Pick<Workflow, 'crop' | 'frameRatio' | 'prefs' | 'toggleFrameRatio'>,
+  setCrop: (crop?: Rect) => void
+): FrameControls | undefined {
+  const lock = { locked: Boolean(workflow.frameRatio), onLock: workflow.toggleFrameRatio }
+  if (tool === 'outpaint') {
+    const target = expandedRect(work.image, work.margins)
+    return { ...lock, size: sizeLabel(target.w, target.h) }
+  }
+  const { crop } = workflow
+  if (!crop) return undefined
+  const choices = frameChoices(work, tool, crop, workflow.prefs.auto)
+  return {
+    ...lock,
+    size: sizeLabel(crop.w, crop.h),
+    full: { active: choices.fullImage, onClick: () => setCrop(choices.fullCrop) },
+    auto: choices.autoAvailable ? { active: choices.automatic, onClick: () => setCrop() } : undefined
+  }
 }

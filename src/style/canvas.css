@@ -164,27 +164,41 @@
 .canvas-tools {
   container-type: inline-size;
   flex: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: safe center;
-  align-items: center;
-  gap: var(--space-1) 0;
   overflow-x: auto;
   padding: var(--space-1) var(--space-2);
   border-top: 1px solid var(--border-gutter);
   background: var(--surface-panel);
 }
-/* Equal flexible sides keep the tools centered while the variant controls sit at the edges. */
+.canvas-tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-1) 0;
+}
+/*
+ * Equal growing sides keep the options box at the exact center in every mode.
+ * Tools hug it from the left, image actions from the right; too narrow bars wrap.
+ */
+.canvas-tool-side {
+  flex: 1 1 0;
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+.canvas-tool-side.end {
+  justify-content: flex-start;
+}
 .canvas-tool-lead,
 .canvas-tool-actions {
-  flex: 1 1 0;
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  min-width: max-content;
 }
 .canvas-tool-actions {
-  justify-content: flex-end;
+  margin-inline-start: auto;
 }
 .canvas-tool-group {
   flex: none;
@@ -206,9 +220,74 @@
 .canvas-tool-group .icon[aria-pressed='true'] {
   color: var(--accent-text);
 }
-@container (max-width: 440px) {
-  .canvas-tool-group .brush-range input {
-    width: 56px;
+/* The options slot has a fixed width so switching tools never moves the tool buttons. */
+.canvas-tool-options {
+  --options-width: 360px;
+  width: var(--options-width);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  min-width: max-content;
+  min-height: calc(var(--control-height-md) + 2 * var(--space-1));
+  margin-inline: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+.canvas-tool-options button {
+  color: var(--text-secondary);
+}
+.canvas-tool-options .icon {
+  width: var(--control-height-md);
+  min-height: var(--control-height-md);
+}
+/* Zero basis keeps long hints from widening the slot; they truncate instead. */
+.tool-option-hint {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-1);
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tool-option-value {
+  padding-inline: var(--space-1);
+  color: var(--text-secondary);
+  font: var(--text-xs) var(--font-mono);
+  white-space: nowrap;
+}
+.canvas-tool-options .brush-range {
+  padding: 0;
+}
+/* Narrow bars keep every option but drop the text labels. */
+@container (max-width: 1040px) {
+  .canvas-tool-options {
+    --options-width: 200px;
+  }
+  .tool-option span {
+    display: none;
+  }
+  .tool-option {
+    width: var(--control-height-md);
+    padding: 0;
+    justify-content: center;
+  }
+  .canvas-tool-options .brush-range input {
+    width: 64px;
+  }
+}
+@container (max-width: 800px) {
+  .canvas-tool-options {
+    margin-inline: var(--space-1);
+    padding-inline: var(--space-1-5);
+  }
+  .tool-option-value {
+    display: none;
+  }
+  .canvas-tool-options .brush-range input {
+    width: 48px;
   }
 }
 .zoom-value {

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { setCropField, sizeOutpaint } from '../../editor/geometry.js'
+import { frameChoices, setCropField, sizeOutpaint } from '../../editor/geometry.js'
 import type { Workflow } from '../../hooks/useWorkflow.js'
 import { expandedRect, maxEdge, maxPixels } from '../../image/pixels.js'
 import type { Notice, Tool, Work } from '../../types/editor.js'
@@ -108,10 +108,7 @@ export function GenerationFrameFields({
   const { crop, grid } = workflow
   if (!crop) return null
   const { image } = work
-  const autoCropAvailable = tool !== 'inpaint' || workflow.prefs.auto
-  const fullImage = autoCropAvailable
-    ? Boolean(work.crop && crop.x === 0 && crop.y === 0 && crop.w === image.w && crop.h === image.h)
-    : !work.crop
+  const choices = frameChoices(work, tool, crop, workflow.prefs.auto)
   const maxWidth = image.w - crop.x
   const maxHeight = image.h - crop.y
   const field = (key: 'w' | 'h', label: string, min: number, max: number) => (
@@ -138,14 +135,15 @@ export function GenerationFrameFields({
       <div className="size-meta">
         <output>{t('{{grid}} px Raster', { grid })}</output>
         <div className="size-actions">
-          <Button className="quiet compact" hidden={!autoCropAvailable} disabled={!work.crop} onClick={() => onCrop()}>
-            {t('Automatischer Ausschnitt')}
-          </Button>
           <Button
             className="quiet compact"
-            disabled={fullImage}
-            onClick={() => onCrop(autoCropAvailable ? { x: 0, y: 0, w: image.w, h: image.h } : undefined)}
+            hidden={!choices.autoAvailable}
+            disabled={choices.automatic}
+            onClick={() => onCrop()}
           >
+            {t('Automatischer Ausschnitt')}
+          </Button>
+          <Button className="quiet compact" disabled={choices.fullImage} onClick={() => onCrop(choices.fullCrop)}>
             {t('Ganzes Bild')}
           </Button>
         </div>

@@ -273,3 +273,21 @@ export function measureWorkflow({
   const measurement = profile && measure(work, tool, profile, crop, prefs.auto ? undefined : [prefs.w, prefs.h])
   return { crop, measurement }
 }
+
+/**
+ * Whole-image and automatic frame choices for edit and inpaint. Without automatic sizing,
+ * inpainting has no automatic crop and an unset crop already means the whole image.
+ */
+export function frameChoices(work: Work, tool: Tool, crop: Rect, auto: boolean) {
+  const { image } = work
+  const autoAvailable = tool !== 'inpaint' || auto
+  const fullImage = autoAvailable
+    ? Boolean(work.crop && crop.x === 0 && crop.y === 0 && crop.w === image.w && crop.h === image.h)
+    : !work.crop
+  return {
+    autoAvailable,
+    fullImage,
+    automatic: !work.crop,
+    fullCrop: autoAvailable ? { x: 0, y: 0, w: image.w, h: image.h } : undefined
+  }
+}

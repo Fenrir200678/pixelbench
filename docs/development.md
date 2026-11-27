@@ -47,11 +47,10 @@ Brush strokes and panning are processed directly on the canvas during the gestur
 ```powershell
 npm test
 node checks/gpu.mjs
-node checks/browser.mjs
 ```
 
 The commands are the same on macOS.
 
 `npm test` runs the `checks/*.test.mjs` tests. They cover the size grid, alpha-preserving compositing, the block on external jobs, targeted cleanup of marked orphaned work folders, prompt weights, references, metadata, adjustments, setup logic and more. A local API test instance checks connection loss. They need no inference.
 
-`checks/gpu.mjs` and `checks/browser.mjs` need a running editor and local model weights. `checks/browser.mjs` and `checks/references-ui.mjs` use an installed Chrome at its usual place on Windows or macOS. Set `PIXELBENCH_CHROME` for a different Chrome path. The tests use generated test images and remove their export files from the system temp folder.
+`checks/gpu.mjs` needs a running editor and local model weights. `checks/references-ui.mjs` uses an installed Chrome at its usual place on Windows or macOS. Set `PIXELBENCH_CHROME` for a different Chrome path. The tests use generated test images and remove their export files from the system temp folder.

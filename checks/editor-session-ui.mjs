@@ -246,7 +246,10 @@ try {
   assert.deepEqual(dialogs, [])
   assert.equal(await restored.locator('#prompt').inputValue(), 'Mask prompt')
   assert.equal(await restored.locator('#negative').inputValue(), 'Unwanted area')
+  await restored.locator('#brush').click()
   assert.equal(await restored.locator('#canvas-clear-mask').isEnabled(), true)
+  // Tool options are contextual, so the drawing actions only appear with the paint brush.
+  await restored.locator('#paint-brush').click()
   assert.equal(await restored.locator('#delete-drawing').isEnabled(), true)
   assert.equal(await brightness(restored).inputValue(), '2')
   assert.equal(await rendered(restored).count(), 1)
