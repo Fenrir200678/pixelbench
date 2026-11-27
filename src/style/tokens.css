@@ -156,6 +156,8 @@
   --weight-up: var(--amber-400);
   --weight-down: var(--blue-300);
   --weight-selection: rgb(86 148 245 / 0.35);
+  /* Search matches */
+  --search-match: var(--amber-400);
 
   /* Status */
   --status-ok: var(--green-400);

@@ -8,7 +8,7 @@ const actions = ['record', 'remove', 'restore', 'clear', 'settings']
 const tools = ['create', 'edit', 'inpaint', 'outpaint', 'upscale']
 const textLimit = 16000
 const limitRange = { min: 1, max: 500 }
-const defaults = { enabled: true, limit: 50 }
+const defaults = { enabled: true, limit: 100 }
 const idPattern = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/
 
 const validLimit = (value) => Number.isInteger(value) && value >= limitRange.min && value <= limitRange.max

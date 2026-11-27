@@ -142,7 +142,7 @@ Under **Size** you can set frame size and render resolution separately. The lock
 
 ## Prompt history
 
-Every generation you start in Create, Edit, Inpaint or Outpaint saves its prompt and, if the model uses one, its negative prompt. Typing alone saves nothing. The history button next to **Refine prompt** lists the saved prompts, newest first, with their mode and time. A click puts the prompt back into the field, and a saved negative prompt replaces the current one. **×** deletes an entry right away; **Undo** brings it back until the list closes. Running the same prompt again moves it to the top instead of adding it twice. With 15 or more entries, a search field appears.
+Every generation you start in Create, Edit, Inpaint or Outpaint saves its prompt and, if the model uses one, its negative prompt. Typing alone saves nothing. The history button next to **Refine prompt** lists the saved prompts, newest first, with their mode and time. A click puts the prompt back into the field, and a saved negative prompt replaces the current one. **×** deletes an entry right away; **Undo** brings it back until the list closes. Running the same prompt again moves it to the top instead of adding it twice. The search field at the top filters from the second character on and highlights the matches in prompts and negative prompts. The sort button switches between newest and oldest first.
 
 ## Console
 

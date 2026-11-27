@@ -3,24 +3,32 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { tools } from '../../editor/tools.js'
 import { messageOf } from '../../helpers/async.js'
+import { readStorage, writeStorage } from '../../helpers/storage.js'
 import { useFormatTime } from '../../helpers/time.js'
 import { removePrompt, restorePrompt, usePromptHistory, type PromptEntry } from '../../settings/promptHistory.js'
 import type { Notice } from '../../types/editor.js'
 import { Button } from '../../ui/Button.js'
 import { Icon } from '../../ui/Icon.js'
 
-// Above this many entries, a search field helps more than scrolling.
-const searchFrom = 15
+// Filtering starts with the second character, so a single letter does not empty the list.
+const minQuery = 2
+const sortKey = 'pixelbench-prompt-history-sort'
+type Sort = 'newest' | 'oldest'
 // Space between the panel and the inspector, and to the window edges.
 const gap = 6
+const panelWidth = 400
+const minWidth = 300
 
 /** Docks the panel to the left edge of the inspector, level with the prompt section. */
 function dock(button: HTMLElement): CSSProperties {
   const inspector = button.closest('.inspector')?.getBoundingClientRect()
   const anchor = (button.closest('#prompt-settings') ?? button).getBoundingClientRect()
-  const right = window.innerWidth - (inspector?.left ?? anchor.left) + gap
+  const edge = inspector?.left ?? anchor.left
+  // As wide as the space next to the inspector allows; in a narrow window it overlaps the inspector instead.
+  const width = Math.min(panelWidth, Math.max(minWidth, edge - gap * 2), window.innerWidth - gap * 2)
+  const right = Math.min(window.innerWidth - edge + gap, window.innerWidth - width - gap)
   const top = Math.max(gap, Math.min(anchor.top, window.innerHeight - 240))
-  return { top, right, maxHeight: window.innerHeight - top - gap * 2 }
+  return { top, right, width, maxHeight: window.innerHeight - top - gap * 2 }
 }
 
 /** Submitted prompts, newest first. A click puts one back into the prompt field. */
@@ -30,6 +38,9 @@ export function PromptHistory({ onApply, notice }: { onApply: (entry: PromptEntr
   const history = usePromptHistory()
   const [position, setPosition] = useState<CSSProperties>()
   const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<Sort>(() =>
+    readStorage<unknown>(sortKey, 'newest') === 'oldest' ? 'oldest' : 'newest'
+  )
   // The last deleted entry, until the panel closes or the next one is deleted.
   const [removed, setRemoved] = useState<{ entry: PromptEntry; index: number }>()
   const button = useRef<HTMLButtonElement>(null)
@@ -95,12 +106,26 @@ export function PromptHistory({ onApply, notice }: { onApply: (entry: PromptEntr
     }
   }
 
-  const search = query.trim().toLowerCase()
+  function toggleSort() {
+    const next = sort === 'newest' ? 'oldest' : 'newest'
+    setSort(next)
+    writeStorage(sortKey, next)
+  }
+
+  const trimmed = query.trim()
+  const search = trimmed.length >= minQuery ? trimmed.toLowerCase() : ''
+  const ordered = sort === 'newest' ? entries : [...entries].reverse()
   const shown = search
-    ? entries.filter((entry) => (entry.prompt + '\n' + entry.negative).toLowerCase().includes(search))
-    : entries
-  // Without a search, the undo row stays where the entry was.
-  const undoAt = removed ? (search ? 0 : Math.min(removed.index, shown.length)) : -1
+    ? ordered.filter((entry) => (entry.prompt + '\n' + entry.negative).toLowerCase().includes(search))
+    : ordered
+  // Without a search, the undo row stays where the entry was, in either order.
+  const undoAt = !removed
+    ? -1
+    : search
+      ? 0
+      : sort === 'newest'
+        ? Math.min(removed.index, shown.length)
+        : Math.max(0, shown.length - removed.index)
 
   const undoRow = removed && (
     <li key="removed" className="prompt-history-removed" role="status">
@@ -137,7 +162,17 @@ export function PromptHistory({ onApply, notice }: { onApply: (entry: PromptEntr
           >
             <header>
               <h2 id="prompt-history-title">{t('Prompt-Verlauf')}</h2>
-              <span className="prompt-history-count">{entries.length}</span>
+              <span className="prompt-history-count">
+                {search ? t('{{shown}} von {{total}}', { shown: shown.length, total: entries.length }) : entries.length}
+              </span>
+              <Button
+                id="prompt-history-sort"
+                className="quiet compact icon"
+                icon={sort === 'newest' ? 'sort-newest' : 'sort-oldest'}
+                aria-label={t('Sortierung umkehren')}
+                title={t(sort === 'newest' ? 'Neueste zuerst' : 'Älteste zuerst')}
+                onClick={toggleSort}
+              />
               <Button
                 className="quiet compact icon"
                 icon="close"
@@ -145,24 +180,29 @@ export function PromptHistory({ onApply, notice }: { onApply: (entry: PromptEntr
                 onClick={() => close(true)}
               />
             </header>
-            {entries.length >= searchFrom && (
+            {entries.length > 0 && (
               <div className="prompt-history-search">
+                <Icon name="search" />
                 <input
                   id="prompt-history-search"
                   type="search"
-                  placeholder={t('Verlauf durchsuchen')}
-                  aria-label={t('Verlauf durchsuchen')}
+                  placeholder={t('Prompts durchsuchen')}
+                  aria-label={t('Prompts durchsuchen')}
+                  aria-controls="prompt-history-list"
+                  autoComplete="off"
+                  spellCheck={false}
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                 />
               </div>
             )}
-            <ul>
+            <ul id="prompt-history-list" data-searching={Boolean(search) || undefined}>
               {shown.map((entry, index) => (
                 <HistoryEntry
                   key={entry.id}
                   before={index === undoAt ? undoRow : undefined}
                   entry={entry}
+                  search={search}
                   time={formatTime(entry.at, { date: true })}
                   onApply={() => {
                     close()
@@ -189,14 +229,31 @@ export function PromptHistory({ onApply, notice }: { onApply: (entry: PromptEntr
   )
 }
 
+/** Wraps every case-insensitive occurrence of the search term in <mark>. */
+function Highlight({ text, search }: { text: string; search: string }) {
+  if (!search) return text
+  const parts: ReactNode[] = []
+  const lower = text.toLowerCase()
+  let from = 0
+  for (let at = lower.indexOf(search); at !== -1; at = lower.indexOf(search, from)) {
+    if (at > from) parts.push(text.slice(from, at))
+    parts.push(<mark key={at}>{text.slice(at, at + search.length)}</mark>)
+    from = at + search.length
+  }
+  parts.push(text.slice(from))
+  return parts
+}
+
 function HistoryEntry({
   entry,
+  search,
   time,
   before,
   onApply,
   onRemove
 }: {
   entry: PromptEntry
+  search: string
   time: string
   before?: ReactNode
   onApply: () => void
@@ -209,10 +266,12 @@ function HistoryEntry({
       {before}
       <li className="prompt-history-entry">
         <button type="button" className="prompt-history-apply" title={entry.prompt} onClick={onApply}>
-          <span className="prompt-history-text">{entry.prompt}</span>
+          <span className="prompt-history-text">
+            <Highlight text={entry.prompt} search={search} />
+          </span>
           {entry.negative && (
             <span className="prompt-history-negative">
-              <em>{t('Negativ')}</em> {entry.negative}
+              <em>{t('Negativ')}</em> <Highlight text={entry.negative} search={search} />
             </span>
           )}
           <span className="prompt-history-meta">

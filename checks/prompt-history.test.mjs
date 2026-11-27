@@ -56,7 +56,7 @@ const prompts = (state) => state.entries.map((entry) => entry.prompt)
 
 test('records submitted prompts newest first, moves repeats to the top and trims to the limit', async (t) => {
   const { runtime, server } = await setup(t)
-  assert.deepEqual(await server.get(), { enabled: true, limit: 50, entries: [] })
+  assert.deepEqual(await server.get(), { enabled: true, limit: 100, entries: [] })
   await server.record('a red fox')
   await server.record('a blue bird', 'edit', 'blurry')
   let state = await server.record('a red fox', 'inpaint')
@@ -119,7 +119,7 @@ test('a damaged file starts an empty history and is replaced on the next write',
   await writeFile(join(runtime, 'prompt-history.json'), '{ broken')
   const server = await serve(runtime)
   t.after(() => server.close())
-  assert.deepEqual(await server.get(), { enabled: true, limit: 50, entries: [] })
+  assert.deepEqual(await server.get(), { enabled: true, limit: 100, entries: [] })
   await server.record('fresh')
   const stored = JSON.parse(await readFile(join(runtime, 'prompt-history.json'), 'utf8'))
   assert.equal(stored.version, 1)

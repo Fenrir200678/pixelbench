@@ -1,5 +1,7 @@
 import {
+  ArrowDownWideNarrow,
   ArrowLeftRight,
+  ArrowUpNarrowWide,
   Bell,
   BookOpen,
   Check,
@@ -43,6 +45,7 @@ import {
   Scan,
   ScanFace,
   ScanLine,
+  Search,
   SlidersHorizontal,
   SlidersVertical,
   Sparkles,
@@ -107,7 +110,10 @@ const icons = {
   gauge: Gauge,
   keyboard: Keyboard,
   plug: Plug,
-  info: Info
+  info: Info,
+  search: Search,
+  'sort-newest': ArrowDownWideNarrow,
+  'sort-oldest': ArrowUpNarrowWide
 }
 
 export type IconName = keyof typeof icons
